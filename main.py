@@ -10,7 +10,30 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 
+from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.authentication import AuthenticationBackend, AuthCredentials, UnauthenticatedUser
+
+class MockAuthBackend(AuthenticationBackend):
+    async def authenticate(self, conn):
+        # Mocking an authenticated superuser
+        return AuthCredentials(["authenticated"]), UnauthenticatedUser() # Or a mock user
+
 app = FastAPI(title="DMS FastAPI", description="Data Management System migrated from Django")
+app.add_middleware(AuthenticationMiddleware, backend=MockAuthBackend())
+
+# Middleware to mock Django's request.user until Auth system is built
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    # Mock user object
+    class MockUser:
+        is_authenticated = True
+        is_superuser = True
+        username = "admin"
+        def has_usable_password(self): return True
+
+    request.state.user = MockUser()
+    response = await call_next(request)
+    return response
 
 # Helpers for Jinja2 Templates (To make it feel like Django)
 def get_static_url(path: str) -> str:
@@ -75,10 +98,23 @@ templates.env.filters["translate"] = translate
 @app.get("/")
 async def home(request: Request):
     """
-    Home page rendering index.html
+    Home page rendering index.html with dummy context for Django compatibility
     """
+    context = {
+        "request": request,
+        "user": request.state.user,
+        "title": "DMS FastAPI Home",
+        "dms_header": {
+            "unread_count": 0,
+            "notifications_json": "[]",
+            "user": {"name": "Admin", "initials": "AD", "role": "Administrator"},
+            "all_institutions": []
+        },
+        "current_institution": None,
+        "is_dms_admin": True,
+    }
     try:
-        return templates.TemplateResponse("index.html", {"request": request, "title": "DMS FastAPI Home"})
+        return templates.TemplateResponse("index.html", context)
     except Exception as e:
         return {"error": "Template not found or error rendering", "details": str(e)}
 
