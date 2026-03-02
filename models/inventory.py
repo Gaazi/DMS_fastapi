@@ -12,7 +12,7 @@ class ItemCategory(AuditModel, table=True):
     __tablename__ = "dms_itemcategory"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     name: str = Field(max_length=100)
     description: str = Field(default="")
 
@@ -20,7 +20,7 @@ class InventoryItem(AuditModel, table=True):
     __tablename__ = "dms_inventoryitem"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     category_id: Optional[int] = Field(default=None, foreign_key="dms_itemcategory.id")
     name: str = Field(max_length=255)
     item_type: str = Field(default="book", max_length=20)

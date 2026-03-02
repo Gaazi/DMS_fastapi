@@ -11,7 +11,7 @@ class TimetableItem(AuditModel, table=True):
     __tablename__ = "dms_timetableitem"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     course_id: int = Field(foreign_key="dms_course.id")
     teacher_id: Optional[int] = Field(default=None, foreign_key="dms_staff.id")
     facility_id: Optional[int] = Field(default=None, foreign_key="dms_facility.id")

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from .foundation import Institution, Course
 
 class Person(AuditModel):
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     user_id: Optional[int] = Field(default=None, foreign_key="auth_user.id")
     reg_id: Optional[str] = Field(default=None, max_length=20, index=True)
     name: str = Field(max_length=200)

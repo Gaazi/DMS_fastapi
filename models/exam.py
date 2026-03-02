@@ -11,7 +11,7 @@ class Exam(AuditModel, table=True):
     __tablename__ = "dms_exam"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     title: str = Field(max_length=200)
     term: str = Field(default="final_term", max_length=50)
     start_date: dt_date = Field()

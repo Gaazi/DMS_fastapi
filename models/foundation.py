@@ -34,7 +34,7 @@ class Course(AuditModel, table=True):
     __tablename__ = "dms_course"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     title: str = Field(max_length=200)
     category: str = Field(max_length=50)
     description: str = Field(default="")
@@ -54,7 +54,7 @@ class Facility(AuditModel, table=True):
     __tablename__ = "dms_facility"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     name: str = Field(max_length=200)
     facility_type: str = Field(max_length=50)
     is_available: bool = Field(default=True)

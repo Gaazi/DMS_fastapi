@@ -25,7 +25,7 @@ class Staff_Attendance(AuditModel, table=True):
     __tablename__ = "dms_staff_attendance"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     staff_member_id: int = Field(foreign_key="dms_staff.id")
     date: dt_date = Field(default_factory=dt_date.today, index=True)
     status: str = Field(default="present", max_length=20)
@@ -37,7 +37,7 @@ class Attendance(AuditModel, table=True):
     __tablename__ = "dms_attendance"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    institution_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     session_id: int = Field(foreign_key="dms_classsession.id")
     student_id: int = Field(foreign_key="dms_student.id")
     status: str = Field(default="present", max_length=20)
