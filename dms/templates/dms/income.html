@@ -1,6 +1,6 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
-{% load dms_tags %}
+
+
 {% block title %}{{ institution.name }} - آمدنی کا ریکارڈ{% endblock %}
 
 {% block content %}
@@ -18,7 +18,7 @@
         x-transition:enter="transition delay-[400ms] duration-1000">
 
         <!-- Table Section -->
-        <section id="recent-income-container" hx-get="{% url 'income' institution.slug %}"
+        <section id="recent-income-container" hx-get="{{ url('income', institution.slug) }}"
             hx-trigger="incomeCreated from:body" hx-select="#recent-income-container" hx-swap="outerHTML"
             class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-2xl">
             <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between">
@@ -46,15 +46,15 @@
                     <tbody class="divide-y divide-white/[0.02]">
                         {% for income in incomes %}
                         <tr class="group hover:bg-white/[0.05] transition-all cursor-pointer"
-                            data-url="{% url 'income_detail' institution.slug income.id %}"
+                            data-url="{{ url('income_detail', institution.slug, income.id) }}"
                             onclick="window.location.href=this.dataset.url;">
                             <td class="px-2 py-2 md:px-4 md:py-3 text-xs text-slate-500 font-mono">
-                                {{ incomes.start_index|add:forloop.counter0 }}
+                                {{ incomes.start_index|add(forloop.counter0) }}
                             </td>
                             <td class="px-2 py-2 md:px-4 md:py-3 cursor-pointer">
                                 <div class="flex items-baseline gap-1 group-hover:opacity-75 transition-opacity">
                                     <span class="text-base text-emerald-40">
-                                        {{ income.amount|floatformat:0 }}</span>
+                                        {{ income.amount|floatformat(0) }}</span>
                                     <span class="text-[8px] text-slate-600 uppercase">{{ currency_label }}</span>
                                 </div>
                             </td>
@@ -67,18 +67,18 @@
                             <td class="px-2 py-2 md:px-4 md:py-3">
                                 <span
                                     class="text-[11px] text-slate-300 font-mono group-hover:text-emerald-400 transition-colors">
-                                    {{ income.date|date:"d/m/y" }}
+                                    {{ income.date|date("d/m/y") }}
                                 </span>
                             </td>
                             <td class="px-2 py-2 md:px-4 md:py-3">
                                 {% if income.donor %}
-                                <a href="{% url 'donor_detail' institution.slug income.donor.id %}"
+                                <a href="{{ url('donor_detail', institution.slug, income.donor.id) }}"
                                     class="text-[11px] text-blue-400 hover:text-blue-300 hover:underline relative z-10"
                                     onclick="event.stopPropagation()">
                                     {{ income.donor.name }}
                                 </a>
                                 {% elif income.payment_record.student %}
-                                <a href="{% url 'student_detail' institution.slug income.payment_record.student.id %}"
+                                <a href="{{ url('student_detail', institution.slug, income.payment_record.student.id) }}"
                                     class="text-[11px] text-blue-400 hover:text-blue-300 hover:underline relative z-10"
                                     onclick="event.stopPropagation()">
                                     {{ income.payment_record.student.full_name }}
@@ -127,12 +127,12 @@
         <!-- Sidebar -->
         <div class="space-y-6">
             <!-- Top Donors -->
-            <div id="top-donors-container" hx-get="{% url 'income' institution.slug %}"
+            <div id="top-donors-container" hx-get="{{ url('income', institution.slug) }}"
                 hx-trigger="incomeCreated from:body" hx-select="#top-donors-container" hx-swap="outerHTML"
                 class="glass-card rounded-3xl p-6 shadow-2xl">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xs text-slate-500 uppercase tracking-[0.3em]">V.I.P Donors</h3>
-                    <a href="{% url 'donor' institution.slug %}"
+                    <a href="{{ url('donor', institution.slug) }}"
                         class="text-[9px] text-emerald-400 hover:text-emerald-300 font-black uppercase tracking-widest px-3 py-1 bg-emerald-400/10 rounded-lg border border-emerald-400/20 transition-all">فہرست
                         دیکھیں</a>
                 </div>
@@ -150,7 +150,7 @@
                                 <span class="text-[8px] text-slate-500 uppercase">{{ donor.count }} Transactions</span>
                             </div>
                         </div>
-                        <span class="text-xs text-emerald-400">{{ donor.total|floatformat:0 }}</span>
+                        <span class="text-xs text-emerald-400">{{ donor.total|floatformat(0) }}</span>
                     </div>
                     {% empty %}
                     <p class="text-[10px] text-center text-slate-600">کوئی ڈیٹا نہیں</p>
@@ -165,8 +165,8 @@
                     {% for row in monthly_totals %}
                     <div>
                         <div class="flex justify-between text-[9px] text-slate-400 mb-2">
-                            <span>{{ row.month|date:"F Y" }}</span>
-                            <span class="text-white">{{ row.total|floatformat:0 }} {{ currency_label }}</span>
+                            <span>{{ row.month|date("F Y") }}</span>
+                            <span class="text-white">{{ row.total|floatformat(0) }} {{ currency_label }}</span>
                         </div>
                         <div class="w-full bg-white/5 rounded-full h-1 overflow-hidden">
                             {% widthratio row.total total_amount 100 as row_percent %}

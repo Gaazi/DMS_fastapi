@@ -19,28 +19,28 @@
                 {% for donation in donations %}
                 <tr class="hover:bg-gray-50 transition">
                     <td class="py-4 px-6 text-gray-400">
-                        {{ donations.start_index|add:forloop.counter0 }}
+                        {{ donations.start_index|add(forloop.counter0) }}
                     </td>
                     <td class="py-4 px-6">
                         {% if donation.donor %}
-                        <a href="{% url 'donor_detail' institution.slug donation.donor.id %}"
+                        <a href="{{ url('donor_detail', institution.slug, donation.donor.id) }}"
                             class="font-bold text-indigo-600 hover:underline">
                             {{ donation.donor.name }}
                         </a>
                         {% else %}
-                        <span class="font-medium text-gray-700">{{ donation.get_source_display|default:donation.source
+                        <span class="font-medium text-gray-700">{{ donation.get_source_display|default(donation.source)
                             }}</span>
                         {% endif %}
                         <div class="text-[10px] text-gray-400 mt-0.5">ID: #{{ donation.id }}</div>
                     </td>
                     <td class="py-4 px-6 text-emerald-600">
-                        {{ donation.amount|floatformat:0 }} {{ currency_label }}
+                        {{ donation.amount|floatformat(0) }} {{ currency_label }}
                     </td>
                     <td class="py-4 px-6 text-gray-600">
-                        {{ donation.description|default:"—" }}
+                        {{ donation.description|default("—") }}
                     </td>
                     <td class="py-4 px-6 text-gray-500 text-left">
-                        {{ donation.date|date:"d M Y" }}
+                        {{ donation.date|date("d M Y") }}
                     </td>
                 </tr>
                 {% empty %}

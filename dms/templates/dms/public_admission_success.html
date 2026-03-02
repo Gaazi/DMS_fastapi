@@ -1,4 +1,4 @@
-{% load static %}
+
 <!DOCTYPE html>
 <html lang="ur" dir="rtl">
 <head>
@@ -27,7 +27,7 @@
             ادارہ جلد ہی آپ سے رابطہ کرے گا اور مزید کارروائی کے لیے آگاہ کرے گا۔
         </p>
 
-        <a href="{% url 'dms_login' %}" class="inline-flex items-center gap-3 px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold transition-all shadow-xl active:scale-95 group">
+        <a href="{{ url('dms_login') }}" class="inline-flex items-center gap-3 px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold transition-all shadow-xl active:scale-95 group">
             <i class="fas fa-home text-xs group-hover:-translate-x-1 transition-transform"></i>
             واپس ہوم پیج پر جائیں
         </a>

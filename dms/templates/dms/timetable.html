@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static dms_tags %}
+
 
 {% block title %}ٹائم ٹیبل - {{ institution.name }}{% endblock %}
 
@@ -17,7 +17,7 @@
             <select name="course" onchange="this.form.submit()" class="rounded-xl border border-gray-200 px-4 py-2 text-sm focus:ring-brand-500 focus:border-brand-500">
                 <option value="">تمام کورسز</option>
                 {% for prog in courses %}
-                <option value="{{ prog.id }}" {% if selected_course == prog.id|stringformat:"s" %}selected{% endif %}>{{ prog.title }}</option>
+                <option value="{{ prog.id }}" {% if selected_course == prog.id|stringformat("s") %}selected{% endif %}>{{ prog.title }}</option>
                 {% endfor %}
             </select>
         </form>
@@ -32,17 +32,17 @@
             </div>
             
             <div class="p-3 space-y-3 flex-1">
-                {% for item in matrix|dict_key:day_val %}
+                {% for item in matrix|dict_key(day_val) %}
                 <div class="p-3 rounded-xl border border-brand-100 bg-brand-50/30 group hover:bg-brand-50 transition-colors">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-[10px] text-brand-600 bg-brand-100 px-2 py-0.5 rounded-full font-sans">
-                            {{ item.start_time|time:"H:i" }} - {{ item.end_time|time:"H:i" }}
+                            {{ item.start_time|time("H:i") }} - {{ item.end_time|time("H:i") }}
                         </span>
                     </div>
-                    <h4 class="font-bold text-gray-800 text-sm leading-tight">{{ item.subject|default:item.course.title }}</h4>
+                    <h4 class="font-bold text-gray-800 text-sm leading-tight">{{ item.subject|default(item.course.title) }}</h4>
                     <p class="text-[11px] text-gray-500 mt-1 flex items-center gap-1">
                         <i class="fas fa-user-tie text-[9px]"></i>
-                        {{ item.teacher.full_name|default:"استاد متعین نہیں" }}
+                        {{ item.teacher.full_name|default("استاد متعین نہیں") }}
                     </p>
                 </div>
                 {% empty %}

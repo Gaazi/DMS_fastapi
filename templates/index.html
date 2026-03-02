@@ -1,28 +1,32 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title>DMS Applications</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
-    <style>
-        body { padding: 2rem; }
-        main { max-width: 720px; margin: 0 auto; }
-        ul { list-style: none; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-    </style>
-</head>
-<body>
-<main>
-    <h1>Select an Application</h1>
-    <ul>
-        {% for app in apps %}
-        <li>
-            <article>
-                <h2>{{ app.name }}</h2>
-                <a role="button" href="/{{ app.slug }}/">Open {{ app.name }}</a>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
-</main>
-</body>
-</html>
+﻿{% extends "base.html" %}
+
+{% block title %}DMS FastAPI - Welcome{% endblock %}
+
+{% block content %}
+<div class="glass-card p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl animate-fade-in text-center mt-10">
+    <div class="w-20 h-20 bg-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+        <i class="fas fa-rocket text-3xl text-indigo-400"></i>
+    </div>
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-white via-indigo-200 to-white bg-clip-text text-transparent mb-4">
+        خوش آمدید! DMS اب FastAPI پر ہے
+    </h1>
+    <p class="text-slate-400 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+        ہم نے کامیابی کے ساتھ تمام ماڈلز اور ٹیمپلیٹس کو منتقل کر دیا ہے۔ اب یہ ایپلیکیشن انتہائی تیز رفتار اور جدید انجن پر چل رہی ہے۔
+    </p>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-right">
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+            <h3 class="text-indigo-400 font-bold mb-2">ماڈلز منتقل</h3>
+            <p class="text-xs text-slate-500">تمام SQLModels ڈیجانگو ٹیبلز کے ساتھ تیار ہیں۔</p>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+            <h3 class="text-emerald-400 font-bold mb-2">ٹیمپلیٹس تیار</h3>
+            <p class="text-xs text-slate-500">Jinja2 اب تمام ڈیزائن کو ہینڈل کر رہا ہے۔</p>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+            <h3 class="text-amber-400 font-bold mb-2">ڈیٹا بیس لنک</h3>
+            <p class="text-xs text-slate-500">آپ کا پرانا ڈیٹا بالکل محفوظ ہے۔</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

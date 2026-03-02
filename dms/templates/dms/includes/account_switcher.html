@@ -14,7 +14,7 @@
         <div class="max-h-[300px] overflow-y-auto">
             {% for inst in request.user.institution_set.all %}
                 <div class="flex items-center justify-between px-4 py-3 text-sm transition-colors border-b border-white/5 last:border-0 hover:bg-white/5 group relative">
-                    <a href="{% url 'dashboard' inst.slug %}" 
+                    <a href="{{ url('dashboard', inst.slug) }}" 
                        class="flex items-center gap-3 flex-1 min-w-0"
                        @click="open = false">
                         
@@ -42,7 +42,7 @@
 
                     {# --- Set Default Action --- #}
                     {% if not inst.is_default %}
-                        <a href="{% url 'set_default_institution' inst.slug %}" 
+                        <a href="{{ url('set_default_institution', inst.slug) }}" 
                            class="ml-2 p-1.5 rounded-full text-gray-600 hover:text-amber-500 hover:bg-amber-500/10 transition-colors z-10"
                            title="بطور ڈیفالٹ سیٹ کریں">
                             <i class="far fa-star text-xs"></i>

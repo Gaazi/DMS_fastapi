@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+
 
 {% block title %}انوینٹری اور لائبریری - {{ institution.name }}{% endblock %}
 
@@ -97,7 +97,7 @@
                         </td>
                         <td class="p-4 text-center">
                             {% if item.available_quantity > 0 %}
-                            <button @click="showIssueModal = true; selectedItem = {{ item.id }}; selectedItemName = '{{ item.name|escapejs }}'" class="text-brand-600 bg-brand-50 hover:bg-brand-100 hover:text-brand-700 font-medium px-3 py-1.5 rounded-lg border border-brand-200 transition-colors inline-flex items-center gap-1.5 shadow-sm">
+                            <button @click="showIssueModal = true; selectedItem = {{ item.id }}; selectedItemName = '{{ item.name|tojson|safe }}'" class="text-brand-600 bg-brand-50 hover:bg-brand-100 hover:text-brand-700 font-medium px-3 py-1.5 rounded-lg border border-brand-200 transition-colors inline-flex items-center gap-1.5 shadow-sm">
                                 <i class="fas fa-hand-holding text-xs"></i> جاری کریں
                             </button>
                             {% else %}
@@ -147,8 +147,8 @@
                 </button>
             </div>
             
-            <form action="{% url 'add_item' institution.slug %}" method="POST" class="space-y-6 max-h-[65vh] overflow-y-auto pr-2">
-                {% csrf_token %}
+            <form action="{{ url('add_item', institution.slug) }}" method="POST" class="space-y-6 max-h-[65vh] overflow-y-auto pr-2">
+                {{ csrf_token() }}
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div class="space-y-2">
@@ -231,8 +231,8 @@
                 </button>
             </div>
             
-            <form action="{% url 'issue_item' institution.slug %}" method="POST" class="space-y-6">
-                {% csrf_token %}
+            <form action="{{ url('issue_item', institution.slug) }}" method="POST" class="space-y-6">
+                {{ csrf_token() }}
                 <input type="hidden" name="item_id" x-model="selectedItem">
                 
                 <div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-2xl flex items-center gap-5 shadow-inner">
@@ -258,7 +258,7 @@
                         <select name="student_id" :required="issueTo === 'student'" class="w-full bg-[#0a0a14] text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all shadow-inner">
                             <option value="">طالب علم کا انتخاب کریں...</option>
                             {% for student in students %}
-                            <option value="{{ student.id }}">{{ student.full_name }} ({{ student.roll_number|default:"-" }})</option>
+                            <option value="{{ student.id }}">{{ student.full_name }} ({{ student.roll_number|default("-") }})</option>
                             {% endfor %}
                         </select>
                     </div>

@@ -1,4 +1,4 @@
-{% load static %}
+
 <!DOCTYPE html>
 <html lang="ur" dir="rtl">
 <head>
@@ -29,7 +29,7 @@
         </div>
 
         <form method="post" class="p-8 space-y-5">
-            {% csrf_token %}
+            {{ csrf_token() }}
             
             {% for field in form %}
             <div class="space-y-1">

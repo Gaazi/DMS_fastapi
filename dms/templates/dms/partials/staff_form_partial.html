@@ -12,7 +12,7 @@
 
     <form method="post" action=""
           class="p-6 space-y-6">
-        {% csrf_token %}
+        {{ csrf_token() }}
         {% if editing_staff %}
         <input type="hidden" name="staff_id" value="{{ editing_staff.id }}">
         {% endif %}
@@ -120,7 +120,7 @@
             </button>
             
             {% if editing_staff %}
-            <a href="{% url 'dms_staff' institution.slug %}"
+            <a href="{{ url('dms_staff', institution.slug) }}"
                 class="px-6 py-3 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition">
                 منسوخ
             </a>

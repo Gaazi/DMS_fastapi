@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+
 {% block title %}{{ institution.name }} - کورسز مینجمنٹ{% endblock %}
 
 {% block content %}
@@ -38,13 +38,13 @@
     <!-- Rows Container -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4" dir="rtl">
         {% for course in courses %}
-        <a href="{% if institution.type == 'masjid' %}{% url 'program_detail' institution.slug course.id %}{% else %}{% url 'dms_course_detail' institution.slug course.id %}{% endif %}" class="block group">
+        <a href="{% if institution.type == 'masjid' %}{{ url('program_detail', institution.slug, course.id) }}{% else %}{{ url('dms_course_detail', institution.slug, course.id) }}{% endif %}" class="block group">
             <!-- Card Content (Grid Item) -->
             <div class="h-full bg-white/[0.02] border border-white/5 rounded-xl p-4 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all group-hover:-translate-y-1 relative overflow-hidden">
                 
                 <!-- ID Badge -->
                 <div class="absolute top-0 left-0 px-2 py-1 bg-white/5 rounded-br-lg border-b border-r border-white/5">
-                    <span class="text-[10px] font-mono text-slate-500">#{{ forloop.counter|stringformat:"02d" }}</span>
+                    <span class="text-[10px] font-mono text-slate-500">#{{ forloop.counter|stringformat("02d") }}</span>
                 </div>
 
                 <!-- Icon & Title -->

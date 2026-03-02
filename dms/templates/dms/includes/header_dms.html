@@ -1,14 +1,14 @@
-{% load static %}
+
 <div class="relative bg-slate-900 text-white shadow-xl pb-1 mb-0.5" 
      x-data="dmsHeader({
-         unread: '{{ dms_header.unread_count|default:0 }}',
-         notificationsUrl: '{{ dms_header.notifications_url|default:" #"|escapejs }}',
-         notificationsJson: '{{ dms_header.notifications_json|escapejs }}',
+         unread: '{{ dms_header.unread_count|default(0) }}',
+         notificationsUrl: '{{ dms_header.notifications_url|default(" #")|tojson|safe }}',
+         notificationsJson: '{{ dms_header.notifications_json|tojson|safe }}',
          user: {
-             name: '{{ dms_header.user.name|default:"منتظم"|escapejs }}',
-             email: '{{ dms_header.user.email|default:""|escapejs }}',
-             role: '{{ dms_header.user.role|default:""|escapejs }}',
-             initials: '{{ dms_header.user.initials|default:"DMS"|escapejs }}'
+             name: '{{ dms_header.user.name|default("منتظم")|tojson|safe }}',
+             email: '{{ dms_header.user.email|default("")|tojson|safe }}',
+             role: '{{ dms_header.user.role|default("")|tojson|safe }}',
+             initials: '{{ dms_header.user.initials|default("DMS")|tojson|safe }}'
          }
      })" 
      x-init="init()">
@@ -37,7 +37,7 @@
             <div class="flex items-center gap-2 sm:gap-3">
                 
                 <!-- Home Link -->
-                <a href="{% if institution or current_institution %}{% url 'dashboard' institution.slug|default:current_institution.slug %}{% else %}{% url 'dms' %}{% endif %}" 
+                <a href="{% if institution or current_institution %}{{ url('dashboard', institution.slug|default(current_institution.slug)) }}{% else %}{{ url('dms') }}{% endif %}" 
                    class="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-300 group text-white/70 hover:text-emerald-400"
                    title="ہوم پیج">
                     <i class="fa-solid fa-house text-lg transition-transform group-hover:scale-110"></i>
@@ -56,14 +56,14 @@
                 {% if request.user.is_authenticated %}
                     {% include "dms/includes/account_switcher.html" %}
                     
-                    <a href="{% url 'dms_logout' %}" 
+                    <a href="{{ url('dms_logout') }}" 
                        class="group flex items-center justify-center w-10 h-10 md:w-auto md:h-auto md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10 hover:bg-rose-500/10 hover:border-rose-500/50 transition-all duration-300 md:gap-2 text-rose-500 hover:text-rose-400"
                        title="لاگ آؤٹ">
                         <span class="hidden md:block text-sm font-mehr">خروج</span>
                         <i class="fa-solid fa-power-off text-lg md:text-base"></i>
                     </a>
                 {% else %}
-                    <a href="{% url 'dms_login' %}" 
+                    <a href="{{ url('dms_login') }}" 
                        class="group flex items-center justify-center w-10 h-10 md:w-auto md:h-auto md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all duration-300 md:gap-2 text-emerald-500 hover:text-emerald-400"
                        title="لاگ ان">
                         <span class="hidden md:block text-sm font-mehr">لاگ ان</span>

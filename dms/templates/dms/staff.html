@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+
 {% block title %}{{ institution.name }} - عملہ کنٹرول پینل{% endblock %}
 
 {% block content %}
@@ -10,15 +10,15 @@
     <section class="grid grid-cols-4 gap-2 md:gap-4 mb-8" x-show="loaded" x-transition:enter="transition delay-[200ms] duration-1000">
         <div class="glass-card rounded-xl p-3 md:p-6 text-center">
             <p class="text-[7px] md:text-[9px] text-slate-500 uppercase tracking-tighter mb-1">کل ارکان</p>
-            <h3 class="text-xs md:text-2xl text-white">{{ total_count|default:0 }}</h3>
+            <h3 class="text-xs md:text-2xl text-white">{{ total_count|default(0) }}</h3>
         </div>
         <div class="glass-card rounded-xl p-3 md:p-6 text-center">
             <p class="text-[7px] md:text-[9px] text-emerald-400/80 uppercase tracking-tighter mb-1">فعال</p>
-            <h3 class="text-xs md:text-2xl text-white">{{ active_count|default:0 }}</h3>
+            <h3 class="text-xs md:text-2xl text-white">{{ active_count|default(0) }}</h3>
         </div>
         <div class="glass-card rounded-xl p-3 md:p-6 text-center">
             <p class="text-[7px] md:text-[9px] text-indigo-400 uppercase tracking-tighter mb-1">پے رول</p>
-            <a href="{% url 'staff_payroll' institution.slug %}" class="text-[8px] md:text-base text-white hover:text-indigo-400 transition-colors uppercase">رپورٹ</a>
+            <a href="{{ url('staff_payroll', institution.slug) }}" class="text-[8px] md:text-base text-white hover:text-indigo-400 transition-colors uppercase">رپورٹ</a>
         </div>
         <div class="glass-card rounded-xl p-3 md:p-6 text-center">
             <p class="text-[7px] md:text-[9px] text-blue-400 uppercase tracking-tighter mb-1">ڈائریکٹری</p>
@@ -30,7 +30,7 @@
     <section class="glass-card rounded-3xl p-4 sm:p-6 mb-12" x-show="loaded" x-transition:enter="transition delay-[400ms] duration-1000">
         <div class="relative group">
             <input type="text" name="q" placeholder="عملے کا نام، عہدہ یا ای میل تلاش کریں..." 
-                   hx-get="{% url 'dms_staff' institution.slug %}"
+                   hx-get="{{ url('dms_staff', institution.slug) }}"
                    hx-target="#staff-table-container"
                    hx-trigger="keyup changed delay:500ms, search"
                    class="w-full pr-14 pl-6 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none text-white shadow-inner transition-all focus:bg-white/10 focus:border-indigo-500/50 placeholder:text-slate-500 text-sm">
@@ -39,7 +39,7 @@
     </section>
 
         <div id="staff-table-container" 
-             hx-get="{% url 'dms_staff' institution.slug %}"
+             hx-get="{{ url('dms_staff', institution.slug) }}"
              hx-trigger="staffChanged from:body">
             {% include 'dms/partials/staff_table_partial.html' %}
         </div>

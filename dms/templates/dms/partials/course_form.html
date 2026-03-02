@@ -12,32 +12,32 @@
     </div>
 
     <form method="post" class="space-y-6">
-        {% csrf_token %}
+        {{ csrf_token() }}
         {% if editing_course %}
         <input type="hidden" name="course_id" value="{{ editing_course.id }}">
         {% endif %}
 
         <div class="space-y-4">
-            {% load widget_tweaks %}
+            
             
             <!-- Title -->
             <div>
                 <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">{% if institution.type == 'masjid' %}پروگرام کا نام{% else %}کورس کا نام{% endif %}</label>
-                {{ form.title|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                {{ form.title|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <!-- Category -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">زمرہ</label>
-                    {{ form.category|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                    {{ form.category|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
                 </div>
                 
                 <!-- Capacity -->
                 {% if institution.type != 'masjid' %}
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">گنجائش</label>
-                    {{ form.capacity|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                    {{ form.capacity|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
                 </div>
                 {% endif %}
             </div>
@@ -54,19 +54,19 @@
             <!-- Description -->
             <div>
                 <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تفصیل</label>
-                {{ form.description|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                {{ form.description|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <!-- Admission Fee -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">{% if institution.type == 'masjid' %}ممبرشپ فیس{% else %}داخلہ فیس{% endif %}</label>
-                    {{ form.admission_fee|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                    {{ form.admission_fee|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
                 </div>
                 <!-- Course Fee -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">{% if institution.type == 'masjid' %}ماہانہ تعاون{% else %}کورس فیس{% endif %}</label>
-                    {{ form.course_fee|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                    {{ form.course_fee|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
                 </div>
             </div>
 
@@ -74,13 +74,13 @@
                 <!-- Fee Type -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">فیس کی قسم</label>
-                    {{ form.fee_type|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                    {{ form.fee_type|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
                 </div>
                 <!-- Status -->
                 <div class="flex items-center h-full pt-6">
                     <label class="flex items-center gap-3 cursor-pointer group">
                         <div class="relative">
-                            {{ form.is_active|add_class:"sr-only peer" }}
+                            {{ form.is_active|add_class("sr-only peer") }}
                             <div class="w-10 h-5 bg-white/10 rounded-full shadow-inner transition-colors peer-checked:bg-emerald-500/20"></div>
                             <div class="absolute left-0 top-0 w-5 h-5 bg-slate-400 rounded-full shadow transition-transform peer-checked:translate-x-full peer-checked:bg-emerald-400"></div>
                         </div>
@@ -94,12 +94,12 @@
                 {% if institution.type != 'masjid' %}
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تاریخ آغاز</label>
-                    {{ form.start_date|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                    {{ form.start_date|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
                 </div>
                 <!-- End Date -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تاریخ اختتام</label>
-                    {{ form.end_date|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                    {{ form.end_date|add_class("w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm") }}
                 </div>
                 {% endif %}
             </div>
@@ -111,7 +111,7 @@
                 {% if editing_course %}تبدیلیاں محفوظ کریں{% else %}{% if institution.type == 'masjid' %}پروگرام شامل کریں{% else %}کورس شامل کریں{% endif %}{% endif %}
             </button>
             {% if editing_course %}
-            <a href="{% url 'dms_course' institution.slug %}"
+            <a href="{{ url('dms_course', institution.slug) }}"
                 class="w-full py-4 bg-white/5 text-slate-400 rounded-2xl text-sm text-center hover:bg-white/10 transition-all">
                 منسوخ کریں
             </a>

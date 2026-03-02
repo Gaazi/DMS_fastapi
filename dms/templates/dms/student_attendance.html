@@ -12,7 +12,7 @@
 }" x-init="setTimeout(() => updateStats(), 300)" class="relative z-10 text-slate-200">
     
     <form method="post" id="attendanceForm" class="max-w-7xl mx-auto py-8 md:py-12">
-        {% csrf_token %}
+        {{ csrf_token() }}
 
         <!-- Cinematic Header -->
 
@@ -70,7 +70,7 @@
                             hx-indicator="#loading-indicator">
                         <option value="" class="bg-[#020617]">All Courses</option>
                         {% for prog in all_courses %}
-                        <option value="{{ prog.id }}" class="bg-[#020617]" {% if prog.id|stringformat:'s' == selected_course_id %}selected{% endif %}>{{ prog.title }}</option>
+                        <option value="{{ prog.id }}" class="bg-[#020617]" {% if prog.id|stringformat('s') == selected_course_id %}selected{% endif %}>{{ prog.title }}</option>
                         {% endfor %}
                     </select>
                     <!-- Custom Arrow for Select -->
@@ -93,7 +93,7 @@
                 <div class="w-6 h-6 flex items-center justify-center text-emerald-500 pl-1">
                     <i class="fas fa-calendar-alt text-[10px]"></i>
                 </div>
-                <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+                <input type="date" name="date" value="{{ selected_date|date('Y-m-d') }}"
                        class="bg-transparent border-none text-white text-[9px] md:text-xs w-auto focus:ring-0 cursor-pointer p-0 text-center"
                        hx-get="." 
                        hx-target="#student-list-container" 

@@ -29,7 +29,7 @@
 <div class="max-w-4xl mx-auto px-4 py-12" dir="rtl">
     <!-- Breadcrumbs / Back Link -->
     <div class="mb-8">
-        <a href="{% url 'dms_staff' institution.slug %}" 
+        <a href="{{ url('dms_staff', institution.slug) }}" 
            class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition group">
             <div class="p-2 rounded-full bg-white shadow-sm border group-hover:bg-indigo-50 transition">
                 <i class="fas fa-arrow-right"></i>

@@ -47,7 +47,7 @@
             </div>
             
             <div class="flex gap-3">
-                <a href="{% url 'guardian_dashboard_scoped' institution_slug=student.institution.slug %}" 
+                <a href="{{ url('guardian_dashboard_scoped', institution_slug=student.institution.slug) }}" 
                    class="px-6 py-3 rounded-2xl bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs hover:bg-blue-500/30 transition-all active:scale-95 shadow-xl flex items-center gap-2">
                    <i class="fas fa-shield-halved text-[10px]"></i>
                    <span>گارجین ڈیش بورڈ</span>
@@ -71,7 +71,7 @@
             </div>
             <div class="bg-white/[0.03] backdrop-blur-2xl rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col items-center text-center">
                 <p class="text-[7px] md:text-[9px] text-purple-400 uppercase mb-1">رول نمبر</p>
-                <h3 class="text-xl md:text-3xl text-white">{{ student.reg_id|default:"—" }}</h3>
+                <h3 class="text-xl md:text-3xl text-white">{{ student.reg_id|default("—") }}</h3>
             </div>
         </section>
 
@@ -99,7 +99,7 @@
                         <tbody class="divide-y divide-white/[0.02]">
                             {% for rec in attendance %}
                             <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="px-6 py-4 text-[11px] text-slate-300">{{ rec.session.date|date:"d M, Y" }}</td>
+                                <td class="px-6 py-4 text-[11px] text-slate-300">{{ rec.session.date|date("d M, Y") }}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest border
                                         {% if rec.status == 'present' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
@@ -108,7 +108,7 @@
                                         {{ rec.get_status_display }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-[10px] text-slate-500 max-w-[120px] truncate" title="{{ rec.remarks }}">{{ rec.remarks|default:'—' }}</td>
+                                <td class="px-6 py-4 text-[10px] text-slate-500 max-w-[120px] truncate" title="{{ rec.remarks }}">{{ rec.remarks|default('—') }}</td>
                             </tr>
                             {% empty %}
                             <tr><td colspan="3" class="px-6 py-16 text-center text-slate-600 text-xs">کوئی حاضری ریکارڈ نہیں ہے۔</td></tr>
@@ -141,11 +141,11 @@
                             <tr class="hover:bg-white/[0.02] transition-colors">
                                 <td class="px-6 py-4 flex flex-col">
                                     <span class="text-[11px] text-slate-200">{{ fee.title }}</span>
-                                    <span class="text-[8px] text-slate-600 uppercase">{{ fee.due_date|date:"M Y" }}</span>
+                                    <span class="text-[8px] text-slate-600 uppercase">{{ fee.due_date|date("M Y") }}</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-baseline gap-1 justify-end">
-                                        <span class="text-[13px] text-white">{{ fee.amount_due|floatformat:0 }}</span>
+                                        <span class="text-[13px] text-white">{{ fee.amount_due|floatformat(0) }}</span>
                                         <span class="text-[8px] text-slate-600 uppercase">PKR</span>
                                     </div>
                                 </td>

@@ -1,5 +1,5 @@
 {% for member in members %}
-<tr x-show="!searchQuery || '{{ member.full_name|escapejs }}'.includes(searchQuery)" 
+<tr x-show="!searchQuery || '{{ member.full_name|tojson|safe }}'.includes(searchQuery)" 
     x-data="{ status: '{% if member.current_status %}{{ member.current_status }}{% else %}present{% endif %}' }"
     :class="{'bg-emerald-50/20': status == 'present', 'bg-rose-50/20': status == 'absent'}"
     class="transition-colors">
@@ -23,7 +23,7 @@
     </td>
 
     <td class="py-4 px-6">
-        <input type="text" name="remarks_{{ member.id }}" value="{{ member.current_remarks|default:'' }}"
+        <input type="text" name="remarks_{{ member.id }}" value="{{ member.current_remarks|default('') }}"
                class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-indigo-500/20"
                placeholder="کوئی نوٹ لکھیں...">
     </td>

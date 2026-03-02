@@ -15,7 +15,7 @@
 
         <div class="flex items-center gap-3">
             <!-- Restored Tactical New Admission Trigger -->
-            <a href="{% if institution.type == 'masjid' %}{% url 'musallee_admission' institution.slug %}{% else %}{% url 'admission' institution.slug %}{% endif %}"  
+            <a href="{% if institution.type == 'masjid' %}{{ url('musallee_admission', institution.slug) }}{% else %}{{ url('admission', institution.slug) }}{% endif %}"  
                class="group/plus relative px-5 py-2 rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 shadow-2xl">
                 <div class="absolute inset-0 bg-emerald-500/10 border border-emerald-500/30 group-hover/plus:bg-emerald-500/20 group-hover/plus:border-emerald-500/50 transition-colors"></div>
                 
@@ -40,18 +40,18 @@
         <div class="absolute inset-0 bg-gradient-to-r from-blue-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
         <!-- Whole Row Interactive Link -->
-        <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_detail' institution.slug student.id %}{% else %}{% url 'student_detail' institution.slug student.id %}{% endif %}" class="absolute inset-0 z-40" aria-label="View Student Profile"></a>
+        <a href="{% if institution.type == 'masjid' %}{{ url('musalleen_detail', institution.slug, student.id) }}{% else %}{{ url('student_detail', institution.slug, student.id) }}{% endif %}" class="absolute inset-0 z-40" aria-label="View Student Profile"></a>
 
         <!-- Tactical Locked-On Indicator -->
         <div class="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-blue-500 rounded-r-full scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-center shadow-[0_0_20px_#3b82f6]"></div>
         
         <!-- Col 1: Tactical ID Stack -->
         <div class="flex flex-col shrink-0 items-center justify-center gap-0.5 md:gap-1 ltr:border-r rtl:border-l rtl:border-r-0 border-white/5 relative z-20 w-[45px] md:w-[60px] self-stretch bg-black/40 ltr:rounded-l-lg rtl:rounded-r-lg group-hover:bg-black/60 transition-colors py-1">
-            <span class="text-xs md:text-base lg:text-lg text-blue-500/90 font-mono font-black tabular-nums leading-none group-hover:text-blue-400 transition-colors">{{ forloop.counter|stringformat:"02d" }}</span>
+            <span class="text-xs md:text-base lg:text-lg text-blue-500/90 font-mono font-black tabular-nums leading-none group-hover:text-blue-400 transition-colors">{{ forloop.counter|stringformat("02d") }}</span>
             <div class="w-4 md:w-8 h-[1px] bg-blue-500/20 group-hover:bg-blue-500/40 transition-colors"></div>
             <div class="flex flex-col items-center">
                 <span class="text-[7px] md:text-[9px] text-slate-500 uppercase leading-none mb-0.5 md:mb-1 tracking-widest">{% if institution.type == 'masjid' %}M.ID{% else %}ROLL{% endif %}</span>
-                <span class="text-[10px] md:text-sm text-white/80 font-mono font-bold tabular-nums leading-none group-hover:text-white transition-colors">{% load dms_tags %}{{ student.reg_id|default:student.id|short_id }}</span>
+                <span class="text-[10px] md:text-sm text-white/80 font-mono font-bold tabular-nums leading-none group-hover:text-white transition-colors">{{ student.reg_id|default(student.id)|short_id }}</span>
             </div>
         </div>
 
@@ -94,9 +94,9 @@
                     </div>
                     <span class="truncate">
                         {% if institution.type == 'masjid' %}
-                             {{ student.guardian_name|default:'---' }}
+                             {{ student.guardian_name|default('---') }}
                         {% else %}
-                             {{ student.father_name|default:'نامعلوم سرپرست' }}
+                             {{ student.father_name|default('نامعلوم سرپرست') }}
                         {% endif %}
                     </span>
                 </div>
@@ -129,7 +129,7 @@
                 <!-- Amount Row -->
                 <div class="flex-1 flex flex-col items-center justify-center mt-0.5">
                     <span class="text-sm md:text-sm tabular-nums leading-none {% if student.has_pending_fee %}text-rose-500{% else %}text-white/60{% endif %}">
-                        {% if student.has_pending_fee %}{{ student.month_due_amount|floatformat:0 }}{% else %}
+                        {% if student.has_pending_fee %}{{ student.month_due_amount|floatformat(0) }}{% else %}
                         <i class="fas fa-check-double text-emerald-500/80 text-[10px] md:text-xs"></i>
                         {% endif %}
                     </span>
@@ -166,7 +166,7 @@
         
         <div class="flex items-center gap-2">
             {% if students.has_previous %}
-            <button hx-get="{% url 'student_list' institution.slug %}?page={{ students.previous_page_number }}" hx-target="#student-list-container" hx-swap="outerHTML" hx-include="#student-filter-form"
+            <button hx-get="{{ url('student_list', institution.slug) }}?page={{ students.previous_page_number }}" hx-target="#student-list-container" hx-swap="outerHTML" hx-include="#student-filter-form"
                     class="h-9 px-4 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold uppercase text-slate-400 hover:bg-blue-500 hover:text-white transition-all cursor-pointer">
                 PREV
             </button>
@@ -177,7 +177,7 @@
             </div>
             
             {% if students.has_next %}
-            <button hx-get="{% url 'student_list' institution.slug %}?page={{ students.next_page_number }}" hx-target="#student-list-container" hx-swap="outerHTML" hx-include="#student-filter-form"
+            <button hx-get="{{ url('student_list', institution.slug) }}?page={{ students.next_page_number }}" hx-target="#student-list-container" hx-swap="outerHTML" hx-include="#student-filter-form"
                     class="h-9 px-4 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold uppercase text-slate-400 hover:bg-blue-500 hover:text-white transition-all cursor-pointer">
                 NEXT
             </button>

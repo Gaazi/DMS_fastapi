@@ -13,7 +13,7 @@
 }" x-init="setTimeout(() => updateStats(), 300)" class="animate-fade-in-up pb-32" dir="rtl">
 
     <form method="post" id="attendanceForm" class="space-y-6">
-        {% csrf_token %}
+        {{ csrf_token() }}
 
         <!-- Header & Stats Card -->
         <div class="sticky top-4 z-50 px-2">
@@ -32,7 +32,7 @@
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <a href="{% url 'dms_staff' institution.slug %}" class="hidden sm:block text-xs text-slate-400 hover:text-slate-600 transition">فہرست میں واپسی ←</a>
+                            <a href="{{ url('dms_staff', institution.slug) }}" class="hidden sm:block text-xs text-slate-400 hover:text-slate-600 transition">فہرست میں واپسی ←</a>
                             <button type="submit" class="group relative flex items-center gap-2 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl text-sm overflow-hidden transition-all hover:pr-12 active:scale-95">
                                 <span>محفوظ کریں</span>
                                 <i class="fas fa-save absolute left-4 -translate-x-10 group-hover:translate-x-0 transition-transform"></i>
@@ -73,7 +73,7 @@
                 
                 <div class="bg-white dark:bg-slate-800 p-1 rounded-2xl shadow-sm flex items-center px-3 min-w-[200px]">
                     <i class="fas fa-calendar text-indigo-500 ml-2"></i>
-                    <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+                    <input type="date" name="date" value="{{ selected_date|date('Y-m-d') }}"
                            class="bg-transparent border-none text-xs w-full focus:ring-0"
                            hx-get="." hx-target="#staff-attendance-body" hx-push-url="true">
                 </div>

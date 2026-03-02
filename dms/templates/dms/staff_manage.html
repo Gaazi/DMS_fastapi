@@ -7,7 +7,7 @@
   <!-- Top Navigation -->
   <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
     <div class="flex items-center gap-4">
-      <a href="{% url 'dms_staff' institution.slug %}" 
+      <a href="{{ url('dms_staff', institution.slug) }}" 
          class="p-2 rounded-full bg-white shadow-sm border hover:bg-gray-50 transition" title="واپس اسٹاف ہب">
         <i class="fas fa-arrow-right text-gray-600"></i>
       </a>
@@ -16,7 +16,7 @@
 
     <!-- Action Buttons -->
     <div class="flex items-center gap-3">
-        <a href="{% url 'dms_staff_create' institution.slug %}" 
+        <a href="{{ url('dms_staff_create', institution.slug) }}" 
            class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition transform hover:-translate-y-0.5">
             <i class="fas fa-plus"></i>
             نیا رکن شامل کریں
@@ -39,7 +39,7 @@
         
         <div class="flex items-center gap-4 w-full sm:w-auto">
             <form method="get" class="relative flex-grow sm:flex-grow-0">
-                <input type="text" name="q" value="{{ query|default:'' }}" 
+                <input type="text" name="q" value="{{ query|default('') }}" 
                        placeholder="نام یا فون نمبر سے تلاش..." 
                        class="w-full sm:w-64 pl-10 pr-4 py-2 text-sm rounded-xl border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -52,7 +52,7 @@
     </div>
 
     <div class="overflow-x-auto" 
-         hx-get="{% url 'dms_staff' institution.slug %}"
+         hx-get="{{ url('dms_staff', institution.slug) }}"
          hx-trigger="staffChanged from:body">
       {% include 'dms/partials/staff_table_partial.html' %}
     </div>

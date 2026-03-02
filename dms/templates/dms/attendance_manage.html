@@ -1,5 +1,5 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
+
 {% block title %}{{ Course.title }} - حاضری کنٹرول{% endblock %}
 
 {% block content %}
@@ -41,13 +41,13 @@
 
         <!-- 4. The Registry: List View (More Premium than Cards) -->
         <form method="post" class="space-y-8 pb-40">
-            {% csrf_token %}
+            {{ csrf_token() }}
             
             <div class="bg-[#0a0a0f]/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
                 <div class="divide-y divide-white/[0.03]">
                     {% for student in enrollments %}
-                    <div x-show="!search || '{{ student.full_name|escapejs }}'.toLowerCase().includes(search.toLowerCase())"
-                         x-data="{ status: '{{ student.current_status|default:'' }}' }"
+                    <div x-show="!search || '{{ student.full_name|tojson|safe }}'.toLowerCase().includes(search.toLowerCase())"
+                         x-data="{ status: '{{ student.current_status|default('') }}' }"
                          class="flex flex-col lg:flex-row lg:items-center gap-6 p-6 md:p-8 transition-all hover:bg-white/[0.02] group">
                         
                         <!-- Profile Identity -->

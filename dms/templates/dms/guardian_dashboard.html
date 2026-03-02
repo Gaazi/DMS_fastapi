@@ -1,5 +1,5 @@
 ﻿{% extends "base.html" %}
-{% load static %}
+
 
 {% block content %}
 <div class="min-h-screen bg-gray-50 pb-12">
@@ -96,14 +96,14 @@
                             <div class="flex items-center gap-4">
                                 <div
                                     class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                    {{ student.full_name|slice:":1" }}
+                                    {{ student.full_name|slice(":1") }}
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-gray-900">{{ student.full_name }}</h4>
                                     <p class="text-sm text-gray-500">{{ student.institution.name }}</p>
                                 </div>
                             </div>
-                            <a href="{% url 'student_dashboard_scoped' student_id=student.id institution_slug=student.institution.slug %}"
+                            <a href="{{ url('student_dashboard_scoped', student_id=student.id, institution_slug=student.institution.slug) }}"
                                 class="px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
                                 تفصیلات دیکھیں
                             </a>

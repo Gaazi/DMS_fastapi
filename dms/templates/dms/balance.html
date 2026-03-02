@@ -1,6 +1,6 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
-{% load dms_tags %}
+
+
 {% block title %}{{ institution.name }} - فنانشل بیلنس{% endblock %}
 
 {% block content %}
@@ -44,20 +44,20 @@
                 <tbody class="divide-y divide-white/[0.02]">
                     {% for tx in recent_transactions %}
                     <tr class="group hover:bg-white/[0.02] transition-colors cursor-pointer"
-                        data-url="{% if tx.transaction_type == 'income' %}{% url 'income_detail' institution.slug tx.id %}{% else %}{% url 'expense_detail' institution.slug tx.id %}{% endif %}"
+                        data-url="{% if tx.transaction_type == 'income' %}{{ url('income_detail', institution.slug, tx.id) }}{% else %}{{ url('expense_detail', institution.slug, tx.id) }}{% endif %}"
                         onclick="window.location=this.dataset.url;">
                         <!-- 0. Serial -->
                         <td class="px-2 py-2 md:px-4 md:py-3 text-xs text-slate-600 font-mono">
-                            {{ page_obj.start_index|add:forloop.counter0 }}
+                            {{ page_obj.start_index|add(forloop.counter0) }}
                         </td>
 
                         <!-- 1. Amount -->
                         <td class="px-2 py-2 md:px-4 md:py-3 font-amiri text-sm md:text-base whitespace-nowrap text-left"
                             dir="ltr">
                             {% if tx.transaction_type == 'income' %}
-                            <span class="text-emerald-400 font-bold">{{ tx.amount|floatformat:0 }}</span>
+                            <span class="text-emerald-400 font-bold">{{ tx.amount|floatformat(0) }}</span>
                             {% else %}
-                            <span class="text-rose-400 font-bold">{{ tx.amount|floatformat:0 }}</span>
+                            <span class="text-rose-400 font-bold">{{ tx.amount|floatformat(0) }}</span>
                             {% endif %}
                         </td>
 
@@ -74,13 +74,13 @@
 
                         <!-- 3. Balance -->
                         <td class="px-2 py-2 md:px-4 md:py-3 font-amiri text-sm md:text-base text-blue-300 whitespace-nowrap text-left"
-                            dir="ltr">Rs: {{ tx.running_balance|floatformat:0|cut:"-" }} </td>
+                            dir="ltr">Rs: {{ tx.running_balance|floatformat(0)|cut:"-" }} </td>
 
                         <!-- 4. Date -->
                         <td class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap">
                             <div class="flex flex-col">
                                 <span class="text-[9px] md:text-[10px] text-slate-300 font-mono">
-                                    {{ tx.date|date:"d/m/y" }}</span>
+                                    {{ tx.date|date("d/m/y") }}</span>
                             </div>
                         </td>
 
@@ -89,7 +89,7 @@
                         <!-- 5. Description -->
                         <td
                             class="px-2 py-2 md:px-4 md:py-3 text-[10px] md:text-[11px] text-slate-400 max-w-[120px] md:max-w-[200px] truncate">
-                            <a href="{% if tx.transaction_type == 'income' %}{% url 'income_detail' institution.slug tx.id %}{% else %}{% url 'expense_detail' institution.slug tx.id %}{% endif %}"
+                            <a href="{% if tx.transaction_type == 'income' %}{{ url('income_detail', institution.slug, tx.id) }}{% else %}{{ url('expense_detail', institution.slug, tx.id) }}{% endif %}"
                                 class="hover:text-blue-400 hover:underline transition-colors block truncate group-hover:text-white"
                                 title="View Details">
                                 {% if tx.transaction_type == 'income' %}
@@ -176,9 +176,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const donations = parseFloat('{{ total_amount|stringformat:".2f"|default:"0" }}');
-        const expenses = parseFloat('{{ total_expenses|stringformat:".2f"|default:"0" }}');
-        const balance = parseFloat('{{ balance|stringformat:".2f"|default:"0" }}');
+        const donations = parseFloat('{{ total_amount|stringformat(".2f")|default:"0" }}');
+        const expenses = parseFloat('{{ total_expenses|stringformat(".2f")|default:"0" }}');
+        const balance = parseFloat('{{ balance|stringformat(".2f")|default:"0" }}');
 
         Chart.defaults.color = 'rgba(255, 255, 255, 0.5)';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';

@@ -6,7 +6,7 @@
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl">سسٹم لاگز (System Audit Logs)</h1>
-        <a href="{% url 'dashboard' institution.slug %}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition">
+        <a href="{{ url('dashboard', institution.slug) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition">
             <i class="fas fa-arrow-right ml-2"></i> واپسی ڈیش بورڈ
         </a>
     </div>
@@ -26,7 +26,7 @@
                 <tbody class="divide-y divide-gray-100">
                     {% for log in logs %}
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 text-sm text-gray-500 font-sans">{{ log.timestamp|date:"d M Y, h:i A" }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 font-sans">{{ log.timestamp|date("d M Y, h:i A") }}</td>
                         <td class="px-6 py-4 text-sm text-gray-700">
                             {% if log.user %}{{ log.user.username }}{% else %}<span class="text-gray-400">سسٹم</span>{% endif %}
                         </td>

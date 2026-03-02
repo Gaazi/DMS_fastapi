@@ -1,4 +1,4 @@
-{% load static %}
+
 <!DOCTYPE html>
 <html lang="ur" dir="rtl">
 <head>
@@ -31,7 +31,7 @@
             آپ کا عطیہ کامیابی سے موصول ہو گیا ہے۔ اللہ تعالیٰ آپ کی اس کاوش کو قبول فرمائے اور دارین کی سعادتیں عطا فرمائے۔
         </p>
 
-        <a href="{% url 'dms_login' %}" class="inline-flex items-center gap-3 px-10 py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold transition-all shadow-xl active:scale-95">
+        <a href="{{ url('dms_login') }}" class="inline-flex items-center gap-3 px-10 py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold transition-all shadow-xl active:scale-95">
             <i class="fas fa-arrow-right text-xs"></i>
             واپس ہوم پیج پر جائیں
         </a>

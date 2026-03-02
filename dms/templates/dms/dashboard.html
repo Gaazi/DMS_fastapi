@@ -1,5 +1,5 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
+
 
 {% block title %}{{ institution.name }} - ڈیش بورڈ{% endblock %}
 
@@ -16,7 +16,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {% if is_admin %}
         <!-- 1. Revenue/Income Card -->
-        <a href="{% url 'income' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-emerald-500/20 transition-all group block relative overflow-hidden">
+        <a href="{{ url('income', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-emerald-500/20 transition-all group block relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-emerald-500/10 transition-colors"></div>
             <div class="flex items-start justify-between mb-4 relative z-10">
                 <div class="w-10 h-10 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
@@ -26,12 +26,12 @@
             </div>
             <p class="text-base text-green-400 mb-1 relative z-10">کل آمدنی</p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                <h3 class="text-2xl text-green-400">{{ total_donations|default:"0"|floatformat:0 }}</h3>
+                <h3 class="text-2xl text-green-400">{{ total_donations|default("0")|floatformat:0 }}</h3>
             </div>
         </a>
 
         <!-- 2. Expenses Card -->
-        <a href="{% url 'expense' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-rose-500/20 transition-all group block relative overflow-hidden">
+        <a href="{{ url('expense', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-rose-500/20 transition-all group block relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-rose-500/10 transition-colors"></div>
             <div class="flex items-start justify-between mb-4 relative z-10">
                 <div class="w-10 h-10 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400 border border-rose-500/20 group-hover:scale-110 transition-transform">
@@ -41,12 +41,12 @@
             </div>
             <p class="text-base text-rose-400 mb-1 relative z-10">کل اخراجات</p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                <h3 class="text-2xl text-rose-400">{{ total_expenses|default:"0"|floatformat:0 }}</h3>
+                <h3 class="text-2xl text-rose-400">{{ total_expenses|default("0")|floatformat:0 }}</h3>
             </div>
         </a>
 
         <!-- 3. Net Balance Card -->
-        <a href="{% url 'balance' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 {% if balance < 0 %}hover:border-rose-500/20{% else %}hover:border-blue-500/20{% endif %} transition-all group block relative overflow-hidden">
+        <a href="{{ url('balance', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 {% if balance < 0 %}hover:border-rose-500/20{% else %}hover:border-blue-500/20{% endif %} transition-all group block relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 {% if balance < 0 %}bg-rose-500/5 group-hover:bg-rose-500/10{% else %}bg-blue-500/5 group-hover:bg-blue-500/10{% endif %} blur-3xl -mr-12 -mt-12 transition-colors"></div>
             <div class="flex items-start justify-between mb-4 relative z-10">
                 <div class="w-10 h-10 {% if balance < 0 %}bg-rose-500/10 text-rose-400 border-rose-500/20{% else %}bg-blue-500/10 text-blue-400 border-blue-500/20{% endif %} rounded-2xl flex items-center justify-center border group-hover:scale-110 transition-transform">
@@ -61,7 +61,7 @@
             </p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
                 <h3 class="text-2xl {% if balance < 0 %}text-rose-400{% else %}text-green-400{% endif %} font-mehr font-bold">
-                    {{ balance|default:"0"|floatformat:0 }}
+                    {{ balance|default("0")|floatformat:0 }}
                 </h3>
             </div>
         </a>
@@ -69,7 +69,7 @@
 
         <!-- 4. Students/Members Card -->
         {% if can_view_academics %}
-        <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-violet-500/20 transition-all group block relative overflow-hidden">
+        <a href="{% if institution.type == 'masjid' %}{{ url('musalleen_list', institution.slug) }}{% else %}{{ url('students', institution.slug) }}{% endif %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-violet-500/20 transition-all group block relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-violet-50/5 blur-3xl -mr-12 -mt-12 group-hover:bg-violet-500/10 transition-colors"></div>
             <div class="flex items-start justify-between mb-4 relative z-10">
                 <div class="w-10 h-10 bg-violet-50/10 rounded-2xl flex items-center justify-center text-violet-400 border border-violet-500/20 group-hover:scale-110 transition-transform">
@@ -83,14 +83,14 @@
                 {% if institution.type == 'masjid' %}کل ممبران{% else %}کل طلبہ{% endif %}
             </p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                <h3 class="text-2xl text-violet-400">{{ stats.students|default:"0" }}</h3>
+                <h3 class="text-2xl text-violet-400">{{ stats.students|default("0") }}</h3>
             </div>
         </a>
         {% endif %}
 
         <!-- 5. Staff Card -->
         {% if is_staff_admin or is_dms_admin %}
-        <a href="{% url 'dms_staff' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-indigo-500/20 transition-all group block relative overflow-hidden">
+        <a href="{{ url('dms_staff', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-indigo-500/20 transition-all group block relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-indigo-500/10 transition-colors"></div>
             <div class="flex items-start justify-between mb-4 relative z-10">
                 <div class="w-10 h-10 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
@@ -100,14 +100,14 @@
             </div>
             <p class="text-xs text-indigo-400 mb-1 relative z-10">کل عملہ</p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                <h3 class="text-2xl text-indigo-400">{{ stats.staff|default:"0" }}</h3>
+                <h3 class="text-2xl text-indigo-400">{{ stats.staff|default("0") }}</h3>
             </div>
         </a>
         {% endif %}
 
         <!-- 6. Courses/Programs Card -->
         {% if can_view_academics %}
-        <a href="{% if institution.type == 'masjid' %}{% url 'program_list' institution.slug %}{% else %}{% url 'dms_course' institution.slug %}{% endif %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-amber-500/20 transition-all group block relative overflow-hidden">
+        <a href="{% if institution.type == 'masjid' %}{{ url('program_list', institution.slug) }}{% else %}{{ url('dms_course', institution.slug) }}{% endif %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-amber-500/20 transition-all group block relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-amber-500/10 transition-colors"></div>
             <div class="flex items-start justify-between mb-4 relative z-10">
                 <div class="w-10 h-10 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
@@ -121,7 +121,7 @@
                 {% if institution.type == 'masjid' %}پروگرامات{% else %}کورسز{% endif %}
             </p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                <h3 class="text-2xl text-amber-400">{{ stats.courses|default:"0" }}</h3>
+                <h3 class="text-2xl text-amber-400">{{ stats.courses|default("0") }}</h3>
             </div>
         </a>
         {% endif %}
@@ -129,7 +129,7 @@
         <!-- 7. Attendance/Assets Card -->
         {% if can_view_academics %}
             {% if institution.type == 'masjid' %}
-            <a href="{% url 'inventory_dashboard' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-sky-500/20 transition-all group block relative overflow-hidden">
+            <a href="{{ url('inventory_dashboard', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-sky-500/20 transition-all group block relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-sky-500/10 transition-colors"></div>
                 <div class="flex items-start justify-between mb-4 relative z-10">
                     <div class="w-10 h-10 bg-sky-500/10 rounded-2xl flex items-center justify-center text-sky-400 border border-sky-500/20 group-hover:scale-110 transition-transform">
@@ -143,7 +143,7 @@
                 </div>
             </a>
             {% else %}
-            <a href="{% url 'student_attendance' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-sky-500/20 transition-all group block relative overflow-hidden">
+            <a href="{{ url('student_attendance', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-sky-500/20 transition-all group block relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-sky-500/10 transition-colors"></div>
                 <div class="flex items-start justify-between mb-4 relative z-10">
                     <div class="w-10 h-10 bg-sky-500/10 rounded-2xl flex items-center justify-center text-sky-400 border border-sky-500/20 group-hover:scale-110 transition-transform">
@@ -153,7 +153,7 @@
                 </div>
                 <p class="text-xs text-sky-400 mb-1 relative z-10">حاضری (آج)</p>
                 <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                    <h3 class="text-2xl text-sky-400">{{ today_attendance|default:"0" }}</h3>
+                    <h3 class="text-2xl text-sky-400">{{ today_attendance|default("0") }}</h3>
                 </div>
             </a>
             {% endif %}
@@ -161,7 +161,7 @@
 
         <!-- 8. Reports Card -->
         {% if can_view_academics %}
-        <a href="{% url 'attendance_report' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-teal-500/20 transition-all group block relative overflow-hidden">
+        <a href="{{ url('attendance_report', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-teal-500/20 transition-all group block relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-teal-500/10 transition-colors"></div>
             <div class="flex items-start justify-between mb-4 relative z-10">
                 <div class="w-10 h-10 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-400 border border-teal-500/20 group-hover:scale-110 transition-transform">
@@ -271,7 +271,7 @@
 
       <div class="space-y-3">
       {% if is_admin %}
-        <a href="{% url 'income_create' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+        <a href="{{ url('income_create', institution.slug) }}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
             <div class="w-10 h-10 rounded-xl bg-emerald-100/60 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
                 <i class="fas fa-plus"></i>
             </div>
@@ -282,7 +282,7 @@
             <i class="fas fa-chevron-left text-slate-300 group-hover:-translate-x-1 transition-transform"></i>
         </a>
 
-        <a href="{% url 'expense_out_create' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+        <a href="{{ url('expense_out_create', institution.slug) }}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
             <div class="w-10 h-10 rounded-xl bg-rose-100/60 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
                 <i class="fas fa-minus"></i>
             </div>
@@ -295,7 +295,7 @@
       {% endif %}
 
         {% if institution.type == 'masjid' %}
-        <a href="{% url 'inventory_dashboard' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+        <a href="{{ url('inventory_dashboard', institution.slug) }}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
             <div class="w-10 h-10 rounded-xl bg-sky-100/60 text-sky-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
                 <i class="fas fa-boxes"></i>
             </div>
@@ -306,7 +306,7 @@
             <i class="fas fa-chevron-left text-slate-300 group-hover:-translate-x-1 transition-transform"></i>
         </a>
         {% else %}
-        <a href="{% url 'attendance_report' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+        <a href="{{ url('attendance_report', institution.slug) }}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
             <div class="w-10 h-10 rounded-xl bg-blue-100/60 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
                 <i class="fas fa-user-clock"></i>
             </div>
@@ -368,7 +368,7 @@
             </div>
             <div>
                 <p class="text-sm">Last Income</p>
-                <h4 class="text-lg">{{ latest_donation_amount|default:0|floatformat:0 }}</h4>
+                <h4 class="text-lg">{{ latest_donation_amount|default(0)|floatformat:0 }}</h4>
             </div>
         </div>
         <div class="text-sm text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg text-sm">
@@ -384,7 +384,7 @@
             </div>
             <div>
                 <p class="text-sm">Last Expense</p>
-                <h4 class="text-lg">{{ latest_expense_amount|default:0|floatformat:0 }}</h4>
+                <h4 class="text-lg">{{ latest_expense_amount|default(0)|floatformat:0 }}</h4>
             </div>
         </div>
         <div class="text-sm text-rose-700 bg-rose-50/80 px-2.5 py-1 rounded-lg text-sm">
@@ -417,7 +417,7 @@
             </div>
             <div>
                 <p class="text-sm">Today's Attendance</p>
-                <h4 class="text-lg">{{ today_attendance|default:"0" }}</h4>
+                <h4 class="text-lg">{{ today_attendance|default("0") }}</h4>
             </div>
         </div>
         <div class="text-sm text-blue-700 bg-blue-50/80 px-2.5 py-1 rounded-lg">
@@ -438,7 +438,7 @@
        </div>
        <div class="min-w-0">
          <p class="text-sm">Records</p>
-         <p class="text-sm font-mehr truncate">{{ total_records|default:"0" }}</p>
+         <p class="text-sm font-mehr truncate">{{ total_records|default("0") }}</p>
        </div>
     </div>
 
@@ -448,7 +448,7 @@
 
 </div>
 
-<script src="{% static 'js/vendors/chart.umd.min.js' %}"></script>
+<script src="{{ static('js/vendors/chart.umd.min.js') }}"></script>
 
 {% if is_admin %}
 <script>
@@ -460,10 +460,10 @@
     Chart.defaults.color = '#64748b';
 
     // ڈیٹا ویری ایبلز
-    const donations = Number('{{ total_donations|default:"0" }}');
-    const expenses = Number('{{ total_expenses|default:"0" }}');
-    const balance = Number('{{ balance|default:"0" }}');
-    const currency = '{{ currency_label|default:"" }}';
+    const donations = Number('{{ total_donations|default("0") }}');
+    const expenses = Number('{{ total_expenses|default("0") }}');
+    const balance = Number('{{ balance|default("0") }}');
+    const currency = '{{ currency_label|default("") }}';
 
     // فیصد کیلکولیشن (نسبت بہ ٹوٹل آمدنی)
     const incomePercent = donations > 0 ? 100 : 0;
@@ -501,9 +501,9 @@
       gradientBalance.addColorStop(0, 'rgba(14, 165, 233, 0.8)');
       gradientBalance.addColorStop(1, 'rgba(14, 165, 233, 0.2)');
 
-      const chartLabels = JSON.parse('{{ chart_data.labels|safe|default:"[]" }}');
-      const chartIncome = JSON.parse('{{ chart_data.income|safe|default:"[]" }}');
-      const chartExpense = JSON.parse('{{ chart_data.expense|safe|default:"[]" }}');
+      const chartLabels = JSON.parse('{{ chart_data.labels|safe|default("[]") }}');
+      const chartIncome = JSON.parse('{{ chart_data.income|safe|default("[]") }}');
+      const chartExpense = JSON.parse('{{ chart_data.expense|safe|default("[]") }}');
 
       const data = {
         labels: chartLabels.length > 0 ? chartLabels : ['No Data'],

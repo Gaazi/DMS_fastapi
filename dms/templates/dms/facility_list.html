@@ -7,7 +7,7 @@
     <!-- Header Section -->
     <div class="mb-10 no-print">
         <nav class="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-6">
-            <a href="{% url 'dashboard' institution.slug %}" class="hover:text-slate-900 transition-colors">ڈیش بورڈ</a>
+            <a href="{{ url('dashboard', institution.slug) }}" class="hover:text-slate-900 transition-colors">ڈیش بورڈ</a>
             <i class="fas fa-chevron-left text-[7px] opacity-50"></i>
             <span class="text-slate-900">انفراسٹرکچر</span>
         </nav>
@@ -23,7 +23,7 @@
 
             <!-- Enhanced Stats Bar & Extra Actions -->
             <div class="flex items-center gap-4">
-                <a href="{% url 'inventory_dashboard' institution.slug %}" 
+                <a href="{{ url('inventory_dashboard', institution.slug) }}" 
                    class="flex flex-col items-center justify-center px-6 py-4 bg-slate-900 text-white rounded-[2rem] hover:bg-slate-800 transition-all active:scale-95 group">
                    <div class="flex items-center gap-2">
                        <i class="fas fa-boxes-stacked text-xs text-emerald-400 group-hover:rotate-6 transition-transform"></i>
@@ -60,7 +60,7 @@
                 </div>
                 
                 <form method="post" class="p-8 space-y-6">
-                    {% csrf_token %}
+                    {{ csrf_token() }}
                     {% if editing_facility %}
                     <input type="hidden" name="facility_id" value="{{ editing_facility.id }}">
                     {% endif %}
@@ -98,7 +98,7 @@
                             <span>{% if editing_facility %}تبدیلی محفوظ کریں{% else %}سسٹم میں شامل کریں{% endif %}</span>
                         </button>
                         {% if editing_facility %}
-                        <a href="{% url 'dms_facilities' institution.slug %}"
+                        <a href="{{ url('dms_facilities', institution.slug) }}"
                            class="w-full py-4 text-slate-400 text-center rounded-[1.25rem] text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors bg-slate-50 border border-slate-100">
                             کینسل کریں
                         </a>
@@ -192,16 +192,16 @@
 
                     <!-- Fast Actions -->
                     <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 duration-500">
-                        <a href="{% url 'dms_facilities' institution.slug %}?edit={{ facility.id }}"
+                        <a href="{{ url('dms_facilities', institution.slug) }}?edit={{ facility.id }}"
                            class="w-12 h-12 flex items-center justify-center bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-200 hover:shadow-xl rounded-2xl transition-all">
                             <i class="fas fa-pen-to-square text-sm"></i>
                         </a>
-                        <form hx-post="{% url 'dms_facilities' institution.slug %}"
+                        <form hx-post="{{ url('dms_facilities', institution.slug) }}"
                               hx-confirm="کیا آپ واقعی اسے حذف کرنا چاہتے ہیں؟"
                               hx-target="closest .facility-card"
                               hx-swap="outerHTML"
                               class="inline">
-                            {% csrf_token %}
+                            {{ csrf_token() }}
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="facility_id" value="{{ facility.id }}">
                             <button type="submit" class="w-12 h-12 flex items-center justify-center bg-white border border-slate-100 text-slate-400 hover:text-rose-600 hover:border-rose-100 hover:shadow-xl rounded-2xl transition-all">

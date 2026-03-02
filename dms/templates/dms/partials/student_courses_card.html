@@ -53,9 +53,9 @@
                         </div>
                     </div>
                     <div class="text-right flex flex-col items-end">
-                        <span class="text-sm font-bold text-emerald-400">{{ currency_label }} {{ enr.agreed_admission_fee|default:0|floatformat:0 }}</span>
+                        <span class="text-sm font-bold text-emerald-400">{{ currency_label }} {{ enr.agreed_admission_fee|default(0)|floatformat:0 }}</span>
                         {% if enr.admission_fee_discount > 0 %}
-                            <span class="text-[8px] text-rose-400 font-bold uppercase tracking-widest bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">Discount: {{ enr.admission_fee_discount|floatformat:0 }}</span>
+                            <span class="text-[8px] text-rose-400 font-bold uppercase tracking-widest bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">Discount: {{ enr.admission_fee_discount|floatformat(0) }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -75,9 +75,9 @@
                         </div>
                     </div>
                     <div class="text-right flex flex-col items-end">
-                        <span class="text-sm font-bold text-emerald-400">{{ currency_label }} {{ enr.agreed_course_fee|default:0|floatformat:0 }}</span>
+                        <span class="text-sm font-bold text-emerald-400">{{ currency_label }} {{ enr.agreed_course_fee|default(0)|floatformat:0 }}</span>
                         {% if enr.course_fee_discount > 0 %}
-                            <span class="text-[8px] text-rose-400 font-bold uppercase tracking-widest bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">Discount: {{ enr.course_fee_discount|floatformat:0 }}</span>
+                            <span class="text-[8px] text-rose-400 font-bold uppercase tracking-widest bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">Discount: {{ enr.course_fee_discount|floatformat(0) }}</span>
                         {% endif %}
                     </div>
                 </div>

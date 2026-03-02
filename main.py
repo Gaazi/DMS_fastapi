@@ -27,17 +27,50 @@ if MEDIA_DIR.exists():
     app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
 
 # Templates Setup
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+template_dirs = [
+    str(BASE_DIR / "templates"),
+    str(BASE_DIR / "dms" / "templates")
+]
+templates = Jinja2Templates(directory=template_dirs)
 
 # Helpers for Jinja2 Templates (To make it feel like Django)
 def get_static_url(path: str) -> str:
     return f"/static/{path}"
 
-def dummy_url(name: str, **kwargs) -> str:
+def dummy_url(name: str, *args, **kwargs) -> str:
     # Later we will implement a real URL reverter
-    return f"/{name}"
+    arg_str = "/".join([str(a) for a in args])
+    kw_str = "/".join([f"{k}={v}" for k, v in kwargs.items()])
+    return f"/{name}/{arg_str}/{kw_str}".strip("/")
 
-templates.env.globals.update(static=get_static_url, url=dummy_url)
+def yesno(value, arg):
+    """
+    Simulate Django's yesno filter
+    """
+    bits = arg.split(',')
+    if len(bits) < 2:
+        return value
+    try:
+        yes, no = bits[0], bits[1]
+        maybe = bits[2] if len(bits) > 2 else no
+    except IndexError:
+        return value
+        
+    if value is True: return yes
+    if value is False: return no
+    return maybe
+
+def translate(text):
+    return text
+
+templates.env.globals.update(
+    static=get_static_url, 
+    url=dummy_url,
+    csrf_token=lambda: "", # Dummy for now
+    translate=translate,
+)
+templates.env.filters["yesno"] = yesno
+templates.env.filters["translate"] = translate
 
 @app.get("/")
 async def home(request: Request):

@@ -13,17 +13,17 @@
             <tbody class="divide-y divide-white/[0.02]">
                 {% for expense in expenses %}
                 <tr class="group hover:bg-white/[0.05] transition-all duration-300 cursor-pointer"
-                    data-url="{% url 'expense_detail' institution.slug expense.id %}"
+                    data-url="{{ url('expense_detail', institution.slug, expense.id) }}"
                     onclick="window.location.href=this.dataset.url;">
                     <td class="px-2 py-2 md:px-4 md:py-3">
                         <span class="text-[10px] text-slate-600 group-hover:text-rose-400 transition-colors">
-                            #{{ expenses.start_index|add:forloop.counter0 }}</span>
+                            #{{ expenses.start_index|add(forloop.counter0) }}</span>
                     </td>
                     <td class="px-2 py-2 md:px-4 md:py-3">
                         <div class="flex items-baseline gap-1.5">
                             <span class="text-base text-white group-hover:text-rose-400 transition-colors">
                                 <span class="text-[8px] text-slate-600 uppercase">{{ currency_label }}</span>
-                                {{ expense.amount|floatformat:0 }}</span>
+                                {{ expense.amount|floatformat(0) }}</span>
                         </div>
                     </td>
                     <td class="px-2 py-2 md:px-4 md:py-3">
@@ -34,13 +34,13 @@
                     </td>
                     <td class="px-2 py-2 md:px-4 md:py-3">
                         <div class="flex flex-col">
-                            <span class="text-[10px] text-slate-300">{{ expense.date|date:"d/m/Y" }}</span>
-                            <span class="text-[8px]">{{ expense.date|time:"H:iA" }}</span>
+                            <span class="text-[10px] text-slate-300">{{ expense.date|date("d/m/Y") }}</span>
+                            <span class="text-[8px]">{{ expense.date|time("H:iA") }}</span>
                         </div>
                     </td>
                     <td class="px-2 py-2 md:px-4 md:py-3">
                         <p class="text-[11px] text-slate-400 max-w-[150px] truncate group-hover:text-slate-200"
-                            title="{{ expense.description }}">{{ expense.description|default:"—" }}
+                            title="{{ expense.description }}">{{ expense.description|default("—") }}
                         </p>
                     </td>
                 </tr>

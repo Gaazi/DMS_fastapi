@@ -29,14 +29,14 @@
         {% if is_academic_admin %}
         <!-- Tactical Actions (Compact) -->
         <div class="flex items-center gap-1.5 shrink-0">
-            <a href="{% url 'dms_course' institution.slug %}?edit={{ course.id }}" 
+            <a href="{{ url('dms_course', institution.slug) }}?edit={{ course.id }}" 
                class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all" 
                title="ترمیم کریں">
                 <i class="fas fa-pen text-[10px]"></i>
             </a>
             
-            <form method="post" action="{% url 'dms_course' institution.slug %}" onsubmit="return confirm('کیا آپ واقعی اس کورس کو حذف کرنا چاہتے ہیں؟ اس سے تمام داخلے اور سیشنز بھی حذف ہو جائیں گے۔');">
-                {% csrf_token %}
+            <form method="post" action="{{ url('dms_course', institution.slug) }}" onsubmit="return confirm('کیا آپ واقعی اس کورس کو حذف کرنا چاہتے ہیں؟ اس سے تمام داخلے اور سیشنز بھی حذف ہو جائیں گے۔');">
+                {{ csrf_token() }}
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="course_id" value="{{ course.id }}">
                 <button type="submit" 
@@ -63,9 +63,9 @@
             <div class="flex items-center gap-2 text-slate-300">
                 <i class="fas fa-calendar-alt text-slate-500"></i>
                 <span>
-                    {% if course.start_date %}{{ course.start_date|date:"d M Y" }}{% else %}--{% endif %}
+                    {% if course.start_date %}{{ course.start_date|date("d M Y") }}{% else %}--{% endif %}
                     <span class="text-slate-600 mx-1">➜</span>
-                    {% if course.end_date %}{{ course.end_date|date:"d M Y" }}{% else %}--{% endif %}
+                    {% if course.end_date %}{{ course.end_date|date("d M Y") }}{% else %}--{% endif %}
                 </span>
             </div>
         </div>
@@ -98,7 +98,7 @@
           <span class="text-xs shrink-0">{% if institution.type == 'masjid' %}خدام:{% else %}اساتذہ:{% endif %}</span>
           <div class="flex flex-wrap items-center gap-2">
             {% for instructor in course.instructors.all %}
-            <a href="{% url 'dms_staff_detail' institution.slug instructor.id %}" class="flex items-center gap-1.5 p-1 pt-0.5 rounded-md border border-slate-700 hover:border-slate-400 transition-all cursor-pointer">
+            <a href="{{ url('dms_staff_detail', institution.slug, instructor.id) }}" class="flex items-center gap-1.5 p-1 pt-0.5 rounded-md border border-slate-700 hover:border-slate-400 transition-all cursor-pointer">
                 <span class="text-xs transition-colors">{{ instructor.full_name }}</span>
             </a>
             {% empty %}
@@ -142,11 +142,11 @@
                   <div class="text-[11px] text-slate-500 font-mono mt-0.5">{{ enrollment.student.mobile }}</div>
                   {% endif %}
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.enrollment_date|date:"d M Y" }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.enrollment_date|date("d M Y") }}</td>
                 <td class="px-4 py-3 whitespace-nowrap">
                    {% if is_academic_admin %}
                    <form method="post" class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                    {% csrf_token %}
+                    {{ csrf_token() }}
                     <input type="hidden" name="action" value="enrollment_update">
                     <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
                     <select name="status" class="w-full sm:w-auto text-xs border border-white/10 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none bg-white/5 text-slate-300" onchange="this.form.submit()">
@@ -162,7 +162,7 @@
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
                   {% if is_academic_admin %}
                   <form method="post" onsubmit="return confirm('کیا آپ واقعی حذف کرنا چاہتے ہیں؟');" class="inline-block">
-                    {% csrf_token %}
+                    {{ csrf_token() }}
                     <input type="hidden" name="action" value="enrollment_delete">
                     <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
                     <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="خارج کریں">
@@ -207,32 +207,32 @@
               {% for session in sessions %}
               <tr class="hover:bg-white/[0.04] transition-colors group">
                 <td class="px-4 py-3 whitespace-nowrap">
-                  <div class="font-bold text-slate-200 font-mono">{{ session.date|date:"d M, Y" }}</div>
+                  <div class="font-bold text-slate-200 font-mono">{{ session.date|date("d M, Y") }}</div>
                   <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{{ session.get_session_type_display }}</div>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">
                   {% if session.start_time %}
-                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.start_time|time:"H:i" }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.start_time|time("H:i") }}</span>
                     {% if session.end_time %}
                     <span class="text-slate-600 mx-1">-</span>
-                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.end_time|time:"H:i" }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.end_time|time("H:i") }}</span>
                     {% endif %}
                   {% else %}
                   <span class="text-slate-600">—</span>
                   {% endif %}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="text-slate-300">{{ session.topic|default:"—"|truncatechars:30 }}</span>
+                    <span class="text-slate-300">{{ session.topic|default("—")|truncatechars:30 }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
                   <div class="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                      <a href="{% url 'dms_session_attendance' institution.slug session.id %}"
+                      <a href="{{ url('dms_session_attendance', institution.slug, session.id) }}"
                         class="p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all" title="حاضری لگائیں">
                         <i class="fas fa-clipboard-check"></i>
                       </a>
                       {% if is_academic_admin %}
                       <form method="post" onsubmit="return confirm('سیشن حذف کرنا چاہتے ہیں؟');" class="inline-block">
-                        {% csrf_token %}
+                        {{ csrf_token() }}
                         <input type="hidden" name="action" value="session_delete">
                         <input type="hidden" name="session_id" value="{{ session.id }}">
                         <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="حذف کریں">
@@ -275,7 +275,7 @@
         </h2>
         
         <form method="post" class="space-y-4 relative z-10">
-          {% csrf_token %}
+          {{ csrf_token() }}
           <input type="hidden" name="action" value="enroll">
           
           <div class="space-y-1">
@@ -310,7 +310,7 @@
         </h2>
         
         <form method="post" class="space-y-4 relative z-10">
-          {% csrf_token %}
+          {{ csrf_token() }}
           <input type="hidden" name="action" value="session">
           
           <div class="space-y-1">

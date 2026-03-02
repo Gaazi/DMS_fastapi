@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div class="flex items-center gap-4">
-            <a href="{% url 'dms_staff' institution.slug %}" 
+            <a href="{{ url('dms_staff', institution.slug) }}" 
                class="p-2 rounded-full bg-white shadow-sm border hover:bg-gray-50 transition">
                 <i class="fas fa-arrow-right text-gray-600"></i>
             </a>
@@ -62,7 +62,7 @@
                             <div class="text-xs text-gray-500">{{ res.staff.get_role_display }}</div>
                         </td>
                         <td class="px-6 py-4 font-sans text-gray-700">
-                            {{ res.report.base|floatformat:0 }}
+                            {{ res.report.base|floatformat(0) }}
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
@@ -71,12 +71,12 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-rose-600 font-sans">{{ res.report.deductions.total|floatformat:0 }}</div>
+                            <div class="text-rose-600 font-sans">{{ res.report.deductions.total|floatformat(0) }}</div>
                             <div class="text-[9px] text-gray-400">غیر حاضری + لیٹ کٹوتی</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-xl text-emerald-600 font-sans tracking-tight">
-                                {{ res.report.final|floatformat:0 }}
+                                {{ res.report.final|floatformat(0) }}
                             </div>
                         </td>
                         <td class="px-6 py-4 text-center">
@@ -103,12 +103,12 @@
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full -mr-10 -mt-10"></div>
             <p class="text-sm opacity-80 mb-1">کل قابلِ ادائیگی تنخواہ</p>
             <div class="text-4xl font-sans mb-4">
-                {{ total_payable|floatformat:0 }}
+                {{ total_payable|floatformat(0) }}
             </div>
             
             {% if total_payable > 0 %}
             <form method="post" action=".">
-                {% csrf_token %}
+                {{ csrf_token() }}
                 <input type="hidden" name="month" value="{{ month }}">
                 <input type="hidden" name="year" value="{{ year }}">
                 <input type="hidden" name="action" value="bulk_pay">

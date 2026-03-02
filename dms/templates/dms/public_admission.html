@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-{% load widget_tweaks %}
-{% load static %}
+
+
 {% block title %}{{ institution.name }} - {% if editing_student %}ترمیم ریکارڈ{% else %}نیا داخلہ{% endif %}{% endblock %}
 
 {% block content %}
@@ -18,7 +18,7 @@
 
 <div class="glass-card rounded-3xl p-1 sm:p-2 shadow-2xl border border-white/10">
     <form method="post" enctype="multipart/form-data" class="space-y-5">
-        {% csrf_token %}
+        {{ csrf_token() }}
 
         <!-- Error Handling -->
         {% if form.errors %}
@@ -40,20 +40,20 @@
                 </label>
             </div>
             
-            {{ form.name|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all"|attr:"placeholder:طالب علم کا نام..." }}
+            {{ form.name|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all")|attr:"placeholder:طالب علم کا نام..." }}
         </div>
 
         <!-- 2. GUARDIAN DETAILS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.father_name.label }}</label>
-                {{ form.father_name|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                {{ form.father_name|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50") }}
             </div>
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.guardian_name.label }}</label>
                 <div class="flex gap-2">
-                    {{ form.guardian_name|add_class:"flex-1 bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50"|attr:"placeholder:والد کے علاوہ اگر کوئی سرپرست ہو تو نام لکھیں..." }}
-                    {{ form.guardian_relation|add_class:"w-[110px] bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-2 h-11 text-xs outline-none focus:border-emerald-500/50 [&>option]:text-black" }}
+                    {{ form.guardian_name|add_class("flex-1 bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50")|attr:"placeholder:والد کے علاوہ اگر کوئی سرپرست ہو تو نام لکھیں..." }}
+                    {{ form.guardian_relation|add_class("w-[110px] bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-2 h-11 text-xs outline-none focus:border-emerald-500/50 [&>option]:text-black") }}
                 </div>
             </div>
         </div>
@@ -62,11 +62,11 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.mobile.label }}</label>
-                {{ form.mobile|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                {{ form.mobile|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50") }}
             </div>
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.mobile2.label }}</label>
-                {{ form.mobile2|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                {{ form.mobile2|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50") }}
             </div>
         </div>
 
@@ -74,11 +74,11 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.gender.label }}</label>
-                {{ form.gender|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black" }}
+                {{ form.gender|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black") }}
             </div>
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.date_of_birth.label }}</label>
-                {{ form.date_of_birth|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [color-scheme:dark]" }}
+                {{ form.date_of_birth|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [color-scheme:dark]") }}
             </div>
         </div>
         
@@ -86,24 +86,24 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.email.label }}</label>
-                {{ form.email|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                {{ form.email|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50") }}
             </div>
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.blood_group.label }}</label>
-                {{ form.blood_group|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                {{ form.blood_group|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50") }}
             </div>
         </div>
 
         <!-- COURSE SELECTION -->
          <div class="space-y-1">
             <label class="text-[11px] text-emerald-400 px-1">{{ form.course.label }}</label>
-            {{ form.course|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black" }}
+            {{ form.course|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black") }}
         </div>
 
         <!-- 6. ADDRESS SECTION -->
         <div class="space-y-1">
             <label class="text-[11px] text-emerald-400 px-1">{{ form.address.label }}</label>
-            {{ form.address|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500/50 resize-none h-24" }}
+            {{ form.address|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500/50 resize-none h-24") }}
         </div>
 
 

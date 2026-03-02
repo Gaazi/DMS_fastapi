@@ -10,7 +10,7 @@
             <h1 class="text-2xl font-bold text-slate-800">Admin Tools & Maintenance</h1>
             <p class="text-slate-500 text-sm mt-1">Manage backups, recover data, and view logs for {{ institution.name }}</p>
         </div>
-        <a href="{% url 'institution_detail' institution.slug %}" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium transition">
+        <a href="{{ url('institution_detail', institution.slug) }}" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium transition">
             &larr; Back to Dashboard
         </a>
     </div>
@@ -24,7 +24,7 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   <!-- Create Backup -->
-                  <a href="{% url 'create_manual_snapshot' institution.slug %}?download=1" 
+                  <a href="{{ url('create_manual_snapshot', institution.slug) }}?download=1" 
                      class="group flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all duration-300 cursor-pointer">
                     <div class="w-12 h-12 rounded-full bg-black/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                       <i class="fas fa-cloud-download-alt text-lg text-indigo-400 group-hover:text-indigo-300"></i>
@@ -34,7 +34,7 @@
                   </a>
 
                   <!-- Backup History -->
-                  <a href="{% url 'backup_manager' institution.slug %}" 
+                  <a href="{{ url('backup_manager', institution.slug) }}" 
                      class="group flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all duration-300 cursor-pointer">
                     <div class="w-12 h-12 rounded-full bg-black/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                       <i class="fas fa-list-alt text-lg text-purple-400 group-hover:text-purple-300"></i>
@@ -45,8 +45,8 @@
 
                   <!-- Restore Backup -->
                   <div class="relative group flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all duration-300">
-                    <form method="post" action="{% url 'institution_import_restore' institution.slug %}" enctype="multipart/form-data" class="absolute inset-0 z-20 opacity-0 cursor-pointer">
-                      {% csrf_token %}
+                    <form method="post" action="{{ url('institution_import_restore', institution.slug) }}" enctype="multipart/form-data" class="absolute inset-0 z-20 opacity-0 cursor-pointer">
+                      {{ csrf_token() }}
                        <input type="file" name="backup_file" class="w-full h-full cursor-pointer" onchange="if(confirm('Are you sure you want to restore? Current data will be replaced.')) this.form.submit()">
                     </form>
                     <div class="w-12 h-12 rounded-full bg-black/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -57,7 +57,7 @@
                   </div>
 
                   <!-- Activity Logs -->
-                  <a href="{% url 'audit_logs' institution.slug %}" 
+                  <a href="{{ url('audit_logs', institution.slug) }}" 
                      class="group flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-300">
                     <div class="w-12 h-12 rounded-full bg-black/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                       <i class="fas fa-history text-lg text-emerald-400 group-hover:text-emerald-300"></i>
@@ -67,7 +67,7 @@
                   </a>
 
                   <!-- Archives -->
-                  <a href="{% url 'recycle_bin' institution.slug %}" 
+                  <a href="{{ url('recycle_bin', institution.slug) }}" 
                      class="group flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-orange-500/10 hover:border-orange-500/30 transition-all duration-300">
                     <div class="w-12 h-12 rounded-full bg-black/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                       <i class="fas fa-trash-restore text-lg text-orange-400 group-hover:text-orange-300"></i>
@@ -77,7 +77,7 @@
                   </a>
 
                   <!-- Account Manager (New) -->
-                  <a href="{% url 'manage_accounts' institution.slug %}" 
+                  <a href="{{ url('manage_accounts', institution.slug) }}" 
                      class="group flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-rose-500/10 hover:border-rose-500/30 transition-all duration-300">
                     <div class="w-12 h-12 rounded-full bg-black/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                       <i class="fas fa-users-cog text-lg text-rose-400 group-hover:text-rose-300"></i>
@@ -96,13 +96,13 @@
                     
                     <!-- Dropdown for Export Options -->
                     <div x-show="open" @click.away="open = false" class="absolute top-full mt-2 w-48 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden" style="display: none;">
-                        <a href="{% url 'institution_export_sheet' institution.slug %}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white border-b border-white/5">
+                        <a href="{{ url('institution_export_sheet', institution.slug) }}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white border-b border-white/5">
                             <i class="fas fa-file-excel text-green-400 w-5"></i> Excel Sheet
                         </a>
-                        <a href="{% url 'institution_export' institution.slug %}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white border-b border-white/5">
+                        <a href="{{ url('institution_export', institution.slug) }}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white border-b border-white/5">
                             <i class="fas fa-code text-yellow-400 w-5"></i> JSON Data
                         </a>
-                        <a href="{% url 'institution_export_bundle' institution.slug %}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white">
+                        <a href="{{ url('institution_export_bundle', institution.slug) }}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white">
                             <i class="fas fa-file-archive text-blue-400 w-5"></i> Full ZIP
                         </a>
                     </div>

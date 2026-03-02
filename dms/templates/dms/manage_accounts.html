@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+
 
 {% block title %}Account Management | Supervisor{% endblock %}
 
@@ -14,7 +14,7 @@
         <!-- Header & Back Button -->
         <div class="flex items-center justify-between">
             <div>
-                <a href="{% url 'dashboard' institution.slug %}" class="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-400 transition-colors mb-2">
+                <a href="{{ url('dashboard', institution.slug) }}" class="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-400 transition-colors mb-2">
                     <i class="fas fa-arrow-left text-xs"></i>
                     <span class="text-[10px] font-bold uppercase tracking-widest">Dashboard</span>
                 </a>
@@ -107,7 +107,7 @@
                     
                     <div class="flex justify-end gap-2 mt-6">
                         <form method="post" class="inline">
-                            {% csrf_token %}
+                            {{ csrf_token() }}
                             <input type="hidden" name="action" value="activate">
                             <input type="hidden" name="user_id" value="{{ acc.id }}">
                             <button class="h-8 px-3 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 font-bold text-xs transition-colors">
@@ -116,7 +116,7 @@
                         </form>
                         
                         <form method="post" class="inline" onsubmit="return confirm('کیا آپ واقعی یہ اکاؤنٹ ڈیلیٹ کرنا چاہتے ہیں؟');">
-                            {% csrf_token %}
+                            {{ csrf_token() }}
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="user_id" value="{{ acc.id }}">
                             <button class="h-8 w-8 flex items-center justify-center rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors" title="ہمیشہ کے لیے ڈیلیٹ">
@@ -153,7 +153,7 @@
                 </div>
                 
                 <form method="post" onsubmit="return confirm('تنبیہ: یہ روبوٹ تمام ڈورمنٹ (غائب) صارفین کو خود بخود غیر فعال کر دے گا۔ کیا آپ تیار ہیں؟');">
-                    {% csrf_token %}
+                    {{ csrf_token() }}
                     <input type="hidden" name="action" value="auto_cleanup">
                     <button class="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs transition-colors shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 flex items-center gap-2 whitespace-nowrap">
                         <i class="fas fa-magic"></i>
@@ -202,7 +202,7 @@
                             <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded text-[10px] font-bold uppercase tracking-widest border border-indigo-500/30">👑 Institution Owner (Protected)</span>
                         {% else %}
                         <form method="post" class="inline" onsubmit="return confirm('کیا آپ اس اکاؤنٹ کو عارضی طور پر بند (Suspend) کرنا چاہتے ہیں؟');">
-                            {% csrf_token %}
+                            {{ csrf_token() }}
                             <input type="hidden" name="action" value="deactivate">
                             <input type="hidden" name="user_id" value="{{ acc.id }}">
                             <button class="h-8 px-4 flex items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20 hover:bg-amber-500/20 transition-colors text-[10px] uppercase tracking-wide gap-2">

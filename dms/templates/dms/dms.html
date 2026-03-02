@@ -1,5 +1,5 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
+
 
 {% block title %}دیجیٹل مینجمنٹ سسٹم - پریمیم ڈیش بورڈ{% endblock %}
 
@@ -58,7 +58,7 @@
         <!-- Selection Grid: Glassmorphism Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-20 px-4">
             <!-- Masjid Card -->
-            <a href="{% url 'dms_login' %}" 
+            <a href="{{ url('dms_login') }}" 
                class="group relative bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-500 shadow-2xl">
                 <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center text-white text-3xl mb-8 shadow-xl shadow-emerald-500/20">
                     <i class="fas fa-mosque"></i>
@@ -72,7 +72,7 @@
             </a>
 
             <!-- Madrasa Card -->
-            <a href="{% url 'dms_login' %}" 
+            <a href="{{ url('dms_login') }}" 
                class="group relative bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] hover:bg-blue-500/10 hover:border-blue-500/30 transition-all duration-500 shadow-2xl">
                 <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center text-white text-3xl mb-8 shadow-xl shadow-blue-500/20">
                     <i class="fas fa-school"></i>
@@ -86,7 +86,7 @@
             </a>
 
             <!-- Maktab Card -->
-            <a href="{% url 'dms_login' %}" 
+            <a href="{{ url('dms_login') }}" 
                class="group relative bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] hover:bg-amber-500/10 hover:border-amber-500/30 transition-all duration-500 shadow-2xl">
                 <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center text-white text-3xl mb-8 shadow-xl shadow-amber-500/20">
                     <i class="fas fa-book-reader"></i>
@@ -106,22 +106,22 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
                 <div class="space-y-3">
                     <p class="text-emerald-500 text-xs">کل آمدنی</p>
-                    <p class="text-4xl font-amiri text-white">{{ total_income|default:"0"|floatformat:0 }}</p>
+                    <p class="text-4xl font-amiri text-white">{{ total_income|default("0")|floatformat:0 }}</p>
                     <p class="text-[10px] text-slate-500 tracking-widest">{{ currency_label }}</p>
                 </div>
                 <div class="space-y-3 border-r border-white/5 pr-8">
                     <p class="text-rose-500 text-xs">کل اخراجات</p>
-                    <p class="text-4xl text-white">{{ total_expense|default:"0"|floatformat:0 }}</p>
+                    <p class="text-4xl text-white">{{ total_expense|default("0")|floatformat:0 }}</p>
                     <p class="text-[10px] text-slate-500 tracking-widest">{{ currency_label }}</p>
                 </div>
                 <div class="space-y-3 border-r border-white/5 pr-8">
                     <p class="text-blue-500 text-xs">نیٹ بیلنس</p>
-                    <p class="text-4xl text-white">{{ total_balance|default:"0"|floatformat:0 }}</p>
+                    <p class="text-4xl text-white">{{ total_balance|default("0")|floatformat:0 }}</p>
                     <p class="text-[10px] text-slate-500 tracking-widest">{{ currency_label }}</p>
                 </div>
                 <div class="space-y-3 border-r border-white/5 pr-8">
                     <p class="text-purple-500 text-xs">رجسٹرڈ ادارے</p>
-                    <p class="text-4xl text-white">{{ total_institutions|default:"0" }}</p>
+                    <p class="text-4xl text-white">{{ total_institutions|default("0") }}</p>
                     <p class="text-[10px] text-slate-500 tracking-widest">Global</p>
                 </div>
             </div>

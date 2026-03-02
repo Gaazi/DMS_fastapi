@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
-{% load i18n static %}
+
 
 {# --- 1. STYLES & FONTS (From old base.html) --- #}
 {% block extrahead %}
-{{ block.super }}
+{{ super() }}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Aref+Ruqaa+Ink&family=Reem+Kufi+Ink&display=swap"
@@ -48,7 +48,7 @@
     {% if site_url %}
     <a href="{{ site_url }}" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;"
         onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">
-        <i class="fas fa-external-link-alt"></i> {% translate 'View site' %}
+        <i class="fas fa-external-link-alt"></i> {{ translate('View site') }}
     </a>
     {% endif %}
 
@@ -65,7 +65,7 @@
     </a>
     <form method="post" action="{{ url('institution_import_restore', current_institution.slug) }}"
         enctype="multipart/form-data" style="display: inline;" id="admin-restore-form">
-        {% csrf_token %}
+        {{ csrf_token() }}
         <label style="color: #f59e0b; cursor: pointer;">
             <i class="fas fa-upload"></i> Restore
             <input type="file" name="backup_file" style="display: none;"
@@ -104,7 +104,7 @@
         </button>
 
         <form method="post" enctype="multipart/form-data" style="display: inline;" id="header-specific-restore-form">
-            {% csrf_token %}
+            {{ csrf_token() }}
             <label title="Restore to Selected" style="cursor: pointer; color: #f59e0b; font-size: 14px;">
                 <i class="fas fa-upload"></i>
                 <input type="file" name="backup_file" style="display: none;" onchange="triggerAdminRestore(this)">
@@ -133,9 +133,9 @@
     {% endif %}
 
     <form id="logout-form" method="post" action="{{ url('admin:logout') }}" style="display: inline;">
-        {% csrf_token %}
+        {{ csrf_token() }}
         <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px;"
-            title="{% translate 'Log out' %}">
+            title="{{ translate('Log out') }}">
             <i class="fas fa-sign-out-alt"></i>
         </button>
     </form>
@@ -146,7 +146,7 @@
 
 {# --- JAVASCRIPT FOR DYNAMIC ACTIONS --- #}
 <script>
-    const isContextActive = "{{ current_institution|yesno:'true,false' }}" === "true";
+    const isContextActive = "{{ current_institution|yesno('true,false') }}" === "true";
 
     function updateAdminHeaderActions(select) {
         const option = select.options[select.selectedIndex];

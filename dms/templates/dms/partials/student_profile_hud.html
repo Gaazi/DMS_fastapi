@@ -23,8 +23,8 @@
             
             {% if is_academic_admin %}
             {% if not student.user %}
-            <form method="POST" action="{% url 'create_portal_account' institution.slug 'student' student.id %}" onsubmit="return confirm('کیا آپ اس طالب علم کا آن لائن پورٹل اکاؤنٹ بنانا چاہتے ہیں؟');" class="inline m-0 p-0">
-                {% csrf_token %}
+            <form method="POST" action="{{ url('create_portal_account', institution.slug, 'student', student.id) }}" onsubmit="return confirm('کیا آپ اس طالب علم کا آن لائن پورٹل اکاؤنٹ بنانا چاہتے ہیں؟');" class="inline m-0 p-0">
+                {{ csrf_token() }}
                 <button type="submit" class="text-[9px] text-cyan-400 font-black uppercase tracking-widest hover:text-cyan-300 transition-colors mr-3">
                     <i class="fas fa-user-plus mr-1.5 opacity-70"></i>Create Account
                 </button>
@@ -36,18 +36,18 @@
             {% endif %}
             
             {% if can_edit_staff %}
-            <form method="POST" action="{% url 'promote_to_staff' institution.slug student.id %}" onsubmit="return confirm('کیا آپ اس ممبر کا ڈیٹا کاپی کر کے انہیں اسٹاف (عملے) میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
-                {% csrf_token %}
+            <form method="POST" action="{{ url('promote_to_staff', institution.slug, student.id) }}" onsubmit="return confirm('کیا آپ اس ممبر کا ڈیٹا کاپی کر کے انہیں اسٹاف (عملے) میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
+                {{ csrf_token() }}
                 <button type="submit" class="text-[9px] text-fuchsia-400 font-black uppercase tracking-widest hover:text-fuchsia-300 transition-colors mr-3 cursor-pointer">
                     <i class="fas fa-award mr-1.5 opacity-70"></i>Assign Role
                 </button>
             </form>
             {% endif %}
 
-            <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}?edit={{ student.id }}" class="text-[9px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300 transition-colors"><i class="fas fa-edit mr-1.5 opacity-70"></i>Modify</a>
+            <a href="{% if institution.type == 'masjid' %}{{ url('musalleen_list', institution.slug) }}{% else %}{{ url('students', institution.slug) }}{% endif %}?edit={{ student.id }}" class="text-[9px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300 transition-colors"><i class="fas fa-edit mr-1.5 opacity-70"></i>Modify</a>
 
             <form method="POST" class="inline m-0 p-0">
-                {% csrf_token %}
+                {{ csrf_token() }}
                 <input type="hidden" name="action" value="update_status">
                 <input type="hidden" name="student_id" value="{{ student.id }}">
                 {% if not student.is_active %}
@@ -58,8 +58,8 @@
                 </button>
             </form>
             
-            <form method="POST" action="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" onsubmit="return confirm('کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟');" class="inline m-0 p-0">
-                {% csrf_token %}
+            <form method="POST" action="{% if institution.type == 'masjid' %}{{ url('musalleen_list', institution.slug) }}{% else %}{{ url('students', institution.slug) }}{% endif %}" onsubmit="return confirm('کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟');" class="inline m-0 p-0">
+                {{ csrf_token() }}
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="student_id" value="{{ student.id }}">
                 <button type="submit" class="text-[9px] text-rose-400 font-black uppercase tracking-widest hover:text-rose-300 transition-colors">
@@ -86,7 +86,7 @@
                 <div class="inline-flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/10 px-3 py-1 rounded-lg">
                     <i class="fas fa-phone text-[8px] text-emerald-500/50"></i>
                     <a href="tel:{{ student.mobile }}" class="text-[11px] font-mono font-bold text-emerald-400">
-                        {{ student.mobile|default:"--NO_CELL--" }}
+                        {{ student.mobile|default("--NO_CELL--") }}
                     </a>
                 </div>
             </div>
@@ -138,14 +138,14 @@
             {% if student.date_of_birth %}
             <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg shadow-sm">
                 <span class="text-[8px] font-black text-slate-500">DOB:</span>
-                <span class="text-xs font-mono font-bold text-white uppercase">{{ student.date_of_birth|date:"d M Y" }}</span>
+                <span class="text-xs font-mono font-bold text-white uppercase">{{ student.date_of_birth|date("d M Y") }}</span>
             </div>
             {% endif %}
 
             <!-- JOINED DATE -->
             <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg shadow-sm">
                 <span class="text-[8px] font-black text-slate-500">JOIN:</span>
-                <span class="text-xs font-mono font-bold text-white">{{ student.enrollment_date|date:"d/m/y" }}</span>
+                <span class="text-xs font-mono font-bold text-white">{{ student.enrollment_date|date("d/m/y") }}</span>
             </div>
         </div>
 
@@ -156,7 +156,7 @@
             </div>
             <div class="min-w-0">
                 <span class="text-[8px] font-black text-slate-500 uppercase mb-1 block">Vector_Location:</span>
-                <p class="text-xs text-white font-urdu leading-snug">{{ student.address|default:"Vectors_Undefined" }}</p>
+                <p class="text-xs text-white font-urdu leading-snug">{{ student.address|default("Vectors_Undefined") }}</p>
             </div>
         </div>
     </div>

@@ -1,7 +1,7 @@
 ﻿{% extends 'base.html' %}
 
-{% load widget_tweaks %}
-{% load socialaccount %}
+
+
 
 {% block title %}لاگ اِن - DMS{% endblock %}
 
@@ -24,20 +24,20 @@
             </p>
 
             <form method="post" class="space-y-5">
-                {% csrf_token %}
+                {{ csrf_token() }}
 
                 <div class="space-y-1">
                     <label class="text-xs text-slate-400 font-mehr">
                         یوزر نیم یا ای میل آئی ڈی درج کریں
                     </label>
-                    {{ form.username|add_class:"glass-input text-left ltr font-mehr" }}
+                    {{ form.username|add_class("glass-input text-left ltr font-mehr") }}
                 </div>
 
                 <div class="space-y-1">
                     <label class="text-xs text-slate-400 font-mehr">
                         پاس ورڈ درج کریں
                     </label>
-                    {{ form.password|add_class:"glass-input text-left ltr font-mehr" }}
+                    {{ form.password|add_class("glass-input text-left ltr font-mehr") }}
                 </div>
 
                 <button type="submit"

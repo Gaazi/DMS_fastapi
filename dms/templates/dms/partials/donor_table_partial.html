@@ -16,15 +16,15 @@
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 text-[10px] font-black">
-                                {{ donor.name|slice:":1"|upper }}
+                                {{ donor.name|slice(":1")|upper }}
                             </div>
-                            <a href="{% url 'donor_detail' institution.slug donor.id %}" class="text-sm font-bold text-white hover:text-emerald-400 transition-colors">
+                            <a href="{{ url('donor_detail', institution.slug, donor.id) }}" class="text-sm font-bold text-white hover:text-emerald-400 transition-colors">
                                 {{ donor.name }}
                             </a>
                         </div>
                     </td>
                     <td class="px-6 py-4">
-                        <span class="text-[10px] text-slate-400 font-mono">{{ donor.phone|default:"—" }}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">{{ donor.phone|default("—") }}</span>
                     </td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-slate-300">
@@ -32,10 +32,10 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-emerald-400 font-amiri text-lg font-bold">
-                        {{ donor.total|default:0|floatformat:0 }} <span class="text-[8px] text-slate-600 uppercase tracking-tighter">{{ currency_label }}</span>
+                        {{ donor.total|default(0)|floatformat:0 }} <span class="text-[8px] text-slate-600 uppercase tracking-tighter">{{ currency_label }}</span>
                     </td>
                     <td class="px-10 py-4 text-left">
-                        <a href="{% url 'donor_detail' institution.slug donor.id %}" 
+                        <a href="{{ url('donor_detail', institution.slug, donor.id) }}" 
                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[9px] font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all">
                             <i class="fas fa-id-card"></i>
                             تفصیل دیکھیں
