@@ -1,186 +1,63 @@
 import os
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 from pathlib import Path
+from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.authentication import AuthenticationBackend, AuthCredentials
+from database import engine, get_session
+from sqlalchemy.orm import Session
+from models import Institution
+from templating import templates
+from routers import core, students, staff, finance, institutions
 
-# Load environment variables
 load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent
 
-from starlette.middleware.authentication import AuthenticationMiddleware
-from starlette.authentication import AuthenticationBackend, AuthCredentials, SimpleUser
-from fastapi.responses import FileResponse
+class MockUser:
+    is_authenticated = True
+    is_superuser = True
+    username = "admin"
+    name = "Admin"
+    initials = "AD"
+    role = "Administrator"
+    id = 1
+    def has_usable_password(self): return True
+    @property
+    def institution_set(self):
+        class MockSet:
+            def all(self): return []
+            def first(self): return None
+        return MockSet()
 
 class MockAuthBackend(AuthenticationBackend):
     async def authenticate(self, conn):
-        # Mocking an authenticated superuser for development
-        return AuthCredentials(["authenticated"]), SimpleUser("admin")
+        return AuthCredentials(["authenticated"]), MockUser()
 
 app = FastAPI(title="DMS FastAPI", description="Data Management System migrated from Django")
 app.add_middleware(AuthenticationMiddleware, backend=MockAuthBackend())
 
-# Middleware to mock Django's request.user until Auth system is built
+# Mock user in request state
 @app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    # Mock user object
-    class MockUser:
-        is_authenticated = True
-        is_superuser = True
-        username = "admin"
-        def has_usable_password(self): return True
-
+async def add_user_to_state(request: Request, call_next):
     request.state.user = MockUser()
-    response = await call_next(request)
-    return response
+# Static and Media Files
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+if (BASE_DIR / "media").exists():
+    app.mount("/media", StaticFiles(directory=str(BASE_DIR / "media")), name="media")
 
-# Helpers for Jinja2 Templates (To make it feel like Django)
-def get_static_url(path: str) -> str:
-    return f"/static/{path}"
+# Include Routers
+app.include_router(core.router)
+app.include_router(institutions.router)
+app.include_router(students.router)
+app.include_router(staff.router)
+app.include_router(finance.router)
 
-# Static & Media Files Setup
-STATIC_DIR = BASE_DIR / "static"
-MEDIA_DIR = BASE_DIR / "media"
-
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
-if MEDIA_DIR.exists():
-    app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
-
-# Templates Setup
-template_dirs = [
-    str(BASE_DIR / "templates"),
-    str(BASE_DIR / "dms" / "templates")
-]
-templates = Jinja2Templates(directory=template_dirs)
-
-# Helpers for Jinja2 Templates (To make it feel like Django)
-def get_static_url(path: str) -> str:
-    return f"/static/{path}"
-
-def dummy_url(name: str, *args, **kwargs) -> str:
-    # Remove quotes if name comes as a string representation
-    name = name.strip("'\"")
-    arg_str = "/".join([str(a) for a in args])
-    kw_str = "/".join([f"{k}={v}" for k, v in kwargs.items()])
-    return f"/{name}/{arg_str}/{kw_str}".strip("/")
-
-def yesno(value, arg):
-    """
-    Simulate Django's yesno filter
-    """
-    bits = arg.split(',')
-    if len(bits) < 2:
-        return value
-    try:
-        yes, no = bits[0], bits[1]
-        maybe = bits[2] if len(bits) > 2 else no
-    except IndexError:
-        return value
-        
-    if value is True: return yes
-    if value is False: return no
-    return maybe
-
-def translate(text):
-    return text
-
-def short_id(reg_id):
-    if not reg_id: return ""
-    parts = str(reg_id).split('-')
-    return parts[-1] if parts else reg_id
-
-def split_filter(value, arg):
-    return value.split(arg) if value else []
-
-def dict_key(d, k):
-    return d.get(k) if isinstance(d, dict) else None
-
-def get_field_filter(form, field_name):
-    # Mocking form field access for now
-    return None
-
-from jinja2 import pass_context
-@pass_context
-def url_replace(context, **kwargs):
-    request = context.get('request')
-    if not request: return ""
-    query = dict(request.query_params)
-    query.update(kwargs)
-    from urllib.parse import urlencode
-    return urlencode(query)
-
-def django_now(format_string):
-    from datetime import datetime
-    return datetime.now().strftime(format_string.replace('Y', '%Y').replace('m', '%m').replace('d', '%d'))
-
-templates.env.globals.update(
-    static=get_static_url, 
-    url=dummy_url,
-    csrf_token=lambda: "", # Dummy for now
-    translate=translate,
-    url_replace=url_replace,
-    now=django_now,
-)
-templates.env.filters["yesno"] = yesno
-templates.env.filters["translate"] = translate
-templates.env.filters["short_id"] = short_id
-templates.env.filters["split"] = split_filter
-templates.env.filters["dict_key"] = dict_key
-templates.env.filters["get_field"] = get_field_filter
-
-@app.get("/manifest.json")
-async def manifest():
-    manifest_path = BASE_DIR / "static" / "manifest.json"
-    if manifest_path.exists():
-        return FileResponse(manifest_path)
-    return {"error": "manifest.json not found"}
-
-@app.get("/login", name="dms_login")
-async def login(request: Request):
-    return {"message": "Login page coming soon"}
-
+# Home route (if not in core)
 @app.get("/logout", name="dms_logout")
-async def logout(request: Request):
-    return {"message": "Logged out"}
-
-@app.get("/dms", name="dms")
-async def dms_home(request: Request):
-    return await home(request)
-
-@app.get("/dashboard/{slug}", name="dashboard")
-async def dashboard(request: Request, slug: str):
-    return {"message": f"Dashboard for {slug} coming soon"}
-
-@app.get("/")
-async def home(request: Request):
-    """
-    Home page rendering index.html with dummy context for Django compatibility
-    """
-    context = {
-        "request": request,
-        "user": request.user, # Use Starlette's request.user
-        "title": "DMS FastAPI Home",
-        "dms_header": {
-            "unread_count": 0,
-            "notifications_json": [], # Pass as list, template will |tojson
-            "user": {"name": "Admin", "initials": "AD", "role": "Administrator"},
-            "all_institutions": []
-        },
-        "current_institution": None,
-        "institution": None,
-        "is_dms_admin": True,
-        "is_staff_admin": True,
-        "can_view_academics": True,
-        "can_view_finance": True,
-    }
-    try:
-        return templates.TemplateResponse("index.html", context)
-    except Exception as e:
-        return {"error": "Template not found or error rendering", "details": str(e)}
+async def logout():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/", status_code=303)
 
 if __name__ == "__main__":
     import uvicorn

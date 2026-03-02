@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اسٹاف ایڈوانس مینیجمنٹ</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; text-align: right; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h1, h2 { color: #1a73e8; margin-bottom: 20px; }
+        .form-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #e9ecef; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #1557b0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #5f6368; font-weight: 600; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+        .status-paid { background-color: #e6f4ea; color: #1e8e3e; }
+        .status-pending { background-color: #fef7e0; color: #b06000; }
+        .adjust-btn { background-color: #34a853; font-size: 13px; padding: 5px 10px; }
+        .adjust-btn:hover { background-color: #2d8e47; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اسٹاف ایڈوانس مینیجمنٹ</h1>
+
+        <!-- Add New Advance Form -->
+        <div class="form-section">
+            <h2>نیا ایڈوانس درج کریں</h2>
+            <form action="/staff/advances/add" method="POST">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>اسٹاف ممبر منتخب کریں:</label>
+                        <select name="staff_id" required>
+                            <option value="">ممبر منتخب کریں...</option>
+                            {% for staff in staff_list %}
+                            <option value="{{ staff.id }}">{{ staff.name }} ({{ staff.role }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم:</label>
+                        <input type="number" name="amount" step="0.01" required placeholder="رقم لکھیں">
+                    </div>
+                    <div class="form-group">
+                        <label>تاریخ:</label>
+                        <input type="date" name="adv_date" value="{{ now('Y-m-d') }}">
+                    </div>
+                </div>
+                <button type="submit">محفوظ کریں</button>
+            </form>
+        </div>
+
+        <!-- Advances List -->
+        <h2>ایڈوانس ریکارڈز</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>اسٹاف کا نام</th>
+                    <th>رقم</th>
+                    <th>تاریخ</th>
+                    <th>اسٹیٹس</th>
+                    <th>ایکشن</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adv in advances %}
+                <tr>
+                    <td>{{ adv.staff_name }}</td>
+                    <td>{{ adv.amount }}</td>
+                    <td>{{ adv.date }}</td>
+                    <td>
+                        {% if adv.is_adjusted %}
+                        <span class="status-badge status-paid">ایڈجسٹ شدہ</span>
+                        {% else %}
+                        <span class="status-badge status-pending">باقی ہے</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not adv.is_adjusted %}
+                        <form action="/staff/advances/adjust/{{ adv.id }}" method="POST" style="display:inline;">
+                            <button type="submit" class="adjust-btn">ایڈجسٹ کریں</button>
+                        </form>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 40px; color: #999;">کوئی ریکارڈ نہیں ملا۔</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <br>
+        <a href="/" style="color: #666; text-decoration: none;">← واپس ہوم پیج</a>
+    </div>
+</body>
+</html>
