@@ -1,0 +1,184 @@
+<div id="income-form-container" 
+     x-data="{ 
+        selectedDonor: '{{ form_data.donor_id if form_data else '' }}', 
+        mode: '{{ 'new' if request.query_params.get('new') else 'existing' }}',
+        get isNew() { return this.mode === 'new' }
+     }"
+     @donor-saved.window="selectedDonor = $event.detail.id; mode = 'existing'; $nextTick(() => { 
+        let select = $el.querySelector('select[name=donor]');
+        let opt = document.createElement('option');
+        opt.value = $event.detail.id;
+        opt.text = $event.detail.name;
+        opt.selected = true;
+        select.add(opt);
+        $el.querySelectorAll('[name^=\'new_donor_\']').forEach(i => i.value = '');
+     })"
+     class="max-w-3xl mx-auto w-full px-4 md:px-0">
+    
+
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+        
+        {# Header #}
+        <div class="px-6 py-8 md:py-10 text-center border-b border-slate-800 bg-slate-900 relative">
+            <div class="absolute inset-0 bg-emerald-500/5 blur-3xl rounded-full opacity-20 pointer-events-none"></div>
+            
+            <h2 class="text-2xl md:text-3xl text-white mb-2 relative z-10">آمدنی کا اندراج</h2>
+            <div class="flex items-center justify-center gap-2 text-emerald-500 text-xs md:text-sm font-medium tracking-wide uppercase mb-8 relative z-10">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                Finance Module
+            </div>
+
+         
+            {# Toggle #}
+            <div class="grid grid-cols-3 gap-1 p-1.5 bg-transparent border border-white/20 rounded-2xl relative z-10 w-full max-w-sm mx-auto">
+                <button type="button" @click="mode = 'existing'" 
+                        :class="mode === 'existing' ? 'bg-white/10 text-white shadow-lg ring-1 ring-white/20' : 'text-slate-300 hover:text-white hover:bg-white/5'"
+                        class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-transparent">
+                    موجودہ ڈونر
+                </button>
+                <button type="button" @click="mode = 'new'" 
+                        :class="mode === 'new' ? 'bg-emerald-600 text-white shadow-lg ring-1 ring-white/20' : 'text-slate-300 hover:text-white hover:bg-white/5'"
+                        class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-transparent">
+                    نیا ڈونر بنائیں
+                </button>
+                <a href="{{ url('students', institution.slug) }}"
+                        class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-slate-300 hover:text-white hover:bg-white/5 text-center flex items-center justify-center border border-transparent">
+                    فیس ادا کریں
+                </a>
+            </div>
+        </div>
+
+        <form hx-post="{{ url('income_create', institution.slug) }}" 
+              hx-target="#income-form-container"
+              hx-swap="outerHTML" 
+              class="p-6 md:p-10 space-y-8 relative z-10 bg-slate-900/50">
+            {{ csrf_token() }}
+
+            <div class="space-y-6" x-cloak>
+                {# Existing Donor OR Fee View #}
+                <div x-show="mode !== 'new'" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="space-y-4">
+                     <label class="block text-sm uppercase px-1 text-slate-400 font-medium">ڈونر منتخب کریں</label>
+                    <div class="relative group">
+                        <select name="donor_id" class="w-full h-12 glass-input font-mehr {% if errors.donor_id %}border-rose-500/50{% endif %}">
+                            <option value="">ڈونر منتخب کریں...</option>
+                            {% for donor in donors %}
+                                <option value="{{ donor.id }}" {% if form_data.donor_id|string == donor.id|string %}selected{% endif %}>{{ donor.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                {# New Donor View #}
+                <div x-show="mode === 'new'" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-slate-500 uppercase px-1">نام (Name)</label>
+                            <input type="text" name="new_donor_name" value="{{ form_data.new_donor_name if form_data else '' }}" class="w-full h-12 glass-input font-mehr">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-slate-500 uppercase px-1">فون نمبر (Phone)</label>
+                            <input type="text" name="new_donor_phone" value="{{ form_data.new_donor_phone if form_data else '' }}" class="w-full h-12 glass-input font-mehr text-left">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-slate-500 uppercase px-1">ای میل (Email)</label>
+                            <input type="email" name="new_donor_email" value="{{ form_data.new_donor_email if form_data else '' }}" class="w-full h-12 glass-input font-mehr text-left">
+                        </div>
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="block text-[10px] text-slate-500 uppercase px-1">پتہ (Address)</label>
+                            <textarea name="new_donor_address" class="w-full h-24 glass-input font-mehr">{{ form_data.new_donor_address if form_data else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <button type="button" 
+                            hx-post="{{ url('donor_create_quick', institution.slug) }}"
+                            hx-include="[name^='new_donor_'], [name='csrfmiddlewaretoken']"
+                            hx-target="#quick-donor-feedback"
+                            class="w-full py-3.5 bg-slate-800/50 hover:bg-slate-800 border-2 border-dashed border-slate-700 hover:border-emerald-500/50 text-slate-400 hover:text-emerald-400 text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle"></i> ڈونر رجسٹر کریں
+                    </button>
+                    <div id="quick-donor-feedback" class="text-center text-sm text-emerald-500"></div>
+                </div>
+            </div>
+
+            <div class="h-px bg-slate-800 w-full"></div>
+
+            {# Transaction Details #}
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+                
+                {# AMOUNT FOCUS #}
+                <div class="md:col-span-12 space-y-2">
+                    <label class="block text-xs font-bold text-slate-400 uppercase px-1">رقم</label>
+                    <div class="group relative rounded-2xl border border-white/20 bg-transparent focus-within:border-emerald-500 transition-colors overflow-hidden {% if errors.amount %}border-rose-500{% endif %}">
+                        <div class="flex items-center px-4 py-4 md:py-5" dir="ltr">
+                            <span class="text-emerald-500 font-bold text-xl md:text-2xl mr-4 border-r border-slate-700 pr-4">Rs</span>
+                            <input name="amount" type="number" step="0.01" 
+                                   class="flex-grow bg-transparent border-none text-2xl md:text-3xl font-bold text-white placeholder-slate-700 focus:ring-0 px-0" 
+                                   placeholder="0.00" value="{{ form_data.amount if form_data else '' }}">
+                        </div>
+                    </div>
+                    {% if errors.amount %}
+                    <p class="text-[10px] text-rose-500 font-medium px-2 animate-bounce">{{ errors.amount }}</p>
+                    {% endif %}
+                </div>
+
+                {# OTHER DETAILS #}
+                <div class="md:col-span-6 space-y-2">
+                    <label class="glass-label px-1">ذریعہ (Source)</label>
+                    <div class="relative group">
+                        <input type="text" name="source" class="w-full h-12 glass-input font-mehr {% if errors.source %}border-rose-500/50{% endif %}" value="{{ form_data.source if form_data else 'Donation' }}">
+                    </div>
+                    {% if errors.source %}
+                    <p class="text-[9px] text-rose-500 px-1">{{ errors.source }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="md:col-span-6 space-y-2">
+                    <label class="glass-label px-1">تاریخ (Date)</label>
+                    <div class="relative group">
+                        <input type="date" name="date" class="w-full h-12 glass-input font-mehr {% if errors.date %}border-rose-500/50{% endif %}" value="{{ form_data.date if form_data else date_today }}">
+                    </div>
+                    {% if errors.date %}
+                    <p class="text-[9px] text-rose-500 px-1">{{ errors.date }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="md:col-span-12 space-y-2">
+                    <label class="glass-label px-1">تفصیل (Description)</label>
+                    <div class="relative group">
+                        <textarea name="description" class="w-full h-24 glass-input font-mehr">{{ form_data.description if form_data else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            {# Actions #}
+            <div class="pt-6 flex flex-col md:flex-row items-center gap-4">
+                <a href="{{ url('income', institution.slug) }}"
+                   class="w-full md:w-auto hover:text-blue-500 text-s py-4 px-6 text-center transition-colors">
+                    کینسل
+                </a>
+                
+                <button type="submit"
+                        class="w-full md:flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm shadow-lg shadow-emerald-900/40 transition-all hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden"
+                        hx-indicator="#submit-loader">
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> محفوظ کریں
+                    </span>
+                    <div id="submit-loader" class="htmx-indicator absolute inset-0 bg-emerald-700 flex items-center justify-center z-20">
+                        <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

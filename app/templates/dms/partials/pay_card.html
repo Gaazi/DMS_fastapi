@@ -1,0 +1,186 @@
+<div class="relative z-10 w-full" dir="rtl"
+     x-data="{ 
+         paymentMode: 'total',
+         selectedFeeId: '{{ first_pending_fee.id|default('') }}',
+         selectedFeeAmount: {{ fee_balance|default(0)|int }},
+         payAmount: {{ fee_balance|default(0)|int }},
+         totalBalance: {{ fee_balance|default(0)|int }},
+         
+         handlePayEvent(e) {
+             if (e.detail && e.detail.feeId) {
+                 this.paymentMode = 'single';
+                 this.selectedFeeId = e.detail.feeId;
+                 this.selectedFeeAmount = e.detail.feeAmount;
+                 this.payAmount = e.detail.feeAmount;
+             } else {
+                 this.paymentMode = 'total';
+                 this.selectedFeeId = '{{ first_pending_fee.id|default('') }}';
+                 this.selectedFeeAmount = this.totalBalance;
+                 this.payAmount = this.totalBalance;
+             }
+         }
+     }"
+     @setup-payment.window="handlePayEvent($event)">
+     
+    <div class="flex justify-between items-center mb-5 sm:mb-6">
+        <div>
+            <h2 class="text-2xl sm:text-3xl text-gray-900">
+                {% if institution.type == 'masjid' %}ادائیگی / چندہ{% else %}فیس کی ادائیگی{% endif %}
+            </h2>
+            <p class="text-[10px] sm:text-xs text-indigo-500 mt-0.5" 
+               x-text="paymentMode === 'total' ? 'Payment Interface' : 'Bill Payment'">Payment Interface</p>
+        </div>
+        <button @click="openModal = false"
+            class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-100 transition-all">
+            <i class="fas fa-times text-base"></i>
+        </button>
+    </div>
+
+    {% if first_pending_fee %}
+    <!-- Alpine dynamically binds the action URL based on selectedFeeId -->
+    <form :action="`/${'{{ institution.slug }}'}/fees/${selectedFeeId}/pay/`"
+        hx-post="javascript:void(0)"
+        @submit.prevent="htmx.ajax('POST', $event.target.action, {target: '#receipt-container', swap: 'innerHTML'})"
+        @htmx:before-request="loading = true"
+        @htmx:after-request="loading = false; openModal = false" class="space-y-4 sm:space-y-5" id="payment-form">
+        {{ csrf_token() }}
+
+        <div
+            class="bg-slate-50 rounded-2xl p-4 sm:p-5 border-2 border-dashed border-slate-200 text-center group/due transition-colors focus-within:border-indigo-400/50 shadow-sm"
+            :class="paymentMode === 'total' ? 'border-slate-200' : 'border-emerald-200 bg-emerald-50/50'">
+            
+            <!-- Total Mode View -->
+            <div x-show="paymentMode === 'total'">
+                <p class="text-[11px] sm:text-xs mb-1 sm:mb-1.5 text-slate-500">کل واجب الادا رقم</p>
+                <div class="flex items-center justify-center gap-1.5">
+                    <span class="text-base sm:text-xl text-slate-400">{{ currency_label }}</span>
+                    <span class="text-4xl sm:text-5xl text-slate-800" x-text="totalBalance">
+                        {{fee_balance|default(0)|int }}</span>
+                </div>
+            </div>
+
+            <!-- Single Mode View -->
+            <div x-show="paymentMode === 'single'" style="display: none;">
+                <div class="flex justify-between items-center mb-2.5 sm:mb-3 border-b border-emerald-200/60 pb-2.5 sm:pb-3">
+                    <p class="text-[10px] sm:text-[11px] text-emerald-800 font-bold uppercase tracking-wider">کل بقایا: <span class="text-emerald-900 font-black">{{ currency_label }} <span x-text="totalBalance"></span></span></p>
+                    <span class="px-2 py-1 bg-emerald-200/50 text-emerald-800 text-[9px] uppercase tracking-widest font-bold rounded-lg border border-emerald-300">منتخب بل</span>
+                </div>
+                <p class="text-[10px] sm:text-[11px] text-emerald-600 mb-1">اس بل کی رقم</p>
+                <div class="flex items-center justify-center gap-1.5">
+                    <span class="text-4xl sm:text-5xl text-emerald-900 font-black tracking-tighter" x-text="selectedFeeAmount"></span>
+                    <span class="text-base sm:text-xl text-emerald-500">{{ currency_label }}</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="space-y-1.5 sm:space-y-2">
+            <label class="block text-xs text-slate-500 mr-1.5">ادا کی جانے والی رقم</label>
+            <div class="relative">
+                <!-- Currency Label (Before Input) -->
+                <div class="absolute inset-y-0 left-3 sm:left-4 flex items-center pointer-events-none">
+                     <span class="text-2xl sm:text-3xl text-black">{{ currency_label }}</span>
+                </div>
+                <!-- Input Field -->
+                <input type="number" name="amount" x-model.number="payAmount" :placeholder="selectedFeeAmount"
+    class="w-full py-4 sm:py-5 pl-12 pr-4 sm:pl-16 sm:pr-5 bg-white border-2 border-slate-400 rounded-xl text-left text-3xl sm:text-4xl font-black !text-slate-900 placeholder:!text-slate-900 focus:!text-black focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-md box-border"
+    max="{{ fee_balance|default(0)|add(50000) }}" min="1" required
+    @focus="if(payAmount == selectedFeeAmount) payAmount = ''" 
+    @blur="if(payAmount === '' || payAmount === null) payAmount = selectedFeeAmount">
+            </div>
+        </div>
+        <!-- Student Context for Payment -->
+        <input type="hidden" name="student_id" value="{{ student.id }}">
+
+        <div class="grid grid-cols-3 gap-2">
+            <label class="cursor-pointer group">
+                {% if student.wallet_balance <= 0 %} <input type="radio" name="method" value="Cash" class="peer hidden" checked>
+                {% else %}
+                <input type="radio" name="method" value="Cash" class="peer hidden">
+                {% endif %}
+                <div class="text-center p-2 sm:p-3 bg-slate-50 border-2 border-transparent rounded-xl peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all hover:bg-slate-100 ring-emerald-500/20 peer-checked:ring-4">
+                    <i class="fas fa-money-bill-wave block text-xl sm:text-2xl mb-1 text-slate-400 peer-checked:text-emerald-600 transition-colors"></i>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 peer-checked:text-emerald-700">نقد</span>
+                </div>
+            </label>
+            <label class="cursor-pointer group">
+                <input type="radio" name="method" value="UPI" class="peer hidden">
+                <div class="text-center p-2 sm:p-3 bg-slate-50 border-2 border-transparent rounded-xl peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all hover:bg-slate-100 ring-blue-500/20 peer-checked:ring-4">
+                    <i class="fas fa-mobile-screen-button block text-xl sm:text-2xl mb-1 text-slate-400 peer-checked:text-blue-600 transition-colors"></i>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 peer-checked:text-blue-700">آن لائن</span>
+                </div>
+            </label>
+            <label class="cursor-pointer group relative overflow-hidden">
+                {% if student.wallet_balance > 0 %}
+                <input type="radio" name="method" value="Wallet" class="peer hidden" checked>
+                <div class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                    </span>
+                </div>
+                {% else %}
+                <input type="radio" name="method" value="Wallet" class="peer hidden">
+                {% endif %}
+                <div class="text-center p-2 sm:p-3 bg-slate-50 border-2 border-transparent rounded-xl peer-checked:border-orange-500 peer-checked:bg-orange-50 transition-all hover:bg-slate-100 ring-orange-500/20 peer-checked:ring-4">
+                    <i class="fas fa-wallet block text-xl sm:text-2xl mb-1 text-slate-400 peer-checked:text-orange-600 transition-colors"></i>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 peer-checked:text-orange-700">والٹ</span>
+                </div>
+            </label>
+        </div>
+
+        <button type="submit" :disabled="loading"
+            class="w-full py-4 bg-indigo-600 text-white rounded-xl shadow-[0_10px_20px_-5px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2 hover:bg-indigo-500 transition-all disabled:opacity-50 active:scale-[0.98] group/submit">
+            <span x-show="!loading" class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-xl sm:text-2xl text-indigo-200 group-hover/submit:scale-110 transition-transform"></i>
+                <span class="text-sm sm:text-base font-bold tracking-wide">ادائیگی کی تصدیق کریں</span>
+            </span>
+            <span x-show="loading" class="flex items-center gap-2 animate-pulse">
+                <i class="fas fa-circle-notch animate-spin text-xl sm:text-2xl"></i> <span class="text-sm sm:text-base font-bold">پروسیسنگ...</span>
+            </span>
+        </button>
+    </form>
+    {% else %}
+    <div class="text-center py-5 sm:py-6">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-inner">
+            <i class="fas fa-check-double text-3xl sm:text-4xl text-emerald-500"></i>
+        </div>
+        <h3 class="text-xl sm:text-2xl text-slate-800 font-bold mb-1">تمام واجبات ادا شدہ ہیں</h3>
+        <p class="text-slate-500 text-xs sm:text-sm mb-5 sm:mb-6">
+            {% if institution.type == 'masjid' %}
+            اس ممبر کے ذمہ فی الحال کوئی رقم باقی نہیں ہے۔
+            {% else %}
+            اس طالب علم کے ذمہ فی الحال کوئی فیس باقی نہیں ہے۔
+            {% endif %}
+        </p>
+
+        <!-- Advance Option -->
+        <div class="bg-indigo-50/50 p-4 sm:p-5 rounded-2xl border border-indigo-100">
+            <p class="text-indigo-800 text-xs sm:text-sm font-bold mb-3 sm:mb-4 text-center leading-relaxed">
+                {% if institution.type == 'masjid' %}
+                مستقبل کے لیے <span class="text-indigo-600">"ایڈوانس"</span> چندہ:
+                {% else %}
+                مستقبل کی فیسوں کے لیے <span class="text-indigo-600">"ایڈوانس"</span> رقم:
+                {% endif %}
+            </p>
+            <form hx-post="{{ url('pay_installment', institution.slug, 0) }}" hx-target="#receipt-container"
+                hx-swap="innerHTML" @htmx:before-request="loading = true"
+                @htmx:after-request="loading = false; openModal = false" class="flex flex-col gap-2.5 sm:gap-3">
+                {{ csrf_token() }}
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+                <div class="relative group/adv">
+                    <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                         <span class="text-lg sm:text-xl text-slate-300 font-bold">{{ currency_label }}</span>
+                    </div>
+                    <input type="number" name="amount" placeholder="رقم..."
+                        class="w-full py-4 px-4 sm:px-5 bg-white border-2 border-indigo-100 rounded-xl text-center text-xl sm:text-2xl text-indigo-900 font-black placeholder-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-sm">
+                </div>
+                <button type="submit"
+                    class="w-full py-4 bg-indigo-600 text-white font-bold text-sm sm:text-base rounded-xl shadow-[0_8px_16px_-4px_rgba(79,70,229,0.3)] hover:bg-indigo-500 transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-[0.98]">
+                    <i class="fas fa-plus-circle text-lg sm:text-xl"></i> ایڈوانس جمع کریں
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>

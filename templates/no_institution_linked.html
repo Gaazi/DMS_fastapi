@@ -68,15 +68,35 @@
             <form method="POST" class="space-y-5">
                 {{ csrf_token() }}
                 
-                {% for field in form %}
-                <div class="space-y-1 text-right">
-                    <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mr-1">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <p class="text-rose-400 text-xs mt-1 mr-1">{{ field.errors.0 }}</p>
-                    {% endif %}
+                {% if errors %}
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-lg p-2 text-xs text-rose-400 mb-2">
+                    <ul class="list-disc list-inside">
+                        {% for field, msg in errors.items() %}
+                            <li>{{ field|title }}: {{ msg }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                {% endfor %}
+                {% endif %}
+
+                <div class="space-y-1 text-right">
+                    <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mr-1 {% if errors.name %}text-rose-500{% endif %}">ادارے کا نام (Institution Name)</label>
+                    <input type="text" name="name" value="{{ form_data.name if form_data else '' }}" required class="w-full bg-slate-950/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-indigo-500/50 focus:bg-slate-900/60 transition-all placeholder-slate-600 {% if errors.name %}border-rose-500/50{% endif %}" placeholder="e.g. Madrasa Anjuman">
+                </div>
+
+                <div class="space-y-1 text-right">
+                    <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mr-1 {% if errors.slug %}text-rose-500{% endif %}">سلگ (Slug - اختیاری)</label>
+                    <input type="text" name="slug" value="{{ form_data.slug if form_data else '' }}" class="w-full bg-slate-950/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-indigo-500/50 focus:bg-slate-900/60 transition-all placeholder-slate-600 {% if errors.slug %}border-rose-500/50{% endif %}" placeholder="e.g. madrasa-anjuman">
+                </div>
+
+                <div class="space-y-1 text-right">
+                    <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mr-1">ادارے کی قسم (Type)</label>
+                    <select name="type" class="w-full bg-slate-950/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-indigo-500/50 focus:bg-slate-900/60 transition-all">
+                        {% set type = form_data.type if form_data else 'school' %}
+                        <option value="school" {% if type == 'school' %}selected{% endif %}>سکول / مدرسہ</option>
+                        <option value="mosque" {% if type == 'mosque' %}selected{% endif %}>مسجد</option>
+                        <option value="other" {% if type == 'other' %}selected{% endif %}>دیگر</option>
+                    </select>
+                </div>
 
                 <div class="pt-4">
                     <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all active:scale-95">

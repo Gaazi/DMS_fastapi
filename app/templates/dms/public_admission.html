@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+
+{% block title %}{{ institution.name }} - {% if editing_student %}ترمیم ریکارڈ{% else %}نیا داخلہ{% endif %}{% endblock %}
+
+{% block content %}
+    <!-- Premium Header Area -->
+    <header class="relative flex flex-col items-center justify-center gap-4 mb-12 text-center"
+            x-show="loaded" x-transition:enter="transition duration-1000 ease-out">
+        <h1 class="text-4xl md:text-6xl text-white">
+            آن لائن داخلہ فارم
+        </h1>
+        
+        <p class="text-slate-400 text-lg opacity-60">
+            برائے مہربانی درج ذیل تفصیلات کو درست طریقے سے پُر کریں۔
+        </p>
+    </header>
+
+<div class="glass-card rounded-3xl p-1 sm:p-2 shadow-2xl border border-white/10">
+    <form method="post" enctype="multipart/form-data" class="space-y-5">
+        {{ csrf_token() }}
+
+        <!-- Error Handling -->
+        {% if error %}
+            <div class="text-rose-400 text-[10px] bg-rose-500/5 p-3 rounded-xl border border-rose-500/20">
+                <i class="fas fa-exclamation-triangle mr-1"></i> {{ error }}
+            </div>
+        {% endif %}
+
+        <!-- NAME FIELD -->
+        <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-1">
+                <label class="text-[11px] text-emerald-400">طالب علم کا نام (Student Name)</label>
+            </div>
+            <input type="text" name="name" required class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all" placeholder="طالب علم کا مکمل نام لکھیں...">
+        </div>
+
+        <!-- 2. GUARDIAN DETAILS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">والد کا نام (Father Name)</label>
+                <input type="text" name="father_name" required class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="والد کا نام">
+            </div>
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">سرپرست کا نام (Guardian Name)</label>
+                <input type="text" name="guardian_name" class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="اگر کوئی اور ہو">
+            </div>
+        </div>
+
+        <!-- 3. CONTACT DETAILS -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">موبائل نمبر (Mobile)</label>
+                <input type="text" name="mobile" required class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 text-left" placeholder="03XXXXXXXXX">
+            </div>
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">دیگر نمبر (Optional Mobile)</label>
+                <input type="text" name="mobile2" class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 text-left">
+            </div>
+        </div>
+
+        <!-- 4. PERSONAL INFO -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">جنس (Gender)</label>
+                <select name="gender" class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black">
+                    <option value="male">مرد (Male)</option>
+                    <option value="female">خواتین (Female)</option>
+                </select>
+            </div>
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">تاریخِ پیدائش (DOB)</label>
+                <input type="date" name="date_of_birth" class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [color-scheme:dark]">
+            </div>
+        </div>
+        
+        <!-- 5. EMAIL & BLOOD GROUP -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">ای میل (Email)</label>
+                <input type="email" name="email" class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="example@mail.com">
+            </div>
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">بلڈ گروپ (Blood Group)</label>
+                <input type="text" name="blood_group" class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="A+ / B+">
+            </div>
+        </div>
+
+        <!-- COURSE SELECTION -->
+         <div class="space-y-1">
+            <label class="text-[11px] text-emerald-400 px-1">کورس کا انتخاب (Select Course)</label>
+            <select name="course" required class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black">
+                <option value="">کورس منتخب کریں...</option>
+                <!-- courses load dynamically if passed, however for now we assume they exist or user adds them -->
+                {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- 6. ADDRESS SECTION -->
+        <div class="space-y-1">
+            <label class="text-[11px] text-emerald-400 px-1">مکمل پتہ (Address)</label>
+            <textarea name="address" required class="w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500/50 resize-none h-24" placeholder="گھر کا پتہ..."></textarea>
+        </div>
+
+
+        <!-- Submit Button -->
+        <div class="pt-6">
+            <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-paper-plane"></i>
+                <span>درخواست جمع کروائیں</span>
+            </button>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}

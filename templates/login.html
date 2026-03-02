@@ -26,18 +26,30 @@
             <form method="post" class="space-y-5">
                 {{ csrf_token() }}
 
+                {% if error %}
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-lg p-2 text-xs text-rose-400 mb-2">
+                     <p class="flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> {{ error }}</p>
+                </div>
+                {% endif %}
+
+                {% if errors %}
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-lg p-2 text-xs text-rose-400 mb-2">
+                    <ul class="list-disc list-inside">
+                        {% for field, msg in errors.items() %}
+                            <li>{{ field|title }}: {{ msg }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
                 <div class="space-y-1">
-                    <label class="text-xs text-slate-400 font-mehr">
-                        یوزر نیم یا ای میل آئی ڈی درج کریں
-                    </label>
-                    {{ form.username|add_class("glass-input text-left ltr font-mehr") }}
+                    <label class="block text-[10px] font-medium text-emerald-400/80 mr-1 {% if errors.username %}text-rose-500{% endif %}">یوزر نیم یا ای میل آئی ڈی درج کریں</label>
+                    <input type="text" name="username" value="{{ form_data.username if form_data else '' }}" required class="w-full bg-slate-950/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-emerald-500/50 focus:bg-slate-900/60 transition-all placeholder-slate-600 {% if errors.username %}border-rose-500/50{% endif %}" placeholder="User Name">
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-xs text-slate-400 font-mehr">
-                        پاس ورڈ درج کریں
-                    </label>
-                    {{ form.password|add_class("glass-input text-left ltr font-mehr") }}
+                    <label class="block text-[10px] font-medium text-emerald-400/80 mr-1 {% if errors.password %}text-rose-500{% endif %}">پاس ورڈ درج کریں</label>
+                    <input type="password" name="password" required class="w-full bg-slate-950/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-emerald-500/50 focus:bg-slate-900/60 transition-all placeholder-slate-600 {% if errors.password %}border-rose-500/50{% endif %}" placeholder="••••••••">
                 </div>
 
                 <button type="submit"

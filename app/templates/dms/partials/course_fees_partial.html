@@ -1,0 +1,207 @@
+
+
+<div x-data="{
+                isCalculating: false,
+                getVal(n) { const e = this.$el.querySelector(`[name='${n}']`); return e ? e.value : ''; },
+                setVal(n, v) { 
+                    const e = this.$el.querySelector(`[name='${n}']`); 
+                    if(e && e.value != v && document.activeElement !== e) { 
+                        e.value = v; 
+                        e.dispatchEvent(new Event('input', {bubbles:true})); 
+                    } 
+                },
+                init() {
+                    setTimeout(() => { this.calcAgreed('adm'); this.calcAgreed('crs'); }, 50);
+                },
+                calcAgreed(p) {
+                    if (this.isCalculating) return;
+                    this.isCalculating = true;
+                    
+                    // Check if Fee Type is Free (100% Discount)
+                    const feeType = this.getVal('custom_fee_type');
+                    if (feeType === 'free') {
+                        this.setVal(p==='adm'?'agreed_admission_fee':'agreed_course_fee', '0.00');
+                        this.isCalculating = false;
+                        this.calcDiscount(p); // Update discount field to reflect 100%
+                        return;
+                    }
+
+                    const act = parseFloat(this.getVal(`actual_${p}`)) || 0;
+                    const dVal = parseFloat(this.getVal(`${p==='adm'?'admission':'course'}_discount`)) || 0;
+                    const res = this.getVal(`${p}_discount_type`) === 'percent' ? act - (act * dVal / 100) : act - dVal;
+                    this.setVal(p==='adm'?'agreed_admission_fee':'agreed_course_fee', Math.max(0, res).toFixed(2));
+                    this.isCalculating = false;
+                },
+                calcDiscount(p) {
+                    if (this.isCalculating) return;
+                    this.isCalculating = true;
+                    const act = parseFloat(this.getVal(`actual_${p}`)) || 0;
+                    const agr = parseFloat(this.getVal(p==='adm'?'agreed_admission_fee':'agreed_course_fee')) || 0;
+                    const diff = act - agr;
+                    const fld = p==='adm' ? 'admission_discount' : 'course_discount';
+                    this.setVal(fld, (this.getVal(`${p}_discount_type`) === 'percent' && act > 0) ? ((diff/act)*100).toFixed(2) : diff.toFixed(2));
+                    this.isCalculating = false;
+                }
+            }"
+            @input="if($event.target.name.includes('_discount')) { if($event.target.name.endsWith('fee')) calcDiscount($event.target.name.includes('adm')?'adm':'crs'); else calcAgreed($event.target.name.includes('adm')?'adm':'crs'); }"
+            @change="if($event.target.name.includes('_discount_type')) calcAgreed($event.target.name.startsWith('adm')?'adm':'crs');
+                     if($event.target.name === 'custom_fee_type') { calcAgreed('adm'); calcAgreed('crs'); }"
+            @focusin="if($event.target.classList.contains('zero-clear') && parseFloat($event.target.value) === 0) $event.target.value = ''"
+            @focusout="if($event.target.classList.contains('zero-clear') && !$event.target.value) $event.target.value = '0'">
+
+<!-- 4. COURSE & FEES SECTION -->
+<div class="space-y-6 pt-4 mt-8 border-t border-white/5" id="course-fees-section">
+    <!-- Course Selection Row -->
+    <div class="grid grid-cols-4 gap-2 sm:gap-4 p-2 sm:p-4 rounded-3xl border border-white/10 bg-white/5 items-end">
+        <div class="col-span-2">
+            <div class="flex items-center justify-between px-1 mb-1.5">
+                <label class="block text-sm text-emerald-400/90">منتخب کورس (Course)</label>
+                <a href="{{ url('dms_course', institution.slug) }}" target="_blank" 
+                   class="text-[10px] bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/20 transition-all flex items-center gap-1"
+                   title="نیا کورس بنائیں">
+                    <i class="fas fa-plus"></i> نیا کورس
+                </a>
+            </div>
+            <div class="relative"
+                 hx-get="{{ url('admission', institution.slug) }}"
+                 hx-trigger="change from:select[name='course_id']" 
+                 hx-include="[name='course_id'], [name='student_id'], [name='name']" 
+                 hx-target="#course-fees-section"
+                 hx-select="#course-fees-section"
+                 hx-swap="outerHTML">
+                <select name="course_id" class="!py-0 !px-4 !text-[11px] sm:!text-sm !text-emerald-400 !rounded-xl !h-10 !bg-slate-900/80 border-white/10 w-full outline-none focus:border-emerald-500">
+                    <option value="">کورس منتخب کریں...</option>
+                    {% for c in courses %}
+                        <option value="{{ c.id }}" {% if selected_course and selected_course.id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">داخلہ فیس</label>
+            <input type="text" name="actual_adm" value="{{ selected_course.admission_fee if selected_course else '0.00' }}" class="!py-0 !px-2 !text-xs !text-emerald-400 !rounded-xl !h-10 !bg-slate-950/40 border-white/5 w-full opacity-70 mb-0 pointer-events-none" readonly>
+        </div>
+        <div class="relative">
+            <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">ماہانہ فیس</label>
+            <input type="text" name="actual_crs" value="{{ selected_course.monthly_fee if selected_course else '0.00' }}" class="!py-0 !px-2 !text-xs !text-emerald-400 !font-bold !rounded-xl !h-10 !bg-slate-950/40 border-white/5 w-full font-bold mb-0 pointer-events-none" readonly>
+        </div>
+    </div>
+
+    {% if selected_course %}
+    <!-- Admission Fee & Discount Row -->
+    <div class="glass-card-sm p-3 sm:p-4 rounded-3xl border border-white/5 bg-white/[0.02]" dir="ltr">
+        <div class="grid grid-cols-12 gap-2 sm:gap-4">
+            <div class="col-span-5">
+                <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">AGREED ADM</label>
+                <div class="relative overflow-hidden rounded-xl">
+                    <input type="text" name="agreed_admission_fee" value="{{ selected_course.admission_fee }}" readonly class="!py-0 !px-3 !text-[12px] !text-emerald-400 !font-extrabold !rounded-xl !h-9 !bg-transparent border border-white/10 w-full pointer-events-none">
+                </div>
+            </div>
+            <div class="col-span-7">
+                <div class="flex items-center px-1 mb-1.5">
+                    <label class="text-sm text-emerald-400/90 flex-1 truncate uppercase font-bold">DISCOUNT</label>
+                    <label class="text-[10px] text-emerald-400/90 w-16 text-center truncate font-bold">TYPE</label>
+                </div>
+                <div class="flex items-center bg-slate-950/40 border border-white/10 rounded-xl h-9">
+                    <div class="dir-rtl relative flex-1">
+                        <input type="number" name="admission_discount" value="0" class="w-full !bg-transparent !border-0 !h-8 !px-3 !text-[11px] !text-emerald-400 focus:ring-0 zero-clear">
+                    </div>
+                    <div class="relative shrink-0 flex items-center border-l border-white/10 ml-2">
+                        <select name="adm_discount_type" class="text-emerald-400 text-[10px] !p-0.5 !pl-2 !pr-5 outline-none appearance-none cursor-pointer bg-transparent">
+                            <option value="amount">Rs</option>
+                            <option value="percent">%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Fee & Discount Row -->
+    <div class="glass-card-sm p-3 sm:p-4 rounded-3xl border border-white/5 bg-white/[0.02]" dir="ltr">
+        <div class="grid grid-cols-12 gap-2 sm:gap-4">
+            <div class="col-span-5">
+                <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">AGREED FEE</label>
+                <div class="relative overflow-hidden rounded-xl">
+                    <input type="text" name="agreed_course_fee" value="{{ selected_course.monthly_fee }}" readonly class="!py-0 !px-3 !text-[12px] !text-emerald-400 !font-extrabold !rounded-xl !h-9 !bg-transparent border border-white/10 w-full pointer-events-none">
+                </div>
+            </div>
+            <div class="col-span-7">
+                <div class="flex items-center px-1 mb-1.5">
+                    <label class="text-sm text-emerald-400/90 flex-1 truncate uppercase font-bold">DISCOUNT</label>
+                    <label class="text-[10px] text-emerald-400/90 w-16 text-center truncate font-bold">TYPE</label>
+                </div>
+                <div class="flex items-center bg-slate-950/40 border border-white/10 rounded-xl h-9">
+                    <div class="dir-rtl relative flex-1">
+                        <input type="number" name="course_discount" value="0" class="w-full !bg-transparent !border-0 !h-8 !px-3 !text-[11px] !text-emerald-400 focus:ring-0 zero-clear">
+                    </div>
+                    <div class="relative shrink-0 flex items-center border-l border-white/10 ml-2">
+                        <select name="crs_discount_type" class="text-emerald-400 text-[10px] !p-0.5 !pl-2 !pr-5 outline-none appearance-none cursor-pointer bg-transparent">
+                            <option value="amount">Rs</option>
+                            <option value="percent">%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Compact Emerald Info Alert -->
+    <div class="bg-emerald-500/5 border border-emerald-500/10 rounded-[2rem] p-4 flex items-center gap-4 text-right">
+        <div class="shrink-0 w-10 h-10 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center text-lg">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <div class="flex-1">
+            <p class="text-white text-xs leading-tight mt-0.5">
+ ابھی تک کوئی کورس منتخب نہیں کیا گیا۔
+ براہِ کرم اپنا مطلوبہ کورس منتخب کریں۔
+ کورس منتخب کرنے کے بعد فیس کی تفصیلات ظاہر ہوں گی۔
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 5. PAYMENT SECTION (Only shown if course selected) -->
+    {% if selected_course %}
+    <div class="glass-card-sm p-3 sm:p-4 rounded-3xl border border-white/5 bg-white/[0.02] mt-6">
+        <div class="grid grid-cols-3 gap-2 sm:gap-4 items-end">
+            <div class="space-y-1" dir="ltr">
+                <label class="block text-sm text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">INITIAL PAYMENT</label>
+                <input type="number" name="initial_payment" value="0" class="w-full !bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl !px-3 !py-0 !h-9 !text-[11px] transition-all outline-none zero-clear !text-left">
+            </div>
+            <div class="space-y-1">
+                <label class="block text-sm text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">FEE TYPE</label>
+                <div class="relative">
+                    <select name="custom_fee_type" class="w-full !bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl !px-3 !py-0 !h-9 !text-[11px] transition-all outline-none appearance-none">
+                        <option value="regular">Regular</option>
+                        <option value="free">Free</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"><i class="fas fa-chevron-down text-[8px]"></i></div>
+                </div>
+            </div>
+            
+            <div class="space-y-1">
+                <label class="block text-sm text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">PAY METHOD</label>
+                <div class="relative">
+                    <select name="payment_method" class="w-full !bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl !px-3 !py-0 !h-9 !text-[11px] transition-all outline-none appearance-none">
+                        <option value="Cash">Cash</option>
+                        <option value="Bank">Bank Transfer</option>
+                        <option value="Cheque">Cheque</option>
+                    </select>
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"><i class="fas fa-chevron-down text-[8px]"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Notes (Always Show) -->
+    <div class="mt-6 pt-6 border-t border-white/5">
+        <div class="space-y-1">
+            <label class="text-sm text-emerald-400/90 px-1 mb-1.5 block font-bold uppercase">NOTES</label>
+            <textarea name="notes" class="w-full !bg-slate-950 !text-emerald-400 border-2 border-white/10 rounded-xl px-4 py-3 text-sm focus:border-emerald-500 transition-all outline-none"></textarea>
+        </div>
+    </div>
+</div>
+</div>

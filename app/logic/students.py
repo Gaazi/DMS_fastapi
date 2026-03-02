@@ -1,0 +1,244 @@
+from typing import List, Optional, Any, Dict
+from sqlmodel import Session, select, func, desc, and_, or_
+from fastapi import HTTPException
+from datetime import date as dt_date, datetime
+from decimal import Decimal
+import json
+import re
+
+# Models
+from ..models import Institution, Student, Course, Attendance, Fee, Admission, User
+from .audit import AuditManager
+
+class StudentManager:    
+    """
+    مرکزی کوآرڈینیٹر (Student Pillar Hub) - (FastAPI/SQLModel ورژن)
+    """
+    def __init__(self, session: Session, user: Any, institution: Optional[Institution] = None, student: Optional[Student] = None):
+        self.user = user
+        self.session = session
+        self.institution = institution
+        self.student = student
+
+        if not self.institution:
+            if hasattr(user, 'staff') and user.staff:
+                self.institution = session.get(Institution, user.staff.inst_id)
+            else:
+                self.institution = session.exec(select(Institution).where(Institution.user_id == user.id)).first()
+
+        if self.student and not self.institution:
+            self.institution = session.get(Institution, self.student.inst_id)
+
+    def _check_access(self, target_student: Optional[Student] = None):
+        """رسائی کے حقوق چیک کرنا۔"""
+        if not self.user: raise HTTPException(status_code=401, detail="Authentication required.")
+        if getattr(self.user, 'is_superuser', False): return True
+        curr_student = target_student or self.student
+        
+        if self.institution:
+            is_staff = hasattr(self.user, 'staff') and self.user.staff and (self.user.staff.inst_id == self.institution.id)
+            is_owner = (self.user.id == self.institution.user_id)
+            if is_staff or is_owner: return True
+                
+        if curr_student:
+            # Check if user is the student themselves
+            # This logic depends on your Auth User -> Student link
+            pass
+                    
+        raise HTTPException(status_code=403, detail="Access Denied.")
+
+    def set_student(self, student: Student):
+        self.student = student
+        if student and not self.institution:
+            self.institution = self.session.get(Institution, student.inst_id)
+        return self
+
+    def finance(self): 
+        from .finance import FinanceManager
+        return FinanceManager(self.session, self.institution, self.user)
+
+    def attendance(self): 
+        from .attendance import AttendanceManager
+        return AttendanceManager(self.session, self.institution, self.user)
+
+    def get_student_list(self, q: Optional[str] = None, course_id: Optional[int] = None, status: str = 'active', page: int = 1):
+        """طلبہ کی مکمل فہرست مع حاضری اور فیس کے اعداد و شمار۔"""
+        self._check_access()
+        page_size = 20
+        
+        # بنیادی کوئری
+        statement = select(Student).where(Student.inst_id == self.institution.id)
+        
+        # 1. فلٹرنگ
+        if q:
+            statement = statement.where(or_(
+                Student.name.contains(q), Student.mobile.contains(q), Student.reg_id.contains(q)
+            ))
+            
+        if status == 'active': statement = statement.where(Student.is_active == True)
+        elif status == 'inactive': statement = statement.where(Student.is_active == False)
+
+        if course_id:
+            statement = statement.join(Admission).where(Admission.course_id == course_id)
+
+        # 2. اعداد و شمار
+        results = self.session.exec(statement.order_by(Student.name).offset((page-1)*page_size).limit(page_size)).all()
+        
+        students_data = []
+        today = dt_date.today()
+        start_of_month = today.replace(day=1)
+
+        for s in results:
+            # حاضری (اس مہینے کی)
+            presents = self.session.exec(select(func.count(Attendance.id)).where(
+                Attendance.student_id == s.id, Attendance.status == 'present', Attendance.timestamp >= start_of_month
+            )).one()
+            
+            # بقایاجات (Due Fees)
+            due_amount = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
+                Fee.student_id == s.id, Fee.status != 'Paid'
+            )).one() or 0
+
+            students_data.append({
+                "obj": s,
+                "month_presents": presents,
+                "due_amount": float(due_amount)
+            })
+
+        return {
+            "students": students_data,
+            "total": self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id)).one(),
+            "stats": self._get_global_stats()
+        }
+
+    def _get_global_stats(self):
+        """پورے ادارے کے طلبہ کے مجموعی اعداد و شمار۔"""
+        return {
+            "total": self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id)).one(),
+            "active": self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id, Student.is_active == True)).one(),
+            "inactive": self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id, Student.is_active == False)).one(),
+        }
+
+    def save_student(self, data: dict, enrollment_data: Optional[dict] = None):
+        """طالب علم کو محفوظ کرنا اور رجسٹریشن لاجک کو سنبھالنا۔"""
+        self._check_access()
+        
+        # 1. Hybrid Datalist Logic
+        full_name = data.get('name', '').strip()
+        match = re.match(r"^(.*)\s*\[(\w+)\]$", full_name)
+        student = None
+
+        if match:
+            reg_id = match.group(2).strip()
+            student = self.session.exec(select(Student).where(Student.inst_id == self.institution.id, Student.reg_id == reg_id)).first()
+
+        if not student:
+            if 'id' in data and data['id']:
+                student = self.session.get(Student, data['id'])
+                if student:
+                    for k, v in data.items(): 
+                        if hasattr(student, k): setattr(student, k, v)
+                    action = "update"
+            
+            if not student:
+                student = Student(**data)
+                student.inst_id = self.institution.id
+                self.session.add(student)
+                action = "create"
+        else:
+            for k, v in data.items(): 
+                if hasattr(student, k): setattr(student, k, v)
+            action = "update"
+
+        self.session.commit()
+        self.session.refresh(student)
+
+        # 2. Admission (Enrollment) & Finance Handling
+        if enrollment_data and enrollment_data.get('course_id'):
+            self._handle_admission(student, enrollment_data)
+
+        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'Student', student.id, student.name, data)
+        self.session.commit()
+        self.session.refresh(student)
+        return student
+
+    def _handle_admission(self, student: Student, e_data: dict):
+        """داخلہ (Admission) اور ابتدائی ادائیگی کو سنبھالنا۔"""
+        existing = self.session.exec(select(Admission).where(
+            Admission.student_id == student.id, Admission.course_id == e_data['course_id'], Admission.status == 'active'
+        )).first()
+        
+        if not existing:
+            admission = Admission(
+                student_id=student.id,
+                course_id=e_data['course_id'],
+                status='active',
+                admission_date=dt_date.today(),
+                agreed_course_fee=e_data.get('agreed_fee'),
+                agreed_admission_fee=e_data.get('admission_fee')
+            )
+            self.session.add(admission)
+            
+            # Initial Payment Handling
+            initial_pay = e_data.get('initial_payment', 0)
+            if initial_pay > 0:
+                from .payments import Cashier
+                cashier = Cashier(self.session, self.institution, self.user)
+                cashier.collect_fee(student_id=student.id, amount=initial_pay, method=e_data.get('payment_method', 'Cash'))
+
+    def update_status(self, student_id: int, is_active: bool):
+        """طالب علم اور اس کے داخلوں (Admissions) کا اسٹیٹس بدلنا۔"""
+        self._check_access()
+        student = self.session.get(Student, student_id)
+        if not student: raise HTTPException(status_code=404, detail="Student not found.")
+        
+        student.is_active = is_active
+        self.session.add(student)
+        
+        # داخلوں کو سنک کریں
+        status_to_set = 'active' if is_active else 'paused'
+        admissions = self.session.exec(select(Admission).where(Admission.student_id == student_id, Admission.status.in_(['active', 'paused', 'pending']))).all()
+        for ad in admissions:
+            ad.status = status_to_set
+            self.session.add(ad)
+            
+        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'update_status', 'Student', student.id, student.name, {'active': is_active})
+        self.session.commit()
+        return True
+
+    def promote_student(self, student_id: int, new_course_id: int):
+        """طالب علم کو ایک کلاس سے نکال کر دوسری میں پروموٹ کرنا۔"""
+        student = self.session.get(Student, student_id)
+        self.set_student(student)._check_access()
+        
+        # 1. پرانے ریکارڈ مکمل کریں
+        old_ads = self.session.exec(select(Admission).where(Admission.student_id == student_id, Admission.status == 'active')).all()
+        for ad in old_ads:
+            ad.status = 'completed'
+            self.session.add(ad)
+            
+        # 2. نیا داخلہ
+        new_ad = Admission(student_id=student_id, course_id=new_course_id, status='active', admission_date=dt_date.today())
+        self.session.add(new_ad)
+        
+        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'promote', 'Student', student_id, student.name, {'to_course': new_course_id})
+        self.session.commit()
+        return True
+
+
+    def get_student_detail_context(self, student_id: int):
+        """مکمل پروفائل ڈیٹا بشمول والٹ اور حاضری۔"""
+        student = self.session.get(Student, student_id)
+        if not student: raise HTTPException(status_code=404, detail="Student not found.")
+        self.set_student(student)._check_access()
+        
+        from .institution import InstitutionManager
+        return {
+            "student": student,
+            "fees": self.finance().student_fee_history(),
+            "attendance": self.attendance().get_member_summary(student),
+            "wallet_balance": getattr(student, 'wallet_balance', 0),
+            "currency_label": InstitutionManager.get_currency_label(self.institution),
+            "admissions": self.session.exec(select(Admission).where(Admission.student_id == student.id)).all()
+        }
+

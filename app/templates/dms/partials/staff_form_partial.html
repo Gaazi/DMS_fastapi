@@ -1,0 +1,153 @@
+<div id="staff-form-container" class="overflow-hidden" dir="rtl">
+    <!-- Header -->
+    <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <h2 class="font-bold flex items-center gap-2">
+            <i class="fas {% if editing_staff %}fa-user-edit text-amber-400{% else %}fa-user-plus text-emerald-400{% endif %}"></i>
+            {% if editing_staff %}معلومات میں ترمیم{% else %}نیا رکن شامل کریں{% endif %}
+        </h2>
+        {% if editing_staff %}
+        <span class="text-[10px] bg-amber-400/20 text-amber-400 px-2 py-0.5 rounded-full font-sans">ID: {{ editing_staff.id }}</span>
+        {% endif %}
+    </div>
+
+    <form method="post" action=""
+          class="p-6 space-y-6">
+        {{ csrf_token() }}
+        {% if editing_staff %}
+        <input type="hidden" name="staff_id" value="{{ editing_staff.id }}">
+        {% endif %}
+
+        {% if errors %}
+            <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400 mb-6">
+                <p class="font-bold mb-2">درج ذیل غلطیاں درست کریں:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    {% for field, msg in errors.items() %}
+                        <li>{{ field|replace('_', ' ')|title }}: {{ msg }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <!-- Grid Layout for Fields -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {# 1. Full Name #}
+            <div class="sm:col-span-2">
+                <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1 {% if errors.name %}text-rose-500{% endif %}">
+                    <i class="fas fa-signature text-xs"></i> نام (Full Name)
+                </label>
+                <input type="text" name="name" value="{{ form_data.name if form_data else (editing_staff.name if editing_staff else '') }}" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50 transition-all {% if errors.name %}border-rose-500/50{% endif %}" placeholder="مکمل نام درج کریں">
+            </div>
+
+            <div class="sm:col-span-2">
+                <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1">
+                    <i class="fas fa-user-friends text-xs"></i> والد کا نام (Father's Name)
+                </label>
+                <input type="text" name="father_name" value="{{ form_data.father_name if form_data else (editing_staff.father_name if editing_staff else '') }}" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="والد کا نام درج کریں">
+            </div>
+
+            {# 2. Role & Salary Row #}
+            <div class="grid grid-cols-2 gap-4 sm:col-span-2 p-3 rounded-xl border border-slate-200">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1">
+                        <i class="fas fa-user-tag text-[10px]"></i> عہدہ (Role)
+                    </label>
+                    <select name="role" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500/50 transition-all">
+                        {% set role = form_data.role if form_data else (editing_staff.role if editing_staff else 'teacher') %}
+                        <option value="teacher" {% if role == 'teacher' %}selected{% endif %}>استاد (Teacher)</option>
+                        <option value="imam" {% if role == 'imam' %}selected{% endif %}>امام (Imam)</option>
+                        <option value="muazzin" {% if role == 'muazzin' %}selected{% endif %}>موذن (Muazzin)</option>
+                        <option value="admin" {% if role == 'admin' %}selected{% endif %}>ایڈمن (Admin)</option>
+                        <option value="other" {% if role == 'other' %}selected{% endif %}>دیگر (Other)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1 {% if errors.base_salary %}text-rose-500{% endif %}">
+                        <i class="fas fa-money-bill-wave text-xs"></i> تنخواہ (Base Salary)
+                    </label>
+                    <input type="number" step="0.01" name="base_salary" value="{{ form_data.base_salary if form_data else (editing_staff.base_salary if editing_staff else '0.00') }}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500/50 transition-all {% if errors.base_salary %}border-rose-500/50{% endif %}">
+                </div>
+            </div>
+
+            {# 4. Phone #}
+            <div>
+                <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1 {% if errors.mobile %}text-rose-500{% endif %}">
+                    <i class="fas fa-phone text-[10px]"></i> موبائل نمبر (Mobile)
+                </label>
+                <input type="text" name="mobile" value="{{ form_data.mobile if form_data else (editing_staff.mobile if editing_staff else '') }}" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-indigo-500/50 transition-all {% if errors.mobile %}border-rose-500/50{% endif %}" placeholder="03XXXXXXXXX">
+            </div>
+
+            {# 5. Email #}
+            <div>
+                <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1 {% if errors.email %}text-rose-500{% endif %}">
+                    <i class="fas fa-envelope text-[10px]"></i> ای میل (Email)
+                </label>
+                <input type="email" name="email" value="{{ form_data.email if form_data else (editing_staff.email if editing_staff else '') }}" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-indigo-500/50 transition-all {% if errors.email %}border-rose-500/50{% endif %}" placeholder="example@mail.com">
+            </div>
+
+            {# 4. Hire Date & Is Active #}
+            <div class="grid grid-cols-2 gap-4 sm:col-span-2 p-3 rounded-xl border border-slate-200">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1 {% if errors.hire_date %}text-rose-500{% endif %}">
+                        <i class="fas fa-calendar-alt text-[10px]"></i> شمولیت کی تاریخ (Hire Date)
+                    </label>
+                    <input type="date" name="hire_date" value="{{ form_data.hire_date if form_data else (editing_staff.hire_date if editing_staff else '') }}" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500/50 transition-all {% if errors.hire_date %}border-rose-500/50{% endif %}">
+                </div>
+
+                <div class="flex items-center gap-3 h-full pt-4">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        {% set is_active = form_data.is_active if form_data else (editing_staff.is_active if editing_staff is not none else True) %}
+                        <input type="checkbox" name="is_active" class="sr-only peer" {% if is_active %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <span class="mr-3 text-xs font-bold text-slate-700">رکن فعال ہے؟</span>
+                    </label>
+                </div>
+            </div>
+
+            {# 6. Shift Time (Combined) #}
+            <div class="sm:col-span-2 p-3 rounded-xl border border-slate-100 grid grid-cols-2 gap-3">
+                <div class="col-span-2 text-[10px] text-slate-400 uppercase tracking-wider mb-1">ڈیوٹی اوقات (Shift)</div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 mb-1">شروع</label>
+                    <input type="time" name="shift_start" value="{{ form_data.shift_start if form_data else (editing_staff.shift_start if editing_staff else '') }}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500/50">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 mb-1">ختم</label>
+                    <input type="time" name="shift_end" value="{{ form_data.shift_end if form_data else (editing_staff.shift_end if editing_staff else '') }}" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500/50">
+                </div>
+            </div>
+
+            {# 7. Address #}
+            <div class="sm:col-span-2">
+                <label class="block text-xs text-gray-500 mb-1 flex items-center gap-1">
+                    <i class="fas fa-map-marker-alt text-[10px]"></i> مکمل پتہ (Address)
+                </label>
+                <textarea name="address" rows="2" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-indigo-500/50 transition-all" placeholder="پتہ درج کریں">{{ form_data.address if form_data else (editing_staff.address if editing_staff else '') }}</textarea>
+            </div>
+
+
+
+            {# 9. Notes #}
+            <div class="sm:col-span-2">
+                <label class="block text-xs text-gray-500 mb-1">اضافی نوٹس</label>
+                <textarea name="notes" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all text-sm resize-none" placeholder="مزید تفصیلات...">{{ form_data.notes if form_data else (editing_staff.notes if editing_staff else '') }}</textarea>
+            </div>
+        </div>
+
+        <!-- Submission -->
+        <div class="flex items-center justify-between pt-6 border-t gap-4">
+            <button type="submit"
+                class="flex-1 px-6 py-3 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-900/20 hover:bg-slate-800 transition transform hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2">
+                <i class="fas fa-save"></i>
+                {% if editing_staff %}ترمیم محفوظ کریں{% else %}رکن شامل کریں{% endif %}
+            </button>
+            
+            {% if editing_staff %}
+            <a href="{{ url('dms_staff', institution.slug) }}"
+                class="px-6 py-3 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition">
+                منسوخ
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>

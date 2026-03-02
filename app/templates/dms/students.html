@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ institution.name }} - {% if institution.type == 'masjid' %}ممبران کا انتظام{% else %}طلبہ کا انتظام{% endif %}{% endblock %}
+
+{% block content %}
+<div class="relative z-10" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+
+
+    <!-- Stats Section (Live via HTMX) -->
+    <div x-show="loaded" x-transition:enter="transition delay-[200ms] duration-1000">
+        {% include 'dms/partials/student_stats_partial.html' %}
+    </div>
+
+
+    <!-- Command Center Bar (Search & Filters) -->
+    <section class="relative z-20 mt-12 mb-4" x-show="loaded" x-transition:enter="transition delay-[300ms] duration-1000 ease-out">
+        <div class="bg-slate-900/40 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-5 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <form id="student-filter-form"
+                  hx-get="{{ url('student_list', institution.slug) }}" 
+                  hx-target="#student-list-wrapper" 
+                  hx-trigger="keyup from:#student-search delay:500ms, change, submit"
+                  class="space-y-4">
+                
+                <!-- Row 1: Advanced Search Box (Full Width) -->
+                <div class="relative group">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-6 pointer-events-none transition-colors group-focus-within:text-blue-400">
+                        <i class="fas fa-search text-lg opacity-40 group-focus-within:opacity-100"></i>
+                    </div>
+                    <input type="text" id="student-search" name="q" value="{{ query|default('') }}" 
+                           placeholder="{% if institution.type == 'masjid' %}ممبر کا نام یا ممبر نمبر درج کریں...{% else %}طالب علم کا نام یا رول نمبر درج کریں...{% endif %}" 
+                           class="w-full pr-16 pl-8 py-5 bg-white/[0.03] border border-white/10 rounded-3xl outline-none text-white transition-all focus:bg-white/[0.07] focus:border-blue-500/50 focus:ring-8 focus:ring-blue-500/5 placeholder:text-slate-600 text-lg">
+                </div>
+
+                <!-- Row 2: Tactical Controls (Compact Matrix) -->
+                <!-- Row 2: Tactical Controls (Compact Matrix) -->
+                <div class="flex items-end gap-1.5 md:gap-3">
+                    
+                    <!-- Status Filter -->
+                    <div class="flex-1 flex flex-col gap-2">
+                        <div class="px-1 flex items-center gap-2 opacity-50">
+                            <i class="fas fa-filter text-[10px] text-blue-400"></i>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">SELECT STATUS</span>
+                        </div>
+                        <div class="relative group w-full">
+                            <select name="status" class="w-full appearance-none bg-slate-900/80 border border-white/10 text-slate-300 rounded-xl md:rounded-2xl px-3 md:px-8 py-3.5 md:py-4 outline-none text-xs md:text-sm uppercase focus:border-blue-500/50 transition-all cursor-pointer hover:bg-slate-800 pr-7 md:pr-12">
+                                <option value="active" {{ 'selected' if current_status == 'active' or not current_status else '' }}>ACTIVE</option>
+                                <option value="pending" {{ 'selected' if current_status == 'pending' else '' }}>PENDING (New)</option>
+                                <option value="inactive" {{ 'selected' if current_status == 'inactive' else '' }}>INACTIVE</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 md:right-5 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none text-[7px] md:text-[8px]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Course Filter -->
+                    <div class="flex-[1.5] flex flex-col gap-2">
+                        <div class="px-1 flex items-center gap-2 opacity-50">
+                            <i class="fas fa-graduation-cap text-[10px] text-emerald-400"></i>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                                {% if institution.type == 'masjid' %}SELECT PROGRAM{% else %}SELECT COURSE{% endif %}
+                            </span>
+                        </div>
+                        <div class="relative group w-full">
+                            <select name="course" class="w-full appearance-none bg-slate-900/80 border border-white/10 text-slate-300 rounded-xl md:rounded-2xl px-3 md:px-8 py-3.5 md:py-4 outline-none text-xs md:text-sm uppercase focus:border-blue-500/50 transition-all cursor-pointer hover:bg-slate-800 pr-7 md:pr-12">
+                                <option value="">{% if institution.type == 'masjid' %}PROGRAM{% else %}COURSE{% endif %}</option>
+                                {% for p in courses %}
+                                <option value="{{ p.id }}" {% if selected_course == p.id|stringformat("s") %}selected{% endif %}>{{ p.title|upper|truncatechars(15) }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 md:right-5 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none text-[7px] md:text-[8px]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Reset Trigger -->
+                    <button type="reset" onclick="window.location.reload()" 
+                            class="w-11 md:w-16 h-[45px] md:h-[55px] flex items-center justify-center rounded-xl md:rounded-2xl bg-white/5 border border-white/10 text-slate-500 hover:text-white hover:bg-rose-500/20 hover:border-rose-500/30 transition-all group shrink-0">
+                        <i class="fas fa-undo-alt text-[10px] md:text-xs group-hover:rotate-[-45deg] transition-transform"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+
+    <!-- Main Content Area: Now Full Width & Centered -->
+    <div class="grid grid-cols-1 gap-8 pb-4" x-show="loaded" x-transition:enter="transition delay-[400ms] duration-1000 ease-out">
+        <!-- Student Directory Panel (Now taking full width with tactical polish) -->
+        <div class="w-full">
+            <div class="glass-card rounded-none md:rounded-[3rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border-x-0 md:border-x border-y border-white/5 bg-slate-900/40 min-h-[600px]">
+                
+
+
+                <!-- List Content (Optimized for all screens) -->
+                <div id="student-list-wrapper" class="relative w-full">
+                    {% include 'dms/partials/student_list.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ institution.name }} - حاضری رپورٹ{% endblock %}
+
+{% block content %}
+<div class="relative z-10 text-slate-200" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+    
+    <!-- 1. Geometric Background Texture -->
+    <div class="fixed inset-0 -z-10 pointer-events-none opacity-[0.03]" 
+         style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <!-- 3. Tactical Filter Bar -->
+        <section class="mb-12" x-show="loaded" x-transition:enter="transition delay-200 duration-1000">
+            <form method="get" class="bg-[#0a0a0f] border border-white/10 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden group">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest mr-2">آغاز تاریخ (Start Date)</label>
+                        <div class="input-wrapper">
+                            <input type="date" name="start_date" value="{{ start_date.isoformat() if start_date else '' }}" class="w-full bg-transparent border border-white/10 rounded-xl px-4 h-11 text-sm text-white outline-none focus:border-indigo-500 transition-all [color-scheme:dark]">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest mr-2">اختتامی تاریخ (End Date)</label>
+                        <div class="input-wrapper">
+                            <input type="date" name="end_date" value="{{ end_date.isoformat() if end_date else '' }}" class="w-full bg-transparent border border-white/10 rounded-xl px-4 h-11 text-sm text-white outline-none focus:border-indigo-500 transition-all [color-scheme:dark]">
+                        </div>
+                    </div>
+                    <div class="flex items-end gap-3">
+                        <button type="submit" 
+                                class="flex-1 px-8 py-4 bg-indigo-600 text-white rounded-2xl text-sm shadow-xl hover:bg-indigo-500 active:scale-95 transition-all">
+                            رپورٹ دکھائیں
+                        </button>
+                        <a href="{{ request.url.path }}" 
+                           class="px-6 py-4 bg-white/5 text-slate-400 rounded-2xl text-sm hover:bg-white/10 transition-all">
+                           ری سیٹ
+                        </a>
+                    </div>
+                </div>
+                <div class="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
+                    <p class="text-[10px] text-slate-500">مدت: {{ start_date|date("d M Y") }} — {{ end_date|date("d M Y") }} ({{ day_span }} دن)</p>
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span class="text-[9px] text-blue-400 uppercase tracking-widest">Filter System Online</span>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        {% if no_records %}
+        <div class="mb-12 px-6 py-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm animate-pulse text-center">
+            منتخب مدت میں حاضری کا کوئی ریکارڈ دستیاب نہیں ملا۔
+        </div>
+        {% endif %}
+
+        <!-- 4. Summary Matrix -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12" x-show="loaded" x-transition:enter="transition delay-400 duration-1000">
+            
+            <!-- Overview Core -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card rounded-[2.5rem] p-8 border-t-4 border-indigo-600">
+                    <h2 class="text-xl text-white mb-8 border-b border-white/5 pb-4">اجمالی جائزہ (Overview)</h2>
+                    <div class="space-y-4">
+                        {% with items="Staff Active:staff_active_count,Rec Staff:staff_unique_members,Staff Records:staff_total_records,Student Active:student_active_count,Rec Students:student_unique_members,Student Records:student_total_records" %}
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="flex justify-between items-center p-3 rounded-xl bg-white/5 hover:bg-white/[0.08] transition-colors">
+                                <span class="text-xs text-slate-400">کل فعال عملہ</span>
+                                <span class="font-black text-white">{{ staff_active_count }}</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 rounded-xl bg-white/5 hover:bg-white/[0.08] transition-colors">
+                                <span class="text-xs text-slate-400">ریکارڈ شدہ عملہ</span>
+                                <span class="font-black text-white">{{ staff_unique_members }}</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 rounded-xl bg-white/5 hover:bg-white/[0.08] transition-colors">
+                                <span class="text-xs text-slate-400">کل فعال طلبہ</span>
+                                <span class="font-black text-white">{{ student_active_count }}</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 rounded-xl bg-white/5 hover:bg-white/[0.08] transition-colors">
+                                <span class="text-xs text-slate-400">ریکارڈ شدہ طلبہ</span>
+                                <span class="font-black text-white">{{ student_unique_members }}</span>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Status Board -->
+            <div class="lg:col-span-4 glass-card rounded-[2.5rem] p-8 border-t-4 border-blue-600">
+                <h2 class="text-xl text-white mb-8 border-b border-white/5 pb-4">عملہ کی صورتحال</h2>
+                <div class="space-y-6">
+                    {% for item in staff_summary %}
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] uppercase tracking-widest text-slate-500">
+                            <span>{{ item.label }}</span>
+                            <span class="text-white">{{ item.percentage|round(1) }}% ({{ item.count }})</span>
+                        </div>
+                        <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" :style="'width: {{ item.percentage|round(1) }}%'"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Student Status Board -->
+            <div class="lg:col-span-4 glass-card rounded-[2.5rem] p-8 border-t-4 border-emerald-600">
+                <h2 class="text-xl text-white mb-8 border-b border-white/5 pb-4">طلبہ کی صورتحال</h2>
+                <div class="space-y-6">
+                    {% for item in student_summary %}
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] uppercase tracking-widest text-slate-500">
+                            <span>{{ item.label }}</span>
+                            <span class="text-white">{{ item.percentage|round(1) }}% ({{ item.count }})</span>
+                        </div>
+                        <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" :style="'width: {{ item.percentage|round(1) }}%'"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Absence Logs -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" x-show="loaded" x-transition:enter="transition delay-600 duration-1000">
+            <!-- Staff Absences -->
+            <div class="bg-[#0a0a0f]/50 border border-white/5 rounded-[2.5rem] overflow-hidden">
+                <div class="p-6 bg-rose-500/10 border-b border-white/5 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <h2 class="text-xl text-white">عملہ کی غیر حاضری</h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    {% for row in staff_absences %}
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all">
+                        <span class="font-bold text-slate-200 text-lg">{{ row.name }}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-rose-500 uppercase tracking-widest">Absences: {{ row.count }}</span>
+                            <div class="w-1 h-1 rounded-full bg-rose-500 animate-ping"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-slate-600 text-center py-10 italic">کوئی غیر حاضری ریکارڈ نہیں کی گئی۔</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Student Absences -->
+            <div class="bg-[#0a0a0f]/50 border border-white/5 rounded-[2.5rem] overflow-hidden">
+                <div class="p-6 bg-orange-500/10 border-b border-white/5 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h2 class="text-xl text-white">طلبہ کی غیر حاضری</h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    {% for row in student_absences %}
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all">
+                        <span class="font-bold text-slate-200 text-lg">{{ row.name }}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-orange-500 uppercase tracking-widest">Absences: {{ row.count }}</span>
+                            <div class="w-1 h-1 rounded-full bg-orange-500 animate-ping"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-slate-600 text-center py-10 italic">کوئی غیر حاضری ریکارڈ نہیں کی گئی۔</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

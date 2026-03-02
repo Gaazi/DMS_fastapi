@@ -1,105 +1,107 @@
-<!DOCTYPE html>
-<html lang="ur" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اسٹاف ایڈوانس مینیجمنٹ</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; text-align: right; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        h1, h2 { color: #1a73e8; margin-bottom: 20px; }
-        .form-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #e9ecef; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { background-color: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #1557b0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: center; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: #5f6368; font-weight: 600; }
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-        .status-paid { background-color: #e6f4ea; color: #1e8e3e; }
-        .status-pending { background-color: #fef7e0; color: #b06000; }
-        .adjust-btn { background-color: #34a853; font-size: 13px; padding: 5px 10px; }
-        .adjust-btn:hover { background-color: #2d8e47; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>اسٹاف ایڈوانس مینیجمنٹ</h1>
+{% extends 'base.html' %}
+{% block title %}اسٹاف ایڈوانس مینیجمنٹ - {{ institution.name }}{% endblock %}
 
-        <!-- Add New Advance Form -->
-        <div class="form-section">
-            <h2>نیا ایڈوانس درج کریں</h2>
-            <form action="/staff/advances/add" method="POST">
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                    <div class="form-group">
-                        <label>اسٹاف ممبر منتخب کریں:</label>
-                        <select name="staff_id" required>
-                            <option value="">ممبر منتخب کریں...</option>
-                            {% for staff in staff_list %}
-                            <option value="{{ staff.id }}">{{ staff.name }} ({{ staff.role }})</option>
-                            {% endfor %}
-                        </select>
+{% block content %}
+<div class="relative w-full py-4 md:py-10" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+    
+    <div class="max-w-5xl mx-auto mb-8 md:mb-12 px-2" dir="rtl"
+         x-show="loaded" x-transition:enter="transition duration-700 ease-out" x-transition:enter-start="opacity-0 translate-y-4">
+        <h1 class="text-3xl md:text-5xl text-white">
+            اسٹاف <span class="text-emerald-400"> ایڈوانس مینیجمنٹ</span>
+        </h1>
+        <p class="text-slate-400 text-xs md:text-base font-medium opacity-80 max-w-2xl mt-4">
+            اسٹاف کو جاری کردہ ایڈوانس رقم کا ریکارڈ اور ایڈجسٹمنٹ۔
+        </p>
+    </div>
+
+    <div class="max-w-5xl mx-auto relative z-10 px-2" dir="rtl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {# 1. FORM SECTION #}
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden relative group">
+                    <div class="absolute inset-0 bg-emerald-500/5 blur-3xl rounded-full opacity-20 pointer-events-none transition-opacity group-hover:opacity-30"></div>
+                    
+                    <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <i class="fas fa-plus-circle text-emerald-500"></i> نیا ایڈوانس
+                    </h2>
+
+                    <form action="{{ url('staff_advances_manage', institution.slug) }}" method="post" class="space-y-5">
+                        {{ csrf_token() }}
+
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-slate-500 uppercase px-1">اسٹاف ممبر</label>
+                            <select name="staff_id" class="w-full h-12 glass-input font-mehr {% if errors.staff_id %}border-rose-500/50{% endif %}" required>
+                                <option value="">ممبر منتخب کریں...</option>
+                                {% for staff in staff_members %}
+                                <option value="{{ staff.id }}" {% if form_data and form_data.staff_id|string == staff.id|string %}selected{% endif %}>{{ staff.name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if errors.staff_id %}<p class="text-[9px] text-rose-500 px-1">{{ errors.staff_id }}</p>{% endif %}
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-slate-500 uppercase px-1">رقم</label>
+                            <input type="number" name="amount" step="0.01" value="{{ form_data.amount if form_data else '' }}" required class="w-full h-12 glass-input font-bold {% if errors.amount %}border-rose-500/50{% endif %}" placeholder="0.00">
+                            {% if errors.amount %}<p class="text-[9px] text-rose-500 px-1">{{ errors.amount }}</p>{% endif %}
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-slate-500 uppercase px-1">تاریخ</label>
+                            <input type="date" name="date" value="{{ form_data.date if form_data else date_today }}" required class="w-full h-12 glass-input">
+                            {% if errors.date %}<p class="text-[9px] text-rose-500 px-1">{{ errors.date }}</p>{% endif %}
+                        </div>
+
+                        <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95 mt-4">
+                            محفوظ کریں
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {# 2. LIST SECTION #}
+            <div class="lg:col-span-8">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+                        <h3 class="text-white font-bold uppercase tracking-wider text-xs">حالیہ ریکارڈز</h3>
                     </div>
-                    <div class="form-group">
-                        <label>رقم:</label>
-                        <input type="number" name="amount" step="0.01" required placeholder="رقم لکھیں">
-                    </div>
-                    <div class="form-group">
-                        <label>تاریخ:</label>
-                        <input type="date" name="adv_date" value="{{ now('Y-m-d') }}">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right" dir="rtl">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-800/20">
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">اسٹاف</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">رقم</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">تاریخ</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">اسٹیٹس</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/50">
+                                {% for adv in advances %}
+                                <tr class="hover:bg-white/5 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-bold text-white">{{ adv.staff_name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm font-bold text-emerald-400">Rs {{ adv.amount }}</td>
+                                    <td class="px-6 py-4 text-xs text-slate-400 text-center">{{ adv.date|date }}</td>
+                                    <td class="px-6 py-4 text-center">
+                                        {% if adv.is_adjusted %}
+                                        <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase rounded-full border border-emerald-500/20">ایڈجسٹ شدہ</span>
+                                        {% else %}
+                                        <span class="px-3 py-1 bg-rose-500/10 text-rose-400 text-[10px] font-black uppercase rounded-full border border-rose-500/20">باقی ہے</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="px-6 py-20 text-center text-slate-600 italic">کوئی ریکارڈ نہیں ملا۔</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <button type="submit">محفوظ کریں</button>
-            </form>
+            </div>
         </div>
-
-        <!-- Advances List -->
-        <h2>ایڈوانس ریکارڈز</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>اسٹاف کا نام</th>
-                    <th>رقم</th>
-                    <th>تاریخ</th>
-                    <th>اسٹیٹس</th>
-                    <th>ایکشن</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for adv in advances %}
-                <tr>
-                    <td>{{ adv.staff_name }}</td>
-                    <td>{{ adv.amount }}</td>
-                    <td>{{ adv.date }}</td>
-                    <td>
-                        {% if adv.is_adjusted %}
-                        <span class="status-badge status-paid">ایڈجسٹ شدہ</span>
-                        {% else %}
-                        <span class="status-badge status-pending">باقی ہے</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if not adv.is_adjusted %}
-                        <form action="/staff/advances/adjust/{{ adv.id }}" method="POST" style="display:inline;">
-                            <button type="submit" class="adjust-btn">ایڈجسٹ کریں</button>
-                        </form>
-                        {% else %}
-                        -
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" style="padding: 40px; color: #999;">کوئی ریکارڈ نہیں ملا۔</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-        <br>
-        <a href="/" style="color: #666; text-decoration: none;">← واپس ہوم پیج</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

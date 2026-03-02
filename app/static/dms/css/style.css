@@ -1,0 +1,10 @@
+/* DMS Specific Styles */
+:root {
+    --dms-primary: #1a73e8;
+    --dms-secondary: #5f6368;
+    --dms-bg: #f8f9fa;
+}
+
+body {
+    background-color: var(--dms-bg);
+}

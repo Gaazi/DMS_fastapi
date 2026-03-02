@@ -1,0 +1,73 @@
+
+
+<!-- Unified Finance Summary Component -->
+<div id="finance-summary-stats" 
+     class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12"
+     {% if institution %}
+     hx-get="{{ request.url.path }}" 
+     hx-trigger="incomeCreated from:body, expenseCreated from:body, feePaid from:body" 
+     hx-swap="outerHTML"
+     hx-select="#finance-summary-stats"
+     {% endif %}>
+    
+    <!-- 1. Revenue/Income Card -->
+    <a href="{{ url('income', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-emerald-500/20 transition-all group block">
+        <div class="flex items-start justify-between mb-4">
+            <div class="w-10 h-10 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-arrow-trend-up text-sm"></i>
+            </div>
+            <span class="text-[8px] uppercase tracking-widest text-emerald-500/50 font-bold">Revenue</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-1">کل آمدنی</p>
+        <div class="flex items-baseline gap-1">
+            <h3 class="text-2xl text-white font-amiri">{{ total_amount|default(0)|int }}</h3>
+            <span class="text-[9px] text-slate-500 font-medium">{{ currency_label }}</span>
+        </div>
+    </a>
+
+    <!-- 2. Expenses Card -->
+    <a href="{{ url('expense', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-rose-500/20 transition-all group block">
+        <div class="flex items-start justify-between mb-4">
+            <div class="w-10 h-10 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400 border border-rose-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-arrow-trend-down text-sm"></i>
+            </div>
+            <span class="text-[8px] uppercase tracking-widest text-rose-500/50 font-bold">Expenses</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-1">کل اخراجات</p>
+        <div class="flex items-baseline gap-1">
+            <h3 class="text-2xl text-white font-amiri">{{ total_expenses|default(0)|int }}</h3>
+            <span class="text-[9px] text-slate-500 font-medium">{{ currency_label }}</span>
+        </div>
+    </a>
+
+    <!-- 3. Net Balance Card -->
+    <a href="{{ url('balance', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-blue-500/20 transition-all group relative overflow-hidden block">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 blur-3xl -mr-12 -mt-12"></div>
+        <div class="flex items-start justify-between mb-4">
+            <div class="w-10 h-10 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 border border-blue-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-vault text-sm"></i>
+            </div>
+            <span class="text-[8px] uppercase tracking-widest text-blue-500/50 font-bold">Balance</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-1">خالص بیلنس</p>
+        <div class="flex items-baseline gap-1">
+            <h3 class="text-2xl text-blue-400 font-amiri">{{ balance|default(0)|int }}</h3>
+            <span class="text-[9px] text-slate-500 font-medium">{{ currency_label }}</span>
+        </div>
+    </a>
+
+    <!-- 4. Activity/Count Card -->
+    <a href="{{ url('balance', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-indigo-500/20 transition-all group block">
+        <div class="flex items-start justify-between mb-4">
+            <div class="w-10 h-10 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-bolt-lightning text-sm"></i>
+            </div>
+            <span class="text-[8px] uppercase tracking-widest text-indigo-500/50 font-bold">Activity</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-1">کل اندراجات</p>
+        <div class="flex items-baseline gap-1">
+            <h3 class="text-2xl text-white font-amiri">{{ total_entries|default(0) }}</h3>
+            <span class="text-[9px] text-slate-500 font-medium uppercase">Records</span>
+        </div>
+    </a>
+</div>
