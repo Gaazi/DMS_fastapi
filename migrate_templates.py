@@ -61,6 +61,23 @@ def transform_template(content):
     content = content.replace('|floatformat(0)', '|int')
     content = content.replace('|floatformat', '|round')
 
+    # 14. Convert Django 'now' tag to Jinja2 function call
+    content = re.sub(r'\{%\s*now\s+[\'"](.*?)[\'"]\s*%\}', r"{{ now('\1') }}", content)
+    
+    # 15. Convert Django 'url_replace' to Jinja2 function call
+    content = re.sub(r'\{%\s*url_replace\s+(.*?)\s*%\}', r"{{ url_replace(\1) }}", content)
+    
+    # 16. Convert Django allauth 'provider_login_url'
+    # Fix previously broken {{ url('auth_google' process="login") }}
+    content = re.sub(r"\{\{\s*url\('auth_(\w+)'\s+(\w+)=[\'\"](.*?)[\'\"]\)\s*\}\}", r"{{ url('auth_\1', \2='\3') }}", content)
+    
+    # And convert original if not converted yet
+    content = re.sub(r'\{%\s*provider_login_url\s+[\'"](\w+)[\'"]\s+(\w+)=[\'"](.*?)[\'"]\s*%\}', r"{{ url('auth_\1', \2='\3') }}", content)
+    content = re.sub(r'\{%\s*provider_login_url\s+[\'"](\w+)[\'"]\s*%\}', r"{{ url('auth_\1') }}", content)
+
+    # 17. Convert {% widthratio A B C as Var %} to {% set Var = (A/B*C)|round|int %}
+    content = re.sub(r'\{%\s*widthratio\s+([\w\.]+)\s+([\w\.]+)\s+(\d+)\s+as\s+(\w+)\s*%\}', r"{% set \4 = (\1 / \2 * \3)|round|int %}", content)
+
     return content
 
 for template_dir in template_dirs:

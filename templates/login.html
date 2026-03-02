@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="mt-6">
-                    <a href="{% provider_login_url 'google' process='login' %}" 
+                    <a href="{{ url('auth_google', process='login') }}" 
                        class="w-full flex items-center justify-center gap-3 bg-white text-slate-700 hover:bg-slate-50 font-bold text-sm py-3 px-4 rounded-xl transition-all shadow-lg active:scale-95 font-mehr">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
                         <span>Google سے لاگ ان کریں</span>

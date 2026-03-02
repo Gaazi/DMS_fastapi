@@ -65,7 +65,7 @@
             <div class="mt-4">
                 
                 <!-- Use provider_login_url with process='login' because signup/login is same for OAuth usually -->
-                <a href="{% provider_login_url 'google' process='login' %}" 
+                <a href="{{ url('auth_google', process='login') }}" 
                    class="w-full flex items-center justify-center gap-2 bg-white text-slate-700 hover:bg-slate-50 font-bold text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.98]">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
                     <span>Google سے جاری رکھیں</span>

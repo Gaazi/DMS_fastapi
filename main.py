@@ -113,12 +113,17 @@ def url_replace(context, **kwargs):
     from urllib.parse import urlencode
     return urlencode(query)
 
+def django_now(format_string):
+    from datetime import datetime
+    return datetime.now().strftime(format_string.replace('Y', '%Y').replace('m', '%m').replace('d', '%d'))
+
 templates.env.globals.update(
     static=get_static_url, 
     url=dummy_url,
     csrf_token=lambda: "", # Dummy for now
     translate=translate,
     url_replace=url_replace,
+    now=django_now,
 )
 templates.env.filters["yesno"] = yesno
 templates.env.filters["translate"] = translate

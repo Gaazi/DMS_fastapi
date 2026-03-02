@@ -107,14 +107,14 @@
 
                 <div class="flex gap-2">
                     {% if page_obj.has_previous %}
-                    <a href="?{% url_replace page=page_obj.previous_page_number %}"
+                    <a href="?{{ url_replace(page=page_obj.previous_page_number) }}"
                         class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold tracking-wider">
                         <i class="fas fa-chevron-left mr-1"></i> Prev
                     </a>
                     {% endif %}
 
                     {% if page_obj.has_next %}
-                    <a href="?{% url_replace page=page_obj.next_page_number %}"
+                    <a href="?{{ url_replace(page=page_obj.next_page_number) }}"
                         class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold tracking-wider">
                         Next <i class="fas fa-chevron-right ml-1"></i>
                     </a>
@@ -169,7 +169,7 @@
                             <span class="text-white">{{ row.total|int }} {{ currency_label }}</span>
                         </div>
                         <div class="w-full bg-white/5 rounded-full h-1 overflow-hidden">
-                            {% widthratio row.total total_amount 100 as row_percent %}
+                            {% set row_percent = (row.total / total_amount * 100)|round|int %}
                             <div class="h-full bg-blue-500/50" :style="'width: {{ row_percent }}%'"></div>
                         </div>
                     </div>
