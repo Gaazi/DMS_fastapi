@@ -1,6 +1,6 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import date, datetime
+from datetime import date as dt_date, datetime
 from .base import AuditModel
 
 if TYPE_CHECKING:
@@ -14,8 +14,8 @@ class Exam(AuditModel, table=True):
     institution_id: int = Field(foreign_key="dms_institution.id")
     title: str = Field(max_length=200)
     term: str = Field(default="final_term", max_length=50)
-    start_date: date = Field()
-    end_date: date = Field()
+    start_date: dt_date = Field()
+    end_date: dt_date = Field()
     is_active: bool = Field(default=True)
     notes: str = Field(default="")
 

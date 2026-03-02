@@ -8,11 +8,12 @@ class AuditModel(SQLModel):
     
     created_at: Optional[datetime] = Field(
         default_factory=datetime.utcnow,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
+        nullable=True
     )
     updated_at: Optional[datetime] = Field(
         default_factory=datetime.utcnow,
-        sa_column=Column(DateTime(timezone=True), onupdate=datetime.utcnow, nullable=True)
+        nullable=True,
+        sa_column_kwargs={"onupdate": datetime.utcnow}
     )
     
     # deleted_at for SafeDelete simulation

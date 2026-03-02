@@ -1,6 +1,6 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import date, time, datetime
+from datetime import date as dt_date, time, datetime
 from .base import AuditModel
 
 if TYPE_CHECKING:
@@ -12,7 +12,7 @@ class ClassSession(AuditModel, table=True):
     
     id: Optional[int] = Field(default=None, primary_key=True)
     course_id: int = Field(foreign_key="dms_course.id")
-    date: date = Field(default_factory=date.today, index=True)
+    date: dt_date = Field(default_factory=dt_date.today, index=True)
     start_time: Optional[time] = Field(default=None)
     end_time: Optional[time] = Field(default=None)
     session_type: str = Field(default="class", max_length=20)
@@ -27,7 +27,7 @@ class Staff_Attendance(AuditModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     institution_id: int = Field(foreign_key="dms_institution.id")
     staff_member_id: int = Field(foreign_key="dms_staff.id")
-    date: date = Field(default_factory=date.today, index=True)
+    date: dt_date = Field(default_factory=dt_date.today, index=True)
     status: str = Field(default="present", max_length=20)
     remarks: str = Field(default="")
     is_late: bool = Field(default=False)

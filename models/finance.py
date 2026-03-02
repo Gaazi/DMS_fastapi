@@ -1,6 +1,6 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float, DateTime
-from datetime import date, datetime
+from datetime import date as dt_date, datetime
 from .base import AuditModel
 from decimal import Decimal
 
@@ -19,14 +19,14 @@ class Fee(AuditModel, table=True):
     
     fee_type: str = Field(default="monthly", max_length=20)
     title: str = Field(default="", max_length=200)
-    month: Optional[date] = Field(default=None)
+    month: Optional[dt_date] = Field(default=None)
     
     amount_due: Decimal = Field(sa_column=Column(Float), default=0.0)
     amount_paid: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
     discount: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
     late_fee: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
     
-    due_date: Optional[date] = Field(default=None)
+    due_date: Optional[dt_date] = Field(default=None)
     status: str = Field(default="Pending", max_length=20)
     recorded_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -84,7 +84,7 @@ class Income(AuditModel, table=True):
     donor_id: Optional[int] = Field(default=None, foreign_key="dms_donor.id")
     source: str = Field(default="Donation", max_length=50)
     amount: Decimal = Field(sa_column=Column(Float))
-    date: date = Field(default_factory=date.today)
+    date: dt_date = Field(default_factory=dt_date.today)
     description: str = Field(default="")
     receipt_number: Optional[str] = Field(default=None, max_length=50)
 
@@ -99,5 +99,5 @@ class Expense(AuditModel, table=True):
     amount: Decimal = Field(sa_column=Column(Float))
     category: str = Field(max_length=50)
     description: str = Field(default="")
-    date: date = Field(default_factory=date.today)
+    date: dt_date = Field(default_factory=dt_date.today)
     receipt_number: Optional[str] = Field(default=None, max_length=50)

@@ -1,6 +1,6 @@
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float
-from datetime import date
+from datetime import date as dt_date
 from .base import AuditModel
 from decimal import Decimal
 
@@ -39,8 +39,8 @@ class AssetIssue(AuditModel, table=True):
     student_id: Optional[int] = Field(default=None, foreign_key="dms_student.id")
     staff_id: Optional[int] = Field(default=None, foreign_key="dms_staff.id")
     quantity: int = Field(default=1)
-    issue_date: date = Field(default_factory=date.today)
-    due_date: Optional[date] = Field(default=None)
-    return_date: Optional[date] = Field(default=None)
+    issue_date: dt_date = Field(default_factory=dt_date.today)
+    due_date: Optional[dt_date] = Field(default=None)
+    return_date: Optional[dt_date] = Field(default=None)
     is_returned: bool = Field(default=False)
     notes: str = Field(default="")
