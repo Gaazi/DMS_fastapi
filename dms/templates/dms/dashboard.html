@@ -26,7 +26,7 @@
             </div>
             <p class="text-base text-green-400 mb-1 relative z-10">کل آمدنی</p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                <h3 class="text-2xl text-green-400">{{ total_donations|default("0")|floatformat:0 }}</h3>
+                <h3 class="text-2xl text-green-400">{{ total_donations|default("0")|floatformat(0) }}</h3>
             </div>
         </a>
 
@@ -41,7 +41,7 @@
             </div>
             <p class="text-base text-rose-400 mb-1 relative z-10">کل اخراجات</p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
-                <h3 class="text-2xl text-rose-400">{{ total_expenses|default("0")|floatformat:0 }}</h3>
+                <h3 class="text-2xl text-rose-400">{{ total_expenses|default("0")|floatformat(0) }}</h3>
             </div>
         </a>
 
@@ -61,7 +61,7 @@
             </p>
             <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
                 <h3 class="text-2xl {% if balance < 0 %}text-rose-400{% else %}text-green-400{% endif %} font-mehr font-bold">
-                    {{ balance|default("0")|floatformat:0 }}
+                    {{ balance|default("0")|floatformat(0) }}
                 </h3>
             </div>
         </a>
@@ -368,7 +368,7 @@
             </div>
             <div>
                 <p class="text-sm">Last Income</p>
-                <h4 class="text-lg">{{ latest_donation_amount|default(0)|floatformat:0 }}</h4>
+                <h4 class="text-lg">{{ latest_donation_amount|default(0)|floatformat(0) }}</h4>
             </div>
         </div>
         <div class="text-sm text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg text-sm">
@@ -384,7 +384,7 @@
             </div>
             <div>
                 <p class="text-sm">Last Expense</p>
-                <h4 class="text-lg">{{ latest_expense_amount|default(0)|floatformat:0 }}</h4>
+                <h4 class="text-lg">{{ latest_expense_amount|default(0)|floatformat(0) }}</h4>
             </div>
         </div>
         <div class="text-sm text-rose-700 bg-rose-50/80 px-2.5 py-1 rounded-lg text-sm">

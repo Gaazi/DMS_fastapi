@@ -102,7 +102,7 @@
                 <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">{{ form.agreed_admission_fee.label }}</label>
                 <div class="relative overflow-hidden rounded-xl">
                     {% with attr="!py-0 !px-3 !text-[12px] !text-emerald-400 !font-extrabold !rounded-xl !h-9 !bg-transparent border border-white/10 w-full pointer-events-none" %}
-                        {{ form.agreed_admission_fee|add_class(attr)|attr:"readonly:readonly" }}
+                        {{ form.agreed_admission_fee|add_class(attr)|attr("readonly:readonly") }}
                     {% endwith %}
                 </div>
             </div>
@@ -130,7 +130,7 @@
                 <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">{{ form.agreed_course_fee.label }}</label>
                 <div class="relative overflow-hidden rounded-xl">
                     {% with attr="!py-0 !px-3 !text-[12px] !text-emerald-400 !font-extrabold !rounded-xl !h-9 !bg-transparent border border-white/10 w-full pointer-events-none" %}
-                        {{ form.agreed_course_fee|add_class(attr)|attr:"readonly:readonly" }}
+                        {{ form.agreed_course_fee|add_class(attr)|attr("readonly:readonly") }}
                     {% endwith %}
                 </div>
             </div>

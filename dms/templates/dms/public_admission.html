@@ -40,7 +40,7 @@
                 </label>
             </div>
             
-            {{ form.name|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all")|attr:"placeholder:طالب علم کا نام..." }}
+            {{ form.name|add_class("w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all")|attr("placeholder:طالب علم کا نام...") }}
         </div>
 
         <!-- 2. GUARDIAN DETAILS -->
@@ -52,7 +52,7 @@
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">{{ form.guardian_name.label }}</label>
                 <div class="flex gap-2">
-                    {{ form.guardian_name|add_class("flex-1 bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50")|attr:"placeholder:والد کے علاوہ اگر کوئی سرپرست ہو تو نام لکھیں..." }}
+                    {{ form.guardian_name|add_class("flex-1 bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50")|attr("placeholder:والد کے علاوہ اگر کوئی سرپرست ہو تو نام لکھیں...") }}
                     {{ form.guardian_relation|add_class("w-[110px] bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-2 h-11 text-xs outline-none focus:border-emerald-500/50 [&>option]:text-black") }}
                 </div>
             </div>

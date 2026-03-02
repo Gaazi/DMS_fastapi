@@ -2,9 +2,9 @@
      x-data="{ 
          paymentMode: 'total',
          selectedFeeId: '{{ first_pending_fee.id|default('') }}',
-         selectedFeeAmount: {{ fee_balance|default(0)|floatformat:0 }},
-         payAmount: {{ fee_balance|default(0)|floatformat:0 }},
-         totalBalance: {{ fee_balance|default(0)|floatformat:0 }},
+         selectedFeeAmount: {{ fee_balance|default(0)|floatformat(0) }},
+         payAmount: {{ fee_balance|default(0)|floatformat(0) }},
+         totalBalance: {{ fee_balance|default(0)|floatformat(0) }},
          
          handlePayEvent(e) {
              if (e.detail && e.detail.feeId) {
@@ -55,7 +55,7 @@
                 <div class="flex items-center justify-center gap-1.5">
                     <span class="text-base sm:text-xl text-slate-400">{{ currency_label }}</span>
                     <span class="text-4xl sm:text-5xl text-slate-800" x-text="totalBalance">
-                        {{fee_balance|default(0)|floatformat:0 }}</span>
+                        {{fee_balance|default(0)|floatformat(0) }}</span>
                 </div>
             </div>
 
@@ -84,7 +84,7 @@
                 <!-- Input Field -->
                 <input type="number" name="amount" x-model.number="payAmount" :placeholder="selectedFeeAmount"
     class="w-full py-4 sm:py-5 pl-12 pr-4 sm:pl-16 sm:pr-5 bg-white border-2 border-slate-400 rounded-xl text-left text-3xl sm:text-4xl font-black !text-slate-900 placeholder:!text-slate-900 focus:!text-black focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-md box-border"
-    max="{{ fee_balance|default(0)|add:50000 }}" min="1" required
+    max="{{ fee_balance|default(0)|add(50000) }}" min="1" required
     @focus="if(payAmount == selectedFeeAmount) payAmount = ''" 
     @blur="if(payAmount === '' || payAmount === null) payAmount = selectedFeeAmount">
             </div>

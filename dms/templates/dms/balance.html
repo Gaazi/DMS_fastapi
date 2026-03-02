@@ -74,7 +74,7 @@
 
                         <!-- 3. Balance -->
                         <td class="px-2 py-2 md:px-4 md:py-3 font-amiri text-sm md:text-base text-blue-300 whitespace-nowrap text-left"
-                            dir="ltr">Rs: {{ tx.running_balance|floatformat(0)|cut:"-" }} </td>
+                            dir="ltr">Rs: {{ tx.running_balance|floatformat(0)|cut("-") }} </td>
 
                         <!-- 4. Date -->
                         <td class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap">
@@ -176,9 +176,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const donations = parseFloat('{{ total_amount|stringformat(".2f")|default:"0" }}');
-        const expenses = parseFloat('{{ total_expenses|stringformat(".2f")|default:"0" }}');
-        const balance = parseFloat('{{ balance|stringformat(".2f")|default:"0" }}');
+        const donations = parseFloat('{{ total_amount|stringformat(".2f")|default("0") }}');
+        const expenses = parseFloat('{{ total_expenses|stringformat(".2f")|default("0") }}');
+        const balance = parseFloat('{{ balance|stringformat(".2f")|default("0") }}');
 
         Chart.defaults.color = 'rgba(255, 255, 255, 0.5)';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';

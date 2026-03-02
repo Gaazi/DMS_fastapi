@@ -153,7 +153,7 @@
                       <span class="text-xs">آمدنی</span>
                        <i class="fas fa-plus text-[10px]"></i>
                    </div>
-                   <span class="text-xs self-center leading-none">{{ total_donations|default("0")|floatformat:0 }}</span>
+                   <span class="text-xs self-center leading-none">{{ total_donations|default("0")|floatformat(0) }}</span>
                 </a>
 
                 
@@ -163,7 +163,7 @@
                       <span class="text-xs">خرچ</span>
                        <i class="fas fa-minus text-[10px]"></i>
                    </div>
-                   <span class="text-xs self-center leading-none">{{ total_expenses|default("0")|floatformat:0 }}</span>
+                   <span class="text-xs self-center leading-none">{{ total_expenses|default("0")|floatformat(0) }}</span>
                 </a>
                 <a href="{{ url('balance', institution.slug) }}" 
                    class="flex flex-col justify-center gap-0.5 py-0.5 px-2 md:h-10 md:w-20 rounded-xl border {% if balance < 0 %}bg-rose-600/20 border-rose-600/30 text-rose-400 hover:bg-rose-600/30{% else %}bg-blue-600/20 border-blue-600/30 text-blue-400 hover:bg-blue-600/30{% endif %} transition-all active:scale-95 shadow-lg">
@@ -171,7 +171,7 @@
                       <span class="text-xs">{% if balance < 0 %}قرض{% else %}بیلنس{% endif %}</span>
                        <i class="fas fa-wallet text-[10px]"></i>
                    </div>
-                   <span dir="ltr" class="text-xs self-center leading-none">{{ balance|default("0")|floatformat:0 }}</span>
+                   <span dir="ltr" class="text-xs self-center leading-none">{{ balance|default("0")|floatformat(0) }}</span>
                 </a>
                 <a href="{{ url('transaction_report', institution.slug) }}" target="_blank"
                    class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">

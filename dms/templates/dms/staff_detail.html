@@ -78,7 +78,7 @@
                     <p class="text-blue-400/80 font-urdu text-base">{{ member.get_role_display }}</p>
                     <div class="flex items-center gap-3 mt-2">
                         <span class="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase">#{{ member.id }}</span>
-                        <span class="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase">{{ member.hire_date|date("M Y")|default:"---" }}</span>
+                        <span class="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase">{{ member.hire_date|date("M Y")|default("---") }}</span>
                     </div>
                 </div>
             </div>
