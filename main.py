@@ -11,12 +11,13 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 
 from starlette.middleware.authentication import AuthenticationMiddleware
-from starlette.authentication import AuthenticationBackend, AuthCredentials, UnauthenticatedUser
+from starlette.authentication import AuthenticationBackend, AuthCredentials, SimpleUser
+from fastapi.responses import FileResponse
 
 class MockAuthBackend(AuthenticationBackend):
     async def authenticate(self, conn):
-        # Mocking an authenticated superuser
-        return AuthCredentials(["authenticated"]), UnauthenticatedUser() # Or a mock user
+        # Mocking an authenticated superuser for development
+        return AuthCredentials(["authenticated"]), SimpleUser("admin")
 
 app = FastAPI(title="DMS FastAPI", description="Data Management System migrated from Django")
 app.add_middleware(AuthenticationMiddleware, backend=MockAuthBackend())
@@ -98,17 +99,56 @@ def split_filter(value, arg):
 def dict_key(d, k):
     return d.get(k) if isinstance(d, dict) else None
 
+def get_field_filter(form, field_name):
+    # Mocking form field access for now
+    return None
+
+from jinja2 import pass_context
+@pass_context
+def url_replace(context, **kwargs):
+    request = context.get('request')
+    if not request: return ""
+    query = dict(request.query_params)
+    query.update(kwargs)
+    from urllib.parse import urlencode
+    return urlencode(query)
+
 templates.env.globals.update(
     static=get_static_url, 
     url=dummy_url,
     csrf_token=lambda: "", # Dummy for now
     translate=translate,
+    url_replace=url_replace,
 )
 templates.env.filters["yesno"] = yesno
 templates.env.filters["translate"] = translate
 templates.env.filters["short_id"] = short_id
 templates.env.filters["split"] = split_filter
 templates.env.filters["dict_key"] = dict_key
+templates.env.filters["get_field"] = get_field_filter
+
+@app.get("/manifest.json")
+async def manifest():
+    manifest_path = BASE_DIR / "static" / "manifest.json"
+    if manifest_path.exists():
+        return FileResponse(manifest_path)
+    return {"error": "manifest.json not found"}
+
+@app.get("/login", name="dms_login")
+async def login(request: Request):
+    return {"message": "Login page coming soon"}
+
+@app.get("/logout", name="dms_logout")
+async def logout(request: Request):
+    return {"message": "Logged out"}
+
+@app.get("/dms", name="dms")
+async def dms_home(request: Request):
+    return await home(request)
+
+@app.get("/dashboard/{slug}", name="dashboard")
+async def dashboard(request: Request, slug: str):
+    return {"message": f"Dashboard for {slug} coming soon"}
 
 @app.get("/")
 async def home(request: Request):
@@ -117,16 +157,20 @@ async def home(request: Request):
     """
     context = {
         "request": request,
-        "user": request.state.user,
+        "user": request.user, # Use Starlette's request.user
         "title": "DMS FastAPI Home",
         "dms_header": {
             "unread_count": 0,
-            "notifications_json": "[]",
+            "notifications_json": [], # Pass as list, template will |tojson
             "user": {"name": "Admin", "initials": "AD", "role": "Administrator"},
             "all_institutions": []
         },
         "current_institution": None,
+        "institution": None,
         "is_dms_admin": True,
+        "is_staff_admin": True,
+        "can_view_academics": True,
+        "can_view_finance": True,
     }
     try:
         return templates.TemplateResponse("index.html", context)
