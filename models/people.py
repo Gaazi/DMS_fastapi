@@ -1,14 +1,14 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float
 from datetime import date, time, datetime
-from .base import AuditModel
+from .audit_model import AuditModel
 from decimal import Decimal
 from .links import StudentParentLink, CourseStaffLink
 
 if TYPE_CHECKING:
     from .foundation import Institution, Course
 
-class PersonBase(AuditModel):
+class Person(AuditModel):
     institution_id: int = Field(foreign_key="dms_institution.id")
     user_id: Optional[int] = Field(default=None, foreign_key="auth_user.id")
     reg_id: Optional[str] = Field(default=None, max_length=20, index=True)
@@ -21,7 +21,7 @@ class PersonBase(AuditModel):
     address: Optional[str] = Field(default=None)
     is_active: bool = Field(default=True)
 
-class Staff(PersonBase, table=True):
+class Staff(Person, table=True):
     __tablename__ = "dms_staff"
     
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -36,7 +36,7 @@ class Staff(PersonBase, table=True):
     
     courses_taught: List["Course"] = Relationship(back_populates="instructors", link_model=CourseStaffLink)
 
-class Parent(PersonBase, table=True):
+class Parent(Person, table=True):
     __tablename__ = "dms_parent"
     
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -44,7 +44,7 @@ class Parent(PersonBase, table=True):
     
     students: List["Student"] = Relationship(back_populates="parents", link_model=StudentParentLink)
 
-class Student(PersonBase, table=True):
+class Student(Person, table=True):
     __tablename__ = "dms_student"
     
     id: Optional[int] = Field(default=None, primary_key=True)

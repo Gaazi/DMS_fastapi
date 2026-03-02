@@ -1,7 +1,7 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float, DateTime
 from datetime import date, datetime
-from .base import AuditModel
+from .audit_model import AuditModel
 from decimal import Decimal
 
 if TYPE_CHECKING:

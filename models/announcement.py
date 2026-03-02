@@ -1,7 +1,7 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import Field, Relationship
 from datetime import date, datetime
-from .base import AuditModel
+from .audit_model import AuditModel
 from .links import AnnouncementTargetParentLink
 
 if TYPE_CHECKING:
