@@ -42,3 +42,11 @@ urllib3==2.6.3
 uv==0.7.13
 whitenoise==6.11.0
 mysqlclient==2.2.8
+# FastAPI Migration
+fastapi==0.115.8
+sqlmodel==0.0.22
+uvicorn[standard]==0.34.0
+jinja2==3.1.5
+python-multipart==0.0.20
+aiofiles==24.1.0
+python-dotenv==1.0.1
