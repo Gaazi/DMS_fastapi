@@ -25,65 +25,65 @@
 
         <div class="grid grid-cols-3 gap-2">
             <!-- Densely Packed Grid -->
-            <a href="{% url 'dashboard' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('dashboard', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-th-large text-base mb-1 text-blue-400"></i>
                 <span class="text-[10px] font-bold">ڈیش بورڈ</span>
             </a>
 
             {% if can_view_academics %}
-            <a href="{% url 'students' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('students', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-users text-base mb-1 text-emerald-400"></i>
                 <span class="text-[10px] font-bold">طلبہ</span>
             </a>
 
-            <a href="{% url 'student_attendance' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('student_attendance', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-user-check text-base mb-1 text-blue-400"></i>
                 <span class="text-[10px] font-bold">حاضری</span>
             </a>
             {% endif %}
 
             {% if is_dms_admin %}
-            <a href="{% url 'income_list' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('income_list', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-wallet text-base mb-1 text-emerald-400"></i>
                 <span class="text-[10px] font-bold">آمدنی</span>
             </a>
             {% endif %}
 
             {% if is_dms_admin %}
-            <a href="{% url 'expense' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('expense', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-hand-holding-dollar text-base mb-1 text-rose-400"></i>
                 <span class="text-[10px] font-bold">اخراجات</span>
             </a>
 
-            <a href="{% url 'balance' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('balance', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-scale-balanced text-base mb-1 text-amber-400"></i>
                 <span class="text-[10px] font-bold">بیلنس</span>
             </a>
             {% endif %}
 
-            <a href="{% url 'dms_course' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('dms_course', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-graduation-cap text-base mb-1 text-indigo-400"></i>
                 <span class="text-[10px] font-bold">کورسز</span>
             </a>
 
             {% if is_dms_admin %}
-            <a href="{% url 'dms_staff' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('dms_staff', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-user-tie text-base mb-1 text-slate-400"></i>
                 <span class="text-[10px] font-bold">عملہ</span>
             </a>
             {% endif %}
 
-            <a href="{% url 'attendance_report' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('attendance_report', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-clipboard-list text-base mb-1 text-sky-400"></i>
                 <span class="text-[10px] font-bold">رپورٹس</span>
             </a>
 
-            <a href="{% url 'inventory_dashboard' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('inventory_dashboard', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-boxes-stacked text-base mb-1 text-amber-500"></i>
                 <span class="text-[10px] font-bold">انونٹری</span>
             </a>
 
-            <a href="{% url 'timetable' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+            <a href="{{ url('timetable', institution.slug) }}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
                 <i class="fas fa-calendar-alt text-base mb-1 text-blue-400"></i>
                 <span class="text-[10px] font-bold">ٹائم ٹیبل</span>
             </a>
@@ -95,17 +95,17 @@
         <div class="max-w-md mx-auto bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl overflow-hidden">
             <div class="grid grid-cols-7 items-center">
                 
-                <a href="{% url 'dashboard' institution.slug %}" 
+                <a href="{{ url('dashboard', institution.slug) }}" 
                    class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'dashboard' %}text-blue-400 bg-blue-500/10{% else %}text-slate-400{% endif %}">
                     <i class="fas fa-th-large text-xs"></i>
                 </a>
                 {% if can_view_academics %}
-                <a href="{% url 'students' institution.slug %}" 
+                <a href="{{ url('students', institution.slug) }}" 
                    class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'students' %}text-emerald-400 bg-emerald-500/10{% else %}text-slate-400{% endif %}">
                     <i class="fas fa-users text-xs"></i>
                 </a>
 
-                <a href="{% url 'student_attendance' institution.slug %}" 
+                <a href="{{ url('student_attendance', institution.slug) }}" 
                    class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'student_attendance' %}text-blue-400 bg-blue-500/10{% else %}text-slate-400{% endif %}">
                     <i class="fas fa-user-check text-xs"></i>
                 </a>
@@ -122,17 +122,17 @@
                 </button>
 
                 {% if is_dms_admin %}
-                <a href="{% url 'income_list' institution.slug %}" 
+                <a href="{{ url('income_list', institution.slug) }}" 
                    class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'income_list' %}text-emerald-400 bg-emerald-500/10{% else %}text-slate-400{% endif %}">
                     <i class="fas fa-wallet text-xs"></i>
                 </a>
 
-                <a href="{% url 'expense' institution.slug %}" 
+                <a href="{{ url('expense', institution.slug) }}" 
                    class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'expense' %}text-rose-400 bg-rose-500/10{% else %}text-slate-400{% endif %}">
                     <i class="fas fa-hand-holding-dollar text-xs"></i>
                 </a>
 
-                <a href="{% url 'balance' institution.slug %}" 
+                <a href="{{ url('balance', institution.slug) }}" 
                    class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'balance' %}text-amber-400 bg-amber-500/10{% else %}text-slate-400{% endif %}">
                     <i class="fas fa-scale-balanced text-xs"></i>
                 </a>

@@ -8,16 +8,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Aref+Ruqaa+Ink&family=Reem+Kufi+Ink&display=swap"
     rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+<link rel="stylesheet" href="{{ static('css/fonts.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="{{ static('css/admin.css') }}">
 {% endblock %}
 
 {# --- 2. BRANDING (From old base.html) --- #}
 {% block branding %}
 <h1 id="site-name">
-    <a href="{% url 'admin:index' %}"
+    <a href="{{ url('admin:index') }}"
         style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
         <span style="font-family: 'Mehr', serif;">DMS</span>
         <span
@@ -55,15 +55,15 @@
     {# 3. BACKUP / RESTORE CONTROLS #}
     {% if current_institution %}
     <span style="color: #475569;">|</span>
-    <a href="{% url 'institution_export_sheet' current_institution.slug %}"
+    <a href="{{ url('institution_export_sheet', current_institution.slug) }}"
         style="color: #10b981; font-weight: bold; text-decoration: none;">
         <i class="fas fa-file-excel"></i> Ledger
     </a>
-    <a href="{% url 'create_manual_snapshot' current_institution.slug %}"
+    <a href="{{ url('create_manual_snapshot', current_institution.slug) }}"
         style="color: #6366f1; font-weight: bold; text-decoration: none;">
         <i class="fas fa-database"></i> Backup
     </a>
-    <form method="post" action="{% url 'institution_import_restore' current_institution.slug %}"
+    <form method="post" action="{{ url('institution_import_restore', current_institution.slug) }}"
         enctype="multipart/form-data" style="display: inline;" id="admin-restore-form">
         {% csrf_token %}
         <label style="color: #f59e0b; cursor: pointer;">
@@ -72,7 +72,7 @@
                 onchange="document.getElementById('admin-restore-form').submit()">
         </label>
     </form>
-    <a href="{% url 'backup_manager' current_institution.slug %}" style="color: #ea580c; text-decoration: none;">
+    <a href="{{ url('backup_manager', current_institution.slug) }}" style="color: #ea580c; text-decoration: none;">
         <i class="fas fa-clock-rotate-left"></i> History
     </a>
 
@@ -89,8 +89,8 @@
             <option value="">Select Institution...</option>
             {% for inst in dms_header.all_institutions %}
             <option value="{{ inst.slug }}"
-                data-backup-url="{% url 'system_create_manual_snapshot' %}?inst_slug={{ inst.slug }}"
-                data-restore-url="{% url 'institution_import_restore' inst.slug %}"
+                data-backup-url="{{ url('system_create_manual_snapshot') }}?inst_slug={{ inst.slug }}"
+                data-restore-url="{{ url('institution_import_restore', inst.slug) }}"
                 data-trash-url="/{{ inst.slug }}/trash/">
                 {{ inst.name }}
             </option>
@@ -113,11 +113,11 @@
     </div>
 
     {# Global System Actions #}
-    <a href="{% url 'system_create_manual_snapshot' %}" title="Full System Backup"
+    <a href="{{ url('system_create_manual_snapshot') }}" title="Full System Backup"
         style="color: #6366f1; margin-left: 5px;">
         <i class="fas fa-server"></i>
     </a>
-    <a href="{% url 'system_backup_manager' %}" title="Backup History" style="color: #ea580c;">
+    <a href="{{ url('system_backup_manager') }}" title="Backup History" style="color: #ea580c;">
         <i class="fas fa-history"></i>
     </a>
 
@@ -127,12 +127,12 @@
     <span style="color: #475569;">|</span>
 
     {% if user.has_usable_password %}
-    <a href="{% url 'admin:password_change' %}" style="text-decoration: none; color: #94a3b8;">
+    <a href="{{ url('admin:password_change') }}" style="text-decoration: none; color: #94a3b8;">
         <i class="fas fa-key"></i>
     </a>
     {% endif %}
 
-    <form id="logout-form" method="post" action="{% url 'admin:logout' %}" style="display: inline;">
+    <form id="logout-form" method="post" action="{{ url('admin:logout') }}" style="display: inline;">
         {% csrf_token %}
         <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px;"
             title="{% translate 'Log out' %}">

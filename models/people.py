@@ -1,7 +1,7 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float
 from datetime import date, time, datetime
-from .audit_model import AuditModel
+from .base import AuditModel
 from decimal import Decimal
 from .links import StudentParentLink, CourseStaffLink
 
@@ -56,18 +56,18 @@ class Student(Person, table=True):
     guardian_relation: str = Field(default="", max_length=100)
     notes: str = Field(default="")
     wallet_balance: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
-    enrollment_date: date = Field(default_factory=date.today)
+    admission_date: date = Field(default_factory=date.today)
 
     parents: List[Parent] = Relationship(back_populates="students", link_model=StudentParentLink)
-    enrollments: List["Enrollment"] = Relationship(back_populates="student")
+    admissions: List["Admission"] = Relationship(back_populates="student")
 
-class Enrollment(AuditModel, table=True):
-    __tablename__ = "dms_enrollment"
+class Admission(AuditModel, table=True):
+    __tablename__ = "dms_enrollment" # Keeping original table name for data safety
     
     id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="dms_student.id")
     course_id: int = Field(foreign_key="dms_course.id")
-    enrollment_date: date = Field(default_factory=date.today)
+    admission_date: date = Field(default_factory=date.today)
     roll_no: Optional[str] = Field(default=None, max_length=50)
     admission_fee_discount: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
     agreed_admission_fee: Optional[Decimal] = Field(default=None, sa_column=Column(Float))
@@ -77,7 +77,7 @@ class Enrollment(AuditModel, table=True):
     fee_type_override: Optional[str] = Field(default=None, max_length=20)
     status: str = Field(default="active", max_length=20)
 
-    student: Student = Relationship(back_populates="enrollments")
+    student: Student = Relationship(back_populates="admissions")
 
 class StaffAdvance(SQLModel, table=True):
     __tablename__ = "dms_staffadvance"

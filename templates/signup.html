@@ -1,6 +1,6 @@
 ﻿{% extends 'base.html' %}
 {% load widget_tweaks %}
-{% load static %}
+
 
 {% block title %}نیا اکاؤنٹ بنائیں{% endblock %}
 
@@ -75,7 +75,7 @@
 
         <div class="mt-4 pt-3 border-t border-white/5 text-center">
             <p class="text-xs text-slate-400">پہلے سے اکاؤنٹ ہے؟ 
-                <a href="{% url 'dms_login' %}" class="text-emerald-400 hover:text-emerald-300 font-bold transition-colors mr-1">لاگ اِن کریں</a>
+                <a href="{{ url('dms_login') }}" class="text-emerald-400 hover:text-emerald-300 font-bold transition-colors mr-1">لاگ اِن کریں</a>
             </p>
         </div>
     </div>

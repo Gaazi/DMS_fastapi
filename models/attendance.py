@@ -1,7 +1,7 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date, time, datetime
-from .audit_model import AuditModel
+from .base import AuditModel
 
 if TYPE_CHECKING:
     from .foundation import Institution, Course

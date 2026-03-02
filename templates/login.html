@@ -1,5 +1,5 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
+
 {% load widget_tweaks %}
 {% load socialaccount %}
 
@@ -67,7 +67,7 @@
 
             <div class="mt-6 pt-5 border-t border-white/10 text-center">
                 <p class="text-sm text-slate-400 font-mehr">اکاؤنٹ نہیں ہے؟ 
-                    <a href="{% url 'dms_signup' %}" class="text-blue-400 hover:text-blue-300 font-bold transition-colors mr-1">نیا اکاؤنٹ بنائیں</a>
+                    <a href="{{ url('dms_signup') }}" class="text-blue-400 hover:text-blue-300 font-bold transition-colors mr-1">نیا اکاؤنٹ بنائیں</a>
                 </p>
             </div>
 

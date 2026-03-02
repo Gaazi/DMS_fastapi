@@ -1,12 +1,12 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float, DateTime
 from datetime import date, datetime
-from .audit_model import AuditModel
+from .base import AuditModel
 from decimal import Decimal
 
 if TYPE_CHECKING:
     from .foundation import Institution, Course
-    from .people import Student, Enrollment
+    from .people import Student, Admission
 
 class Fee(AuditModel, table=True):
     __tablename__ = "dms_fee"
@@ -15,7 +15,7 @@ class Fee(AuditModel, table=True):
     institution_id: int = Field(foreign_key="dms_institution.id")
     student_id: int = Field(foreign_key="dms_student.id")
     course_id: Optional[int] = Field(default=None, foreign_key="dms_course.id")
-    enrollment_id: Optional[int] = Field(default=None, foreign_key="dms_enrollment.id")
+    admission_id: Optional[int] = Field(default=None, foreign_key="dms_enrollment.id")
     
     fee_type: str = Field(default="monthly", max_length=20)
     title: str = Field(default="", max_length=200)
