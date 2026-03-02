@@ -37,7 +37,7 @@
                 <span class="text-sm text-white mb-2 block">کل بقایا رقم</span>
                 <div class="flex items-baseline justify-center gap-1">
                     <span class="text-xs text-white">{{ currency_label }}</span>
-                    <p class="text-base text-white leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all group-hover/node:scale-110">{{ fee_balance|default(0)|floatformat(0) }}</p>
+                    <p class="text-base text-white leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all group-hover/node:scale-110">{{ fee_balance|default(0)|int }}</p>
                 </div>
             </div>
 
@@ -46,7 +46,7 @@
                 <span class="text-sm block mb-2">کل واجبات</span>
                 <div class="flex items-center justify-center gap-1">
                     <span class="text-xs">{{ currency_label }}</span>
-                    <p class="text-base text-white leading-none">{{ fee_totals.total_due|default(0)|floatformat(0) }}</p>
+                    <p class="text-base text-white leading-none">{{ fee_totals.total_due|default(0)|int }}</p>
                 </div>
             </div>
 
@@ -55,7 +55,7 @@
                 <span class="text-sm text-emerald-200 block mb-2">وصول شدہ</span>
                 <div class="flex items-center justify-center gap-1">
                     <span class="text-xs font-mono text-emerald-200">{{ currency_label }}</span>
-                    <p class="text-base font-mono text-emerald-200 leading-none">{{ fee_totals.total_paid|default(0)|floatformat(0) }}</p>
+                    <p class="text-base font-mono text-emerald-200 leading-none">{{ fee_totals.total_paid|default(0)|int }}</p>
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
             <div class="flex-shrink-0 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-4 py-3 flex flex-col justify-center min-w-[100px] shadow-lg relative overflow-hidden group/wallet">
                 <div class="absolute inset-0 bg-emerald-400/5 opacity-0 group-hover/wallet:opacity-100 transition-opacity"></div>
                 <span class="text-sm text-emerald-200 block mb-1.5">Wallet</span>
-                <span class="text-sm text-emerald-200 leading-none">{{ currency_label }}: {{ student.wallet_balance|floatformat(0) }}</span>
+                <span class="text-sm text-emerald-200 leading-none">{{ currency_label }}: {{ student.wallet_balance|int }}</span>
             </div>
             {% endif %}
 

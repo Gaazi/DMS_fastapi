@@ -44,7 +44,7 @@
                 
                 <!-- ID Badge -->
                 <div class="absolute top-0 left-0 px-2 py-1 bg-white/5 rounded-br-lg border-b border-r border-white/5">
-                    <span class="text-[10px] font-mono text-slate-500">#{{ forloop.counter|stringformat("02d") }}</span>
+                    <span class="text-[10px] font-mono text-slate-500">#{{ loop.index|stringformat("02d") }}</span>
                 </div>
 
                 <!-- Icon & Title -->
@@ -80,7 +80,7 @@
 
             </div>
         </a>
-        {% empty %}
+        {% else %}
         <div class="py-6 text-center text-sm text-slate-500">
             کوئی ریکارڈ نہیں
         </div>

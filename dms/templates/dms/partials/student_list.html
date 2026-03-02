@@ -47,7 +47,7 @@
         
         <!-- Col 1: Tactical ID Stack -->
         <div class="flex flex-col shrink-0 items-center justify-center gap-0.5 md:gap-1 ltr:border-r rtl:border-l rtl:border-r-0 border-white/5 relative z-20 w-[45px] md:w-[60px] self-stretch bg-black/40 ltr:rounded-l-lg rtl:rounded-r-lg group-hover:bg-black/60 transition-colors py-1">
-            <span class="text-xs md:text-base lg:text-lg text-blue-500/90 font-mono font-black tabular-nums leading-none group-hover:text-blue-400 transition-colors">{{ forloop.counter|stringformat("02d") }}</span>
+            <span class="text-xs md:text-base lg:text-lg text-blue-500/90 font-mono font-black tabular-nums leading-none group-hover:text-blue-400 transition-colors">{{ loop.index|stringformat("02d") }}</span>
             <div class="w-4 md:w-8 h-[1px] bg-blue-500/20 group-hover:bg-blue-500/40 transition-colors"></div>
             <div class="flex flex-col items-center">
                 <span class="text-[7px] md:text-[9px] text-slate-500 uppercase leading-none mb-0.5 md:mb-1 tracking-widest">{% if institution.type == 'masjid' %}M.ID{% else %}ROLL{% endif %}</span>
@@ -129,7 +129,7 @@
                 <!-- Amount Row -->
                 <div class="flex-1 flex flex-col items-center justify-center mt-0.5">
                     <span class="text-sm md:text-sm tabular-nums leading-none {% if student.has_pending_fee %}text-rose-500{% else %}text-white/60{% endif %}">
-                        {% if student.has_pending_fee %}{{ student.month_due_amount|floatformat(0) }}{% else %}
+                        {% if student.has_pending_fee %}{{ student.month_due_amount|int }}{% else %}
                         <i class="fas fa-check-double text-emerald-500/80 text-[10px] md:text-xs"></i>
                         {% endif %}
                     </span>
@@ -151,7 +151,7 @@
             </div>
         </div>
     </div>
-    {% empty %}
+    {% else %}
     <div class="py-24 flex flex-col items-center justify-center text-center px-10">
         <i class="fas fa-database text-2xl text-slate-800 mb-4 animate-pulse"></i>
         <h3 class="text-slate-500 font-urdu">ریکارڈ موجود نہیں ہے</h3>

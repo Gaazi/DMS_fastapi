@@ -46,7 +46,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600 font-sans">{{ log.model_name }}</td>
                         <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ log.object_repr }}</td>
                     </tr>
-                    {% empty %}
+                    {% else %}
                     <tr>
                         <td colspan="5" class="px-6 py-10 text-center text-gray-400">کوئی ریکارڈ موجود نہیں ہے۔</td>
                     </tr>

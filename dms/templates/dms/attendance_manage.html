@@ -57,7 +57,7 @@
                                     {{ student.full_name|first|upper }}
                                 </div>
                                 <div class="absolute -top-2 -right-2 px-2 py-0.5 rounded-md bg-indigo-600/20 border border-indigo-600/30 text-[8px] text-indigo-400 uppercase">
-                                    #{{ forloop.counter }}
+                                    #{{ loop.index }}
                                 </div>
                             </div>
                             <div>
@@ -99,7 +99,7 @@
                             </div>
                         </div>
                     </div>
-                    {% empty %}
+                    {% else %}
                     <div class="p-40 text-center opacity-30">
                         <i class="fas fa-database text-6xl mb-6"></i>
                         <p class="text-2xl">ڈیٹا بیس میں کوئی طالب علم نہیں ملا</p>

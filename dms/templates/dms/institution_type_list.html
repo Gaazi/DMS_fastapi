@@ -46,7 +46,7 @@
           <dt class="font-medium text-gray-800">کل آمدنی</dt>
           <dd class="text-green-600 font-semibold">
             {{ inst.currency_label|default_if_none(currency_label) }}
-            {{ inst.total_income|default(0)|floatformat(0) }}
+            {{ inst.total_income|default(0)|int }}
           </dd>
         </div>
 
@@ -54,7 +54,7 @@
           <dt class="font-medium text-gray-800">کل اخراجات</dt>
           <dd class="text-red-600 font-semibold">
             {{ inst.currency_label|default_if_none(currency_label) }}
-            {{ inst.total_expense|default(0)|floatformat(0) }}
+            {{ inst.total_expense|default(0)|int }}
           </dd>
         </div>
 
@@ -67,7 +67,7 @@
                 text-red-600
               {% endif %}">
             {{ inst.currency_label|default_if_none(currency_label) }}
-            {{ inst.balance|default(0)|floatformat(0) }}
+            {{ inst.balance|default(0)|int }}
           </dd>
         </div>
 

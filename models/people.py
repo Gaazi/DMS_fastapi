@@ -61,6 +61,39 @@ class Student(Person, table=True):
     parents: List[Parent] = Relationship(back_populates="students", link_model=StudentParentLink)
     admissions: List["Admission"] = Relationship(back_populates="student")
 
+    # Extra properties for template compatibility (Calculated in routes)
+    @property
+    def month_presents(self) -> int:
+        return getattr(self, "_month_presents", 0)
+    
+    @month_presents.setter
+    def month_presents(self, value):
+        self._month_presents = value
+
+    @property
+    def month_absents(self) -> int:
+        return getattr(self, "_month_absents", 0)
+    
+    @month_absents.setter
+    def month_absents(self, value):
+        self._month_absents = value
+
+    @property
+    def has_pending_fee(self) -> bool:
+        return getattr(self, "_has_pending_fee", False)
+    
+    @has_pending_fee.setter
+    def has_pending_fee(self, value):
+        self._has_pending_fee = value
+
+    @property
+    def month_due_amount(self) -> Decimal:
+        return getattr(self, "_month_due_amount", Decimal("0.00"))
+    
+    @month_due_amount.setter
+    def month_due_amount(self, value):
+        self._month_due_amount = value
+
 class Admission(AuditModel, table=True):
     __tablename__ = "dms_enrollment" # Keeping original table name for data safety
     

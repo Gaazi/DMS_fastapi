@@ -89,7 +89,7 @@
             <!-- Salary Box -->
             <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-center gap-1 shadow-lg">
                 <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">تنخواہ</span>
-                <p dir="rtl" class="text-lg font-bold text-left text-white tabular-nums">Rs: {{ member.base_salary|floatformat(0) }} </p>
+                <p dir="rtl" class="text-lg font-bold text-left text-white tabular-nums">Rs: {{ member.base_salary|int }} </p>
             </div>
 
             <!-- Shift Box -->

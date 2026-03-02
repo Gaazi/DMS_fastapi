@@ -12,7 +12,7 @@
             </div>
              <p class="text-[11px] md:text-sm text-white mb-1">کل اخراجات</p>
             <div class="flex items-baseline gap-1">
-                <h3 class="text-xs md:text-2xl text-white">{{ total_expenses|floatformat(0) }}</h3>
+                <h3 class="text-xs md:text-2xl text-white">{{ total_expenses|int }}</h3>
                 <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
             </div>
         </div>
@@ -28,7 +28,7 @@
             <div class="flex items-baseline gap-1">
                 <h3 class="text-xs md:text-2xl text-white">
                     {% with latest=expenses.0 %}
-                        {% if latest %}{{ latest.amount|floatformat(0) }}{% else %}0{% endif %}
+                        {% if latest %}{{ latest.amount|int }}{% else %}0{% endif %}
                     {% endwith %}
                 </h3>
                 <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
@@ -44,7 +44,7 @@
             </div>
             <p class="text-[11px] md:text-sm text-white mb-1">اوسط</p>
             <div class="flex items-baseline gap-1">
-                <h3 class="text-xs md:text-2xl text-white">{{ average_expense|default(0)|floatformat(0) }}</h3>
+                <h3 class="text-xs md:text-2xl text-white">{{ average_expense|default(0)|int }}</h3>
                 <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
             </div>
         </div>

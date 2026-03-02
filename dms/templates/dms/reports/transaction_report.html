@@ -46,18 +46,18 @@
             <tbody class="text-slate-800">
                 {% for expense in expenses %}
                 <tr class="border-b border-slate-100">
-                    <td class="py-3 px-4 text-center text-slate-400 text-xs">{{ forloop.counter }}</td>
+                    <td class="py-3 px-4 text-center text-slate-400 text-xs">{{ loop.index }}</td>
                     <td class="py-3 px-4 text-sm font-mono">{{ expense.date|date("d/m/Y") }}</td>
                     <td class="py-3 px-4 text-sm font-bold">{{ expense.get_category_display }}</td>
                     <td class="py-3 px-4 text-sm text-slate-600">{{ expense.description|default("-") }}</td>
-                    <td class="py-3 px-4 text-left font-mono font-bold">{{ expense.amount|floatformat(0) }}</td>
+                    <td class="py-3 px-4 text-left font-mono font-bold">{{ expense.amount|int }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr class="bg-slate-50 border-t-2 border-slate-800 font-bold text-lg">
                     <td colspan="4" class="py-4 px-4 text-center nastaliq">کل میزان (Total Expenses)</td>
-                    <td class="py-4 px-4 text-left dir-ltr">{{ total|floatformat(0) }}</td>
+                    <td class="py-4 px-4 text-left dir-ltr">{{ total|int }}</td>
                 </tr>
             </tfoot>
         </table>

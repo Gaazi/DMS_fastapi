@@ -19,7 +19,7 @@
                 {% for donation in donations %}
                 <tr class="hover:bg-gray-50 transition">
                     <td class="py-4 px-6 text-gray-400">
-                        {{ donations.start_index|add(forloop.counter0) }}
+                        {{ donations.start_index|add(loop.index0) }}
                     </td>
                     <td class="py-4 px-6">
                         {% if donation.donor %}
@@ -34,7 +34,7 @@
                         <div class="text-[10px] text-gray-400 mt-0.5">ID: #{{ donation.id }}</div>
                     </td>
                     <td class="py-4 px-6 text-emerald-600">
-                        {{ donation.amount|floatformat(0) }} {{ currency_label }}
+                        {{ donation.amount|int }} {{ currency_label }}
                     </td>
                     <td class="py-4 px-6 text-gray-600">
                         {{ donation.description|default("—") }}
@@ -43,7 +43,7 @@
                         {{ donation.date|date("d M Y") }}
                     </td>
                 </tr>
-                {% empty %}
+                {% else %}
                 <tr>
                     <td colspan="5" class="py-12 text-center text-gray-400">
                         <p>کوئی آمدنی موجود نہیں ہے</p>

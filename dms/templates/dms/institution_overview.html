@@ -41,11 +41,11 @@
     </div>
     <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-2xl shadow-lg p-6">
       <h2 class="text-sm uppercase tracking-wide opacity-80">کل آمدنی</h2>
-      <p class="text-3xl font-semibold mt-2">{{ currency_label }}: {{ totals.income|floatformat(0) }}</p>
+      <p class="text-3xl font-semibold mt-2">{{ currency_label }}: {{ totals.income|int }}</p>
     </div>
     <div class="bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl shadow-lg p-6">
       <h2 class="text-sm uppercase tracking-wide opacity-80">کل اخراجات</h2>
-      <p class="text-3xl font-semibold mt-2">{{ currency_label }}: {{ totals.expense|floatformat(0) }}</p>
+      <p class="text-3xl font-semibold mt-2">{{ currency_label }}: {{ totals.expense|int }}</p>
     </div>
   </div>
 
@@ -102,13 +102,13 @@
         <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
           آمدنی:
           {{ currency_label|default_if_none("") }}
-          {{ item.total_income|floatformat(0) }}
+          {{ item.total_income|int }}
         </span>
 
         <span class="px-3 py-1 rounded-full bg-rose-50 text-rose-700">
           اخراجات:
           {{ currency_label|default_if_none("") }}
-          {{ item.total_expense|floatformat(0) }}
+          {{ item.total_expense|int }}
         </span>
       </div>
 
@@ -137,8 +137,8 @@
             <td class="px-3 py-2 font-semibold text-gray-800">{{ inst.name }}</td>
             <td class="px-3 py-2 text-gray-600">{{ inst.get_type_display }}</td>
             <td class="px-3 py-2 text-gray-500">{{ inst.address|default("—") }}</td>
-            <td class="px-3 py-2 text-emerald-700">{{ currency_label }}: {{ inst.income_total|floatformat(0) }}</td>
-            <td class="px-3 py-2 text-rose-700">{{ currency_label }}: {{ inst.expense_total|floatformat(0) }}</td>
+            <td class="px-3 py-2 text-emerald-700">{{ currency_label }}: {{ inst.income_total|int }}</td>
+            <td class="px-3 py-2 text-rose-700">{{ currency_label }}: {{ inst.expense_total|int }}</td>
             <td class="px-3 py-2 space-x-2 space-x-reverse">
               <a href="{{ url('dashboard', inst.slug) }}" class="text-blue-600 text-sm hover:underline">ڈیش
                 بورڈ</a>
@@ -146,7 +146,7 @@
                 class="text-gray-600 text-sm hover:underline">تفصیل</a>
             </td>
           </tr>
-          {% empty %}
+          {% else %}
           <tr>
             <td colspan="6" class="px-3 py-4 text-center text-gray-500">کوئی ادارہ موجود نہیں ہے۔</td>
           </tr>

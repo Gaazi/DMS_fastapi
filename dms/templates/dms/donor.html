@@ -28,7 +28,7 @@
             <div>
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-1">کل جمع شدہ آمدنی</p>
                 <div class="flex items-baseline gap-2">
-                    <h3 class="text-3xl font-black text-white leading-none">{{ overall_total|floatformat(0) }}</h3>
+                    <h3 class="text-3xl font-black text-white leading-none">{{ overall_total|int }}</h3>
                     <span class="text-[10px] text-slate-400 uppercase">{{ currency_label }}</span>
                 </div>
             </div>

@@ -106,17 +106,17 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
                 <div class="space-y-3">
                     <p class="text-emerald-500 text-xs">کل آمدنی</p>
-                    <p class="text-4xl font-amiri text-white">{{ total_income|default("0")|floatformat(0) }}</p>
+                    <p class="text-4xl font-amiri text-white">{{ total_income|default("0")|int }}</p>
                     <p class="text-[10px] text-slate-500 tracking-widest">{{ currency_label }}</p>
                 </div>
                 <div class="space-y-3 border-r border-white/5 pr-8">
                     <p class="text-rose-500 text-xs">کل اخراجات</p>
-                    <p class="text-4xl text-white">{{ total_expense|default("0")|floatformat(0) }}</p>
+                    <p class="text-4xl text-white">{{ total_expense|default("0")|int }}</p>
                     <p class="text-[10px] text-slate-500 tracking-widest">{{ currency_label }}</p>
                 </div>
                 <div class="space-y-3 border-r border-white/5 pr-8">
                     <p class="text-blue-500 text-xs">نیٹ بیلنس</p>
-                    <p class="text-4xl text-white">{{ total_balance|default("0")|floatformat(0) }}</p>
+                    <p class="text-4xl text-white">{{ total_balance|default("0")|int }}</p>
                     <p class="text-[10px] text-slate-500 tracking-widest">{{ currency_label }}</p>
                 </div>
                 <div class="space-y-3 border-r border-white/5 pr-8">

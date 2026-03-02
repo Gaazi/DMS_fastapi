@@ -14,7 +14,7 @@
         </div>
         <p class="text-[11px] md:text-sm text-white mb-1">کل آمدنی</p>
         <div class="flex items-baseline gap-1 justify-center">
-            <h3 class="text-sm md:text-2xl text-white">{{ total_amount|floatformat(0) }}</h3>
+            <h3 class="text-sm md:text-2xl text-white">{{ total_amount|int }}</h3>
             <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
         </div>
     </a>
@@ -26,7 +26,7 @@
         </div>
         <p class="text-[11px] md:text-sm text-white mb-1">کل اخراجات</p>
         <div class="flex items-baseline gap-1 justify-center">
-            <h3 class="text-sm md:text-2xl text-white">{{ total_expenses|floatformat(0) }}</h3>
+            <h3 class="text-sm md:text-2xl text-white">{{ total_expenses|int }}</h3>
             <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
         </div>
     </a>
@@ -38,7 +38,7 @@
         </div>
         <p class="text-[11px] md:text-sm text-white mb-1">خالص بیلنس</p>
         <div class="flex items-baseline gap-1 justify-center">
-            <h3 class="text-sm md:text-2xl text-white">{{ balance|floatformat(0) }}</h3>
+            <h3 class="text-sm md:text-2xl text-white">{{ balance|int }}</h3>
             <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
         </div>
     </div>

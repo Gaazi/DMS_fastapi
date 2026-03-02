@@ -41,7 +41,7 @@
         <div class="flex flex-col shrink-0 items-center justify-center gap-0.5 ltr:border-r rtl:border-l rtl:border-r-0 border-white/10 relative z-20 w-[45px] md:w-[65px] min-h-[3.5rem] md:h-16 bg-black/20 ltr:rounded-l-lg rtl:rounded-r-lg">
             <div class="flex flex-col items-center">
                 <span class="text-[8px] text-blue-500/50 font-mono uppercase leading-none mb-1 tracking-widest font-black">ID_SEQ</span>
-                <span class="text-sm md:text-lg text-blue-400 font-mono font-black tabular-nums leading-none">{{ forloop.counter|stringformat("02d") }}</span>
+                <span class="text-sm md:text-lg text-blue-400 font-mono font-black tabular-nums leading-none">{{ loop.index|stringformat("02d") }}</span>
             </div>
             <div class="w-6 h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
             <div class="flex flex-col items-center">
@@ -98,7 +98,7 @@
                 <!-- Amount Row -->
                 <div class="flex-1 flex flex-col items-center justify-center mt-1 pt-1">
                     <span class="text-sm md:text-base tabular-nums leading-none {% if member.has_pending_salary %}text-rose-500{% else %}text-white/60{% endif %}">
-                        {% if member.has_pending_salary %}{{ member.month_due_amount|floatformat(0) }}{% else %}
+                        {% if member.has_pending_salary %}{{ member.month_due_amount|int }}{% else %}
                         <i class="fas fa-check-double text-emerald-500/80 text-[10px] md:text-sm"></i>
                         {% endif %}
                     </span>
@@ -122,7 +122,7 @@
             </div>
         </div>
     </div>
-    {% empty %}
+    {% else %}
     <div class="py-24 flex flex-col items-center justify-center text-center px-10">
         <i class="fas fa-user-slash text-2xl text-slate-800 mb-4 animate-pulse"></i>
         <h3 class="text-slate-500 font-urdu">عملے کا کوئی ریکارڈ موجود نہیں ہے</h3>

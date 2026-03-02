@@ -53,7 +53,7 @@
                     <div class="h-px bg-white/5"></div>
                     <div class="flex justify-between items-center">
                         <span class="text-[9px] text-slate-500 uppercase tracking-widest">والٹ بیلنس</span>
-                        <span class="font-bold text-indigo-400 tabular-nums">{{ currency_label }} {{ student.wallet_balance|floatformat(0) }}</span>
+                        <span class="font-bold text-indigo-400 tabular-nums">{{ currency_label }} {{ student.wallet_balance|int }}</span>
                     </div>
                     {% endif %}
                 </div>

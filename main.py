@@ -61,7 +61,8 @@ def get_static_url(path: str) -> str:
     return f"/static/{path}"
 
 def dummy_url(name: str, *args, **kwargs) -> str:
-    # Later we will implement a real URL reverter
+    # Remove quotes if name comes as a string representation
+    name = name.strip("'\"")
     arg_str = "/".join([str(a) for a in args])
     kw_str = "/".join([f"{k}={v}" for k, v in kwargs.items()])
     return f"/{name}/{arg_str}/{kw_str}".strip("/")
@@ -86,6 +87,17 @@ def yesno(value, arg):
 def translate(text):
     return text
 
+def short_id(reg_id):
+    if not reg_id: return ""
+    parts = str(reg_id).split('-')
+    return parts[-1] if parts else reg_id
+
+def split_filter(value, arg):
+    return value.split(arg) if value else []
+
+def dict_key(d, k):
+    return d.get(k) if isinstance(d, dict) else None
+
 templates.env.globals.update(
     static=get_static_url, 
     url=dummy_url,
@@ -94,6 +106,9 @@ templates.env.globals.update(
 )
 templates.env.filters["yesno"] = yesno
 templates.env.filters["translate"] = translate
+templates.env.filters["short_id"] = short_id
+templates.env.filters["split"] = split_filter
+templates.env.filters["dict_key"] = dict_key
 
 @app.get("/")
 async def home(request: Request):

@@ -48,16 +48,16 @@
                         onclick="window.location=this.dataset.url;">
                         <!-- 0. Serial -->
                         <td class="px-2 py-2 md:px-4 md:py-3 text-xs text-slate-600 font-mono">
-                            {{ page_obj.start_index|add(forloop.counter0) }}
+                            {{ page_obj.start_index|add(loop.index0) }}
                         </td>
 
                         <!-- 1. Amount -->
                         <td class="px-2 py-2 md:px-4 md:py-3 font-amiri text-sm md:text-base whitespace-nowrap text-left"
                             dir="ltr">
                             {% if tx.transaction_type == 'income' %}
-                            <span class="text-emerald-400 font-bold">{{ tx.amount|floatformat(0) }}</span>
+                            <span class="text-emerald-400 font-bold">{{ tx.amount|int }}</span>
                             {% else %}
-                            <span class="text-rose-400 font-bold">{{ tx.amount|floatformat(0) }}</span>
+                            <span class="text-rose-400 font-bold">{{ tx.amount|int }}</span>
                             {% endif %}
                         </td>
 
@@ -74,7 +74,7 @@
 
                         <!-- 3. Balance -->
                         <td class="px-2 py-2 md:px-4 md:py-3 font-amiri text-sm md:text-base text-blue-300 whitespace-nowrap text-left"
-                            dir="ltr">Rs: {{ tx.running_balance|floatformat(0)|cut("-") }} </td>
+                            dir="ltr">Rs: {{ tx.running_balance|int|cut("-") }} </td>
 
                         <!-- 4. Date -->
                         <td class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap">
@@ -99,7 +99,7 @@
                             </a>
                         </td>
                     </tr>
-                    {% empty %}
+                    {% else %}
                     <tr>
                         <td colspan="5" class="py-20 text-center opacity-30 text-xs">کوئی ریکارڈ موجود نہیں۔</td>
                     </tr>

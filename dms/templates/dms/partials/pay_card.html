@@ -2,9 +2,9 @@
      x-data="{ 
          paymentMode: 'total',
          selectedFeeId: '{{ first_pending_fee.id|default('') }}',
-         selectedFeeAmount: {{ fee_balance|default(0)|floatformat(0) }},
-         payAmount: {{ fee_balance|default(0)|floatformat(0) }},
-         totalBalance: {{ fee_balance|default(0)|floatformat(0) }},
+         selectedFeeAmount: {{ fee_balance|default(0)|int }},
+         payAmount: {{ fee_balance|default(0)|int }},
+         totalBalance: {{ fee_balance|default(0)|int }},
          
          handlePayEvent(e) {
              if (e.detail && e.detail.feeId) {
@@ -55,7 +55,7 @@
                 <div class="flex items-center justify-center gap-1.5">
                     <span class="text-base sm:text-xl text-slate-400">{{ currency_label }}</span>
                     <span class="text-4xl sm:text-5xl text-slate-800" x-text="totalBalance">
-                        {{fee_balance|default(0)|floatformat(0) }}</span>
+                        {{fee_balance|default(0)|int }}</span>
                 </div>
             </div>
 

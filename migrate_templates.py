@@ -36,19 +36,30 @@ def transform_template(content):
     # 6. Replace {{ block.super }} with {{ super() }}
     content = re.sub(r'\{\{\s*block\.super\s*\}\}', r"{{ super() }}", content)
     
-    # 7. Remove other Django specific tags that might crash Jinja2
+    # 7. Replace {% empty %} with {% else %}
+    content = re.sub(r'\{%\s*empty\s*%\}', r"{% else %}", content)
+    
+    # 8. Replace forloop.counter with loop.index
+    content = re.sub(r'forloop\.counter0', 'loop.index0', content)
+    content = re.sub(r'forloop\.counter', 'loop.index', content)
+
+    # 9. Remove other Django specific tags that might crash Jinja2
     content = re.sub(r'\{%\s*load\s+.*?\s*%\}', '', content)
     
-    # 8. Convert |filter:arg to |filter(arg)
+    # 10. Convert |filter:arg to |filter(arg)
     # Handle single quotes, double quotes, or no quotes
     content = re.sub(r'\|(\w+):([\'"]?)(.*?)\2(\s*[|}]|(?:\s+))', r'|\1(\2\3\2)\4', content)
 
-    # 10. Replace {% comment %} ... {% endcomment %} with {# ... #}
+    # 11. Replace {% comment %} ... {% endcomment %} with {# ... #}
     # This needs to be done carefully for multi-line
     content = re.sub(r'\{%\s*comment\s*%\}(.*?)\{%\s*endcomment\s*%\}', r"{# \1 #}", content, flags=re.DOTALL)
     
-    # 11. Remove any other remaining load tags
+    # 12. Remove any other remaining load tags
     content = re.sub(r'\{%\s*load\s+.*?\s*%\}', '', content)
+
+    # 13. Replace common filters that have different names or need simple transformation
+    content = content.replace('|floatformat(0)', '|int')
+    content = content.replace('|floatformat', '|round')
 
     return content
 

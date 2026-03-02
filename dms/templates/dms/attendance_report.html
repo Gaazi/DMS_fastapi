@@ -93,10 +93,10 @@
                     <div class="space-y-2">
                         <div class="flex justify-between text-[10px] uppercase tracking-widest text-slate-500">
                             <span>{{ item.label }}</span>
-                            <span class="text-white">{{ item.percentage|floatformat(1) }}% ({{ item.count }})</span>
+                            <span class="text-white">{{ item.percentage|round(1) }}% ({{ item.count }})</span>
                         </div>
                         <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" :style="'width: {{ item.percentage|floatformat(1) }}%'"></div>
+                            <div class="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" :style="'width: {{ item.percentage|round(1) }}%'"></div>
                         </div>
                     </div>
                     {% endfor %}
@@ -111,10 +111,10 @@
                     <div class="space-y-2">
                         <div class="flex justify-between text-[10px] uppercase tracking-widest text-slate-500">
                             <span>{{ item.label }}</span>
-                            <span class="text-white">{{ item.percentage|floatformat(1) }}% ({{ item.count }})</span>
+                            <span class="text-white">{{ item.percentage|round(1) }}% ({{ item.count }})</span>
                         </div>
                         <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" :style="'width: {{ item.percentage|floatformat(1) }}%'"></div>
+                            <div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" :style="'width: {{ item.percentage|round(1) }}%'"></div>
                         </div>
                     </div>
                     {% endfor %}
@@ -141,7 +141,7 @@
                             <div class="w-1 h-1 rounded-full bg-rose-500 animate-ping"></div>
                         </div>
                     </div>
-                    {% empty %}
+                    {% else %}
                     <p class="text-sm text-slate-600 text-center py-10 italic">کوئی غیر حاضری ریکارڈ نہیں کی گئی۔</p>
                     {% endfor %}
                 </div>
@@ -164,7 +164,7 @@
                             <div class="w-1 h-1 rounded-full bg-orange-500 animate-ping"></div>
                         </div>
                     </div>
-                    {% empty %}
+                    {% else %}
                     <p class="text-sm text-slate-600 text-center py-10 italic">کوئی غیر حاضری ریکارڈ نہیں کی گئی۔</p>
                     {% endfor %}
                 </div>

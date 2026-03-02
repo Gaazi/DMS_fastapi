@@ -101,7 +101,7 @@
             <a href="{{ url('dms_staff_detail', institution.slug, instructor.id) }}" class="flex items-center gap-1.5 p-1 pt-0.5 rounded-md border border-slate-700 hover:border-slate-400 transition-all cursor-pointer">
                 <span class="text-xs transition-colors">{{ instructor.full_name }}</span>
             </a>
-            {% empty %}
+            {% else %}
             <span class="text-[10px] text-slate-600 italic">کوئی نہیں</span>
             {% endfor %}
           </div>
@@ -172,7 +172,7 @@
                   {% endif %}
                 </td>
               </tr>
-              {% empty %}
+              {% else %}
               <tr>
                 <td colspan="4" class="px-6 py-12 text-center">
                     <div class="flex flex-col items-center justify-center text-slate-600">
@@ -243,7 +243,7 @@
                   </div>
                 </td>
               </tr>
-              {% empty %}
+              {% else %}
               <tr>
                 <td colspan="4" class="px-6 py-12 text-center">
                     <div class="flex flex-col items-center justify-center text-slate-600">

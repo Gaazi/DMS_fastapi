@@ -32,7 +32,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-emerald-400 font-amiri text-lg font-bold">
-                        {{ donor.total|default(0)|floatformat(0) }} <span class="text-[8px] text-slate-600 uppercase tracking-tighter">{{ currency_label }}</span>
+                        {{ donor.total|default(0)|int }} <span class="text-[8px] text-slate-600 uppercase tracking-tighter">{{ currency_label }}</span>
                     </td>
                     <td class="px-10 py-4 text-left">
                         <a href="{{ url('donor_detail', institution.slug, donor.id) }}" 
@@ -42,7 +42,7 @@
                         </a>
                     </td>
                 </tr>
-                {% empty %}
+                {% else %}
                 <tr><td colspan="5" class="py-20 text-center opacity-30 text-xs">کوئی ڈونر موجود نہیں۔</td></tr>
                 {% endfor %}
             </tbody>

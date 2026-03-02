@@ -9,7 +9,7 @@
   <div class="bg-white rounded-2xl shadow-sm border p-6 group hover:border-emerald-500/30 transition-all duration-300">
     <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">کل آمدنی رقم</p>
     <p class="text-3xl text-emerald-600">
-      {{ total_donations|floatformat(0) }}
+      {{ total_donations|int }}
       <span class="text-sm font-normal text-gray-400">{{ currency_label }}</span>
     </p>
   </div>
@@ -18,7 +18,7 @@
   <div class="bg-white rounded-2xl shadow-sm border p-6 group hover:border-blue-500/30 transition-all duration-300">
     <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">اوسط آمدنی</p>
     <p class="text-3xl text-blue-600">
-      {{ average_donation|floatformat(0) }}
+      {{ average_donation|int }}
       <span class="text-sm font-normal text-gray-400">{{ currency_label }}</span>
     </p>
   </div>
@@ -36,7 +36,7 @@
     <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">تازہ ترین رقم</p>
     <p class="text-3xl text-slate-700">
       {% if donations.object_list %}
-        {{ donations.object_list.0.amount|floatformat(0) }}
+        {{ donations.object_list.0.amount|int }}
       {% else %}
         0
       {% endif %}
