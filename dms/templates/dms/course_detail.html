@@ -1,0 +1,391 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} - {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6" dir="rtl">
+
+  <!-- Course Overview Card (Compact Mobile-First) -->
+  <div class="bg-slate-900/50 rounded-xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
+    <div class="p-4 sm:p-6">
+      
+      <!-- Header Row: Title & Actions -->
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold border border-blue-500/20 uppercase tracking-wide">
+              {{ course.get_category_display }}
+            </span>
+            {% if course.is_active %}
+            <span class="flex h-1.5 w-1.5 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+            </span>
+            {% endif %}
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold text-white leading-tight">{{ course.title }}</h1>
+        </div>
+        
+        {% if is_academic_admin %}
+        <!-- Tactical Actions (Compact) -->
+        <div class="flex items-center gap-1.5 shrink-0">
+            <a href="{% url 'dms_course' institution.slug %}?edit={{ course.id }}" 
+               class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all" 
+               title="ترمیم کریں">
+                <i class="fas fa-pen text-[10px]"></i>
+            </a>
+            
+            <form method="post" action="{% url 'dms_course' institution.slug %}" onsubmit="return confirm('کیا آپ واقعی اس کورس کو حذف کرنا چاہتے ہیں؟ اس سے تمام داخلے اور سیشنز بھی حذف ہو جائیں گے۔');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="course_id" value="{{ course.id }}">
+                <button type="submit" 
+                        class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all" 
+                        title="حذف کریں">
+                    <i class="fas fa-trash-alt text-[10px]"></i>
+                </button>
+            </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Description (Truncated/Compact) -->
+      {% if course.description %}
+      <p class="text-slate-400 leading-relaxed text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none">{{ course.description }}</p>
+      {% endif %}
+
+      <!-- Info Grid (Dense) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-500 border-t border-white/5 pt-4">
+        
+        <!-- Timeline -->
+        <div class="col-span-2 md:col-span-2 flex flex-col gap-1">
+            <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">دورانیہ</span>
+            <div class="flex items-center gap-2 text-slate-300">
+                <i class="fas fa-calendar-alt text-slate-500"></i>
+                <span>
+                    {% if course.start_date %}{{ course.start_date|date:"d M Y" }}{% else %}--{% endif %}
+                    <span class="text-slate-600 mx-1">➜</span>
+                    {% if course.end_date %}{{ course.end_date|date:"d M Y" }}{% else %}--{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Schedule -->
+        {% if course.schedule_notes %}
+        <div class="flex flex-col gap-1">
+             <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">شیڈول</span>
+             <div class="flex items-center gap-2 text-slate-300">
+                <i class="fas fa-clock text-slate-500"></i>
+                <span class="truncate">{{ course.schedule_notes }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Capacity -->
+        {% if course.capacity %}
+        <div class="flex flex-col gap-1">
+             <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">گنجائش</span>
+             <div class="flex items-center gap-2 text-slate-300">
+                <i class="fas fa-users text-slate-500"></i>
+                <span>{{ course.capacity }} نشستیں</span>
+            </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Compact Instructors Row -->
+      <div class="mt-4 pt-3 border-t border-white/5 flex items-center gap-3 overflow-x-auto pb-1 no-scrollbar">
+          <span class="text-xs shrink-0">{% if institution.type == 'masjid' %}خدام:{% else %}اساتذہ:{% endif %}</span>
+          <div class="flex flex-wrap items-center gap-2">
+            {% for instructor in course.instructors.all %}
+            <a href="{% url 'dms_staff_detail' institution.slug instructor.id %}" class="flex items-center gap-1.5 p-1 pt-0.5 rounded-md border border-slate-700 hover:border-slate-400 transition-all cursor-pointer">
+                <span class="text-xs transition-colors">{{ instructor.full_name }}</span>
+            </a>
+            {% empty %}
+            <span class="text-[10px] text-slate-600 italic">کوئی نہیں</span>
+            {% endfor %}
+          </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Main Grid Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+    
+    <!-- Left Column: Enrollments & Sessions -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Enrollments Section -->
+      <div class="bg-slate-900/50 rounded-2xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
+        <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <h2 class="text-lg font-bold text-white">اندراج شدہ طلبہ</h2>
+          <span class="px-2.5 py-0.5 rounded-full bg-white/5 text-slate-400 text-xs font-bold border border-white/10">{{ enrollments|length }}</span>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-white/5">
+            <thead class="bg-white/[0.02] text-slate-500 text-xs uppercase font-medium">
+              <tr>
+                <th class="px-4 py-3 text-right">طالب علم</th>
+                <th class="px-4 py-3 text-right">تاریخ</th>
+                <th class="px-4 py-3 text-right">حیثیت</th>
+                <th class="px-4 py-3 text-right print:hidden">عمل</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 bg-transparent text-sm">
+              {% for enrollment in enrollments %}
+              <tr class="hover:bg-white/[0.04] transition-colors group">
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="font-bold text-slate-200">{{ enrollment.student.full_name }}</div>
+                  {% if enrollment.student.mobile %}
+                  <div class="text-[11px] text-slate-500 font-mono mt-0.5">{{ enrollment.student.mobile }}</div>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.enrollment_date|date:"d M Y" }}</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                   {% if is_academic_admin %}
+                   <form method="post" class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="enrollment_update">
+                    <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+                    <select name="status" class="w-full sm:w-auto text-xs border border-white/10 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none bg-white/5 text-slate-300" onchange="this.form.submit()">
+                      {% for value,label in enrollment_status_choices %}
+                      <option value="{{ value }}" {% if enrollment.status == value %}selected{% endif %} class="bg-slate-800 text-slate-300">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </form>
+                  {% else %}
+                  <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px]">{{ enrollment.get_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
+                  {% if is_academic_admin %}
+                  <form method="post" onsubmit="return confirm('کیا آپ واقعی حذف کرنا چاہتے ہیں؟');" class="inline-block">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="enrollment_delete">
+                    <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+                    <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="خارج کریں">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center text-slate-600">
+                        <i class="fas fa-user-graduate text-3xl mb-3 opacity-20"></i>
+                        <p class="text-sm">اس کورس میں ابھی کوئی طالب علم نہیں ہے</p>
+                    </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sessions Section -->
+      <div class="bg-slate-900/50 rounded-2xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
+        <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <h2 class="text-lg font-bold text-white">روزانہ سیشن</h2>
+          <!-- <a href="#" class="text-xs font-semibold text-blue-400 hover:text-blue-300">تمام دیکھیں</a> -->
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-white/5">
+            <thead class="bg-white/[0.02] text-slate-500 text-xs uppercase font-medium">
+              <tr>
+                <th class="px-4 py-3 text-right">تاریخ</th>
+                <th class="px-4 py-3 text-right">اوقات</th>
+                <th class="px-4 py-3 text-right">موضوع</th>
+                <th class="px-4 py-3 text-right print:hidden">عمل</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 bg-transparent text-sm">
+              {% for session in sessions %}
+              <tr class="hover:bg-white/[0.04] transition-colors group">
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="font-bold text-slate-200 font-mono">{{ session.date|date:"d M, Y" }}</div>
+                  <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{{ session.get_session_type_display }}</div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">
+                  {% if session.start_time %}
+                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.start_time|time:"H:i" }}</span>
+                    {% if session.end_time %}
+                    <span class="text-slate-600 mx-1">-</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.end_time|time:"H:i" }}</span>
+                    {% endif %}
+                  {% else %}
+                  <span class="text-slate-600">—</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-slate-300">{{ session.topic|default:"—"|truncatechars:30 }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
+                  <div class="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <a href="{% url 'dms_session_attendance' institution.slug session.id %}"
+                        class="p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all" title="حاضری لگائیں">
+                        <i class="fas fa-clipboard-check"></i>
+                      </a>
+                      {% if is_academic_admin %}
+                      <form method="post" onsubmit="return confirm('سیشن حذف کرنا چاہتے ہیں؟');" class="inline-block">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="session_delete">
+                        <input type="hidden" name="session_id" value="{{ session.id }}">
+                        <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="حذف کریں">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </form>
+                      {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center text-slate-600">
+                        <i class="fas fa-calendar-times text-3xl mb-3 opacity-20"></i>
+                        <p class="text-sm">کوئی سیشن شیڈول نہیں ہے</p>
+                    </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {% if is_academic_admin %}
+    <!-- Right Column: Actions Forms (Sidebar) -->
+    <div class="space-y-6 sticky top-6">
+      
+      <!-- Add Student Form -->
+      <div class="bg-slate-900/50 rounded-2xl shadow-lg border border-white/10 p-5 sm:p-6 relative overflow-hidden group backdrop-blur-sm">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:scale-110"></div>
+        
+        <h2 class="text-lg font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm shadow-sm border border-emerald-500/30">
+                <i class="fas fa-user-plus"></i>
+            </span>
+            طالب علم شامل کریں
+        </h2>
+        
+        <form method="post" class="space-y-4 relative z-10">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="enroll">
+          
+          <div class="space-y-1">
+             <label class="block text-xs font-semibold text-slate-400">طالب علم منتخب کریں</label>
+             {{ enrollment_form.student }}
+             {% if enrollment_form.student.errors %}
+                <p class="text-xs text-rose-500 mt-1">{{ enrollment_form.student.errors.0 }}</p>
+             {% endif %}
+          </div>
+          
+          <div class="space-y-1">
+                <label class="block text-xs font-semibold text-slate-400">تاریخ داخلہ</label>
+                {{ enrollment_form.enrollment_date }}
+           </div>
+
+          <button type="submit"
+            class="w-full h-11 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 font-medium active:scale-95 border border-white/10">
+            <i class="fas fa-check"></i> کورس میں داخل کریں
+          </button>
+        </form>
+      </div>
+
+      <!-- Schedule Session Form -->
+      <div class="bg-slate-900/50 rounded-2xl shadow-lg border border-white/10 p-5 sm:p-6 relative overflow-hidden group backdrop-blur-sm">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:scale-110"></div>
+        
+        <h2 class="text-lg font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+             <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm shadow-sm border border-blue-500/30">
+                <i class="fas fa-calendar-plus"></i>
+            </span>
+            نیا سیشن
+        </h2>
+        
+        <form method="post" class="space-y-4 relative z-10">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="session">
+          
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-slate-400">تاریخ</label>
+            {{ session_form.date }}
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="block text-xs font-semibold text-slate-400">شروع وقت</label>
+                {{ session_form.start_time }}
+              </div>
+              <div class="space-y-1">
+                <label class="block text-xs font-semibold text-slate-400">اختتام وقت</label>
+                {{ session_form.end_time }}
+              </div>
+          </div>
+          
+           <div class="space-y-1">
+            <label class="block text-xs font-semibold text-slate-400">موضوع / عنوان</label>
+            {{ session_form.topic }}
+          </div>
+           <div class="space-y-1">
+            <label class="block text-xs font-semibold text-slate-400">قسم</label>
+            {{ session_form.session_type }}
+          </div>
+
+          <button type="submit" class="w-full h-11 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 font-medium active:scale-95 border border-white/10">
+             <i class="fas fa-calendar-check"></i> شیڈول کریں
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+    /* Custom Scrollbar for tables */
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 6px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Input Styling Override - Dark Mode */
+    input[type="text"], input[type="date"], input[type="time"], select, textarea {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        color: #e2e8f0;
+        transition: all 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+    /* Select Options */
+    option {
+        background-color: #0f172a;
+        color: #e2e8f0;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,78 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load socialaccount %}
+
+{% block title %}لاگ اِن - DMS{% endblock %}
+
+{% block body_structure %}
+<div class="min-h-screen flex items-center justify-center relative bg-slate-950">
+
+    <!-- ✅ Only Login Card -->
+    <div class="relative z-10 w-full max-w-sm px-6">
+        <div class="glass-card rounded-[2.5rem] p-8 md:p-10 shadow-2xl animate-fade-in-up">
+
+            <div class="flex justify-center mb-8">
+                <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg text-3xl text-white">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+            </div>
+
+            <h1 class="text-2xl text-center text-white mb-2 font-mehr">خوش آمدید</h1>
+            <p class="text-slate-400 text-center text-sm mb-8 font-mehr">
+                براہ کرم اپنا اکاؤنٹ لاگ ان کریں
+            </p>
+
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+
+                <div class="space-y-1">
+                    <label class="text-xs text-slate-400 font-mehr">
+                        یوزر نیم یا ای میل آئی ڈی درج کریں
+                    </label>
+                    {{ form.username|add_class:"glass-input text-left ltr font-mehr" }}
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs text-slate-400 font-mehr">
+                        پاس ورڈ درج کریں
+                    </label>
+                    {{ form.password|add_class:"glass-input text-left ltr font-mehr" }}
+                </div>
+
+                <button type="submit"
+                    class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:scale-[1.02] active:scale-95 transition-all font-mehr font-bold">
+                    لاگ ان کریں
+                </button>
+            </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-white/10"></div>
+                    </div>
+                    <div class="relative flex justify-center text-xs">
+                        <span class="px-2 bg-transparent text-slate-500 font-mehr">یا</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a href="{% provider_login_url 'google' process='login' %}" 
+                       class="w-full flex items-center justify-center gap-3 bg-white text-slate-700 hover:bg-slate-50 font-bold text-sm py-3 px-4 rounded-xl transition-all shadow-lg active:scale-95 font-mehr">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                        <span>Google سے لاگ ان کریں</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-5 border-t border-white/10 text-center">
+                <p class="text-sm text-slate-400 font-mehr">اکاؤنٹ نہیں ہے؟ 
+                    <a href="{% url 'dms_signup' %}" class="text-blue-400 hover:text-blue-300 font-bold transition-colors mr-1">نیا اکاؤنٹ بنائیں</a>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

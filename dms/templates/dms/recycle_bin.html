@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}آرکائیو - {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl text-amber-600">
+            <i class="fas fa-archive ml-2"></i> آرکائیو (Archive)
+        </h1>
+        <a href="{% url 'dashboard' institution.slug %}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition">
+            <i class="fas fa-arrow-right ml-2"></i> واپسی ڈیش بورڈ
+        </a>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl text-amber-800 text-sm">
+        <i class="fas fa-info-circle ml-2"></i> یہاں وہ ریکارڈز موجود ہیں جو حذف کیے گئے ہیں۔ آپ انہیں دوبارہ فعال (Restore) کر سکتے ہیں یا ہمیشہ کے لیے ختم کر سکتے ہیں۔
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-right">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">حذف کرنے کا وقت</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">ریکارڈ</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">قسم (Model)</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600 text-center">ایکشن</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for item in trash_items %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-sm text-gray-500 font-sans">{{ item.deleted_at|date:"d M Y, h:i A" }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ item.repr }}</td>
+                        <td class="px-6 py-4 text-xs text-gray-500 font-sans uppercase">{{ item.model }}</td>
+                        <td class="px-6 py-4 flex justify-center space-x-2 space-x-reverse">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="restore">
+                                <input type="hidden" name="model_path" value="{{ item.model_path }}">
+                                <input type="hidden" name="object_id" value="{{ item.id }}">
+                                <button type="submit" class="bg-green-50 text-green-700 hover:bg-green-100 px-3 py-1.5 rounded-lg text-sm transition">
+                                    <i class="fas fa-undo ml-1"></i> بحال کریں
+                                </button>
+                            </form>
+                            <form method="post" onsubmit="return confirm('کیا آپ واقعی اسے ہمیشہ کے لیے ختم کرنا چاہتے ہیں؟');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_permanent">
+                                <input type="hidden" name="model_path" value="{{ item.model_path }}">
+                                <input type="hidden" name="object_id" value="{{ item.id }}">
+                                <button type="submit" class="bg-red-50 text-red-700 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm transition">
+                                    <i class="fas fa-times ml-1"></i> مکمل حذف
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-20 text-center">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-archive text-gray-200 text-5xl mb-4"></i>
+                                <span class="text-gray-400">آرکائیو خالی ہے۔</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

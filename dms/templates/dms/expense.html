@@ -1,0 +1,59 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ institution.name }} - اخراجات کا ریکارڈ{% endblock %}
+
+{% block content %}
+<div class="relative z-10" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+
+    <!-- Dynamic Statistics -->
+    <section class="mb-12" x-show="loaded" x-transition:enter="transition delay-[200ms] duration-1000">
+        {% include 'dms/partials/finance_summary_unified.html' %}
+    </section>
+
+    <!-- Transaction Table -->
+    <section class="glass-card rounded-3xl overflow-hidden shadow-2xl" 
+             x-show="loaded" x-transition:enter="transition delay-[400ms] duration-1000">
+        
+        <div class="px-6 py-6 border-b border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400 text-xl border border-rose-500/20 shadow-inner">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl text-white">تفصیلی ریکارڈ</h2>
+                    <p class="text-[9px] text-slate-500 uppercase tracking-[0.2em]">Verified Ledger History</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="{% url 'transaction_report' institution.slug %}" target="_blank" 
+                   class="px-4 py-2 bg-blue-500/10 text-blue-400 rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500/20 transition-all border border-blue-500/20 flex items-center gap-2">
+                    <i class="fas fa-print"></i> Transaction Report
+                </a>
+                <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-[9px] text-slate-400 uppercase tracking-widest leading-none">
+                    Total Records: {{ expenses.paginator.count }}
+                </div>
+                <button hx-get="{% url 'expense' institution.slug %}" 
+                        hx-target="#expense-table-container" 
+                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-rose-400 transition-all border border-white/5">
+                    <i class="fas fa-sync-alt text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="expense-table-wrapper" 
+             hx-get="{% url 'expense' institution.slug %}" 
+             hx-trigger="expenseCreated from:body"
+             hx-swap="innerHTML">
+            {% include 'dms/partials/expense_table_partial.html' %}
+        </div>
+    </section>
+
+    <!-- Premium Footer Area -->
+    <footer class="text-center py-20 opacity-30">
+        <p class="text-[10px] text-slate-500 uppercase tracking-[0.5em]">
+            Secure Financial Infrastructure • Expenses Control 2026
+        </p>
+    </footer>
+</div>
+{% endblock %}

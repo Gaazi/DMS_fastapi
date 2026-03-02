@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ donor.name }} - آمدنی کا ریکارڈ{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10" dir="rtl">
+
+  <div class="flex items-center justify-between mb-6">
+    <a href="{% url 'donor' institution.slug %}"
+      class="text-sm text-gray-500 hover:text-gray-700 transition">
+      ← ڈونر لسٹ میں واپس جائیں
+    </a>
+    
+    <div class="flex items-center gap-3">
+        <a href="{% url 'donor_edit' institution.slug donor.id %}" 
+           class="px-3 py-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 transition" title="معلومات میں ترمیم کریں">
+           <i class="fas fa-edit"></i>
+        </a>
+        <a href="{% url 'donor_delete' institution.slug donor.id %}" 
+           class="px-3 py-2 bg-white border border-gray-200 text-rose-600 text-sm font-medium rounded-lg shadow-sm hover:bg-rose-50 transition" title="ڈونر کو حذف کریں">
+           <i class="fas fa-trash"></i>
+        </a>
+        <a href="{% url 'income_create' institution.slug %}?donor={{ donor.id }}"
+          class="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg shadow hover:bg-emerald-600 transition">
+          آمدنی درج کریں
+        </a>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+    <!-- Header Section -->
+    <div class="p-6 border-b bg-gray-50/50">
+      <h1 class="text-2xl text-gray-800 mb-4">{{ donor.name }}</h1>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-4 bg-white rounded-xl border shadow-sm">
+          <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">کل رقم</p>
+          <p class="text-2xl text-emerald-600">
+            {{ total_amount|floatformat:0 }}
+            <span class="text-sm font-normal text-gray-400">{{ currency_label|default:"Rs" }}</span>
+          </p>
+        </div>
+
+        <div class="p-4 bg-white rounded-xl border shadow-sm">
+          <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">رابطہ نمبر</p>
+          <p class="text-lg font-medium text-gray-700">{{ donor.phone|default:"—" }}</p>
+        </div>
+
+        <div class="p-4 bg-white rounded-xl border shadow-sm">
+          <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">ای میل</p>
+          <p class="text-lg font-medium text-gray-700">{{ donor.email|default:"—" }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Donations Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm text-right">
+        <thead class="bg-gray-50 text-gray-400 uppercase text-xs border-b">
+          <tr>
+            <th class="py-4 px-6 font-semibold">#</th>
+            <th class="py-4 px-6 font-semibold">رقم</th>
+            <th class="py-4 px-6 font-semibold">تفصیل</th>
+            <th class="py-4 px-6 font-semibold text-left">تاریخ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {% for donation in donations %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="py-4 px-6 text-gray-400">{{ forloop.counter }}</td>
+            <td class="py-4 px-6 text-emerald-600">
+              {{ donation.amount|floatformat:0 }} {{ currency_label|default:"Rs" }}
+            </td>
+            <td class="py-4 px-6 text-gray-600">{{ donation.description|default:"—" }}</td>
+            <td class="py-4 px-6 text-gray-500 text-left">{{ donation.date|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="py-12 text-center text-gray-400">
+              اس ڈونر کے لئے ابھی کوئی رقم درج نہیں ہوئی۔
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

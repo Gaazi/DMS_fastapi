@@ -1,0 +1,54 @@
+{% load static %}
+
+<!-- Summary Stats Partial -->
+<section id="balance-summary-stats" 
+         class="grid grid-cols-4 gap-2 md:gap-4 mb-12" 
+         hx-get="{% url 'balance' institution.slug %}" 
+         hx-trigger="every 30s, incomeCreated from:body, expenseCreated from:body" 
+         hx-swap="outerHTML">
+    
+    <!-- Total Income -->
+    <a href="{% url 'income' institution.slug %}" class="glass-card rounded-2xl p-3 md:p-6 text-center group hover:bg-white/[0.07] hover:-translate-y-1 transition-all duration-300 border border-white/10 hover:border-emerald-500/30 block cursor-pointer">
+        <div class="w-8 h-8 md:w-12 md:h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400 mb-2 border border-emerald-500/20 mx-auto group-hover:scale-110 transition-transform">
+            <i class="fas fa-coins text-xs md:text-lg"></i>
+        </div>
+        <p class="text-[11px] md:text-sm text-white mb-1">کل آمدنی</p>
+        <div class="flex items-baseline gap-1 justify-center">
+            <h3 class="text-sm md:text-2xl text-white">{{ total_amount|floatformat:0 }}</h3>
+            <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
+        </div>
+    </a>
+
+    <!-- Total Expenses -->
+    <a href="{% url 'expense' institution.slug %}" class="glass-card rounded-2xl p-3 md:p-6 text-center group hover:bg-white/[0.07] hover:-translate-y-1 transition-all duration-300 border border-white/10 hover:border-rose-500/30 block cursor-pointer">
+        <div class="w-8 h-8 md:w-12 md:h-12 bg-rose-500/10 rounded-lg flex items-center justify-center text-rose-400 mb-2 border border-rose-500/20 mx-auto group-hover:scale-110 transition-transform">
+            <i class="fas fa-money-bill-wave text-xs md:text-lg"></i>
+        </div>
+        <p class="text-[11px] md:text-sm text-white mb-1">کل اخراجات</p>
+        <div class="flex items-baseline gap-1 justify-center">
+            <h3 class="text-sm md:text-2xl text-white">{{ total_expenses|floatformat:0 }}</h3>
+            <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
+        </div>
+    </a>
+
+    <!-- Net Balance -->
+    <div class="glass-card rounded-2xl p-3 md:p-6 text-center group border border-white/10 shadow-[0_20px_40px_rgba(59,130,246,0.05)]">
+        <div class="w-8 h-8 md:w-12 md:h-12 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-400 mb-2 border border-blue-500/20 mx-auto">
+            <i class="fas fa-university text-xs md:text-lg"></i>
+        </div>
+        <p class="text-[11px] md:text-sm text-white mb-1">خالص بیلنس</p>
+        <div class="flex items-baseline gap-1 justify-center">
+            <h3 class="text-sm md:text-2xl text-white">{{ balance|floatformat:0 }}</h3>
+            <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
+        </div>
+    </div>
+
+    <!-- Total Entries -->
+    <div class="glass-card rounded-2xl p-3 md:p-6 text-center group border border-white/10">
+        <div class="w-8 h-8 md:w-12 md:h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400 mb-2 border border-indigo-500/20 mx-auto">
+            <i class="fas fa-list-ol text-xs md:text-lg"></i>
+        </div>
+        <p class="text-[11px] md:text-sm text-white mb-1">کل اندراجات</p>
+        <h3 class="text-sm md:text-2xl text-white">{{ total_entries }}</h3>
+    </div>
+</section>

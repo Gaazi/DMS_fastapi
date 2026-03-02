@@ -1,0 +1,95 @@
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    brand: {
+                        50: '#f0f9ff',
+                        100: '#e0f2fe',
+                        500: '#0ea5e9',
+                        600: '#0284c7',
+                        700: '#0369a1',
+                        800: '#075985',
+                        900: '#0c4a6e',
+                    },
+                },
+                fontFamily: {
+                    nastaliq: ['"Noto Nastaliq Urdu"', 'serif'],
+                    arabic: ['"Noto Sans Arabic"', 'sans-serif'],
+                    mehr: ['"Mehr"', '"Noto Nastaliq Urdu"', 'serif'],
+                },
+                boxShadow: {
+                    soft: '0 4px 6px -1px rgba(0,0,0,.05), 0 2px 4px -1px rgba(0,0,0,.03)',
+                    glass: '0 8px 32px 0 rgba(31,38,135,.15)',
+                }
+            },
+        },
+    };
+</script>
+
+<style>
+    body {
+        font-family: 'Mehr', 'Noto Nastaliq Urdu', 'Noto Sans Arabic', sans-serif;
+        background-color: #f3f4f6;
+        line-height: 1.8;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .hero-pattern {
+        background-color: #1e293b;
+        background-image:
+            radial-gradient(at 0% 0%, rgba(14, 165, 233, .25) 0, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(99, 102, 241, .25) 0, transparent 50%),
+            url("data:image/svg+xml,%3Csvg ... %3E");
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, .1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, .18);
+    }
+
+    .nav-link {
+        padding: .5rem 1rem;
+        border-radius: 9999px;
+        transition: all .3s ease;
+        font-size: .95rem;
+    }
+
+    .nav-link:hover {
+        background: rgba(255, 255, 255, .15);
+        transform: translateY(-1px);
+    }
+
+    .feature-icon {
+        transition: transform .3s ease;
+    }
+
+    .hover-card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+</style>

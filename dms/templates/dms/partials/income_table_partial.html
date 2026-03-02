@@ -1,0 +1,78 @@
+<div id="income-table-container">
+    <div class="px-6 py-4 border-b bg-gray-50/50 flex items-center justify-between">
+        <h2 class="font-bold text-gray-800">حالیہ ریکارڈز</h2>
+        <div class="text-xs text-gray-400">صفحہ {{ donations.number }} از {{ donations.paginator.num_pages }}</div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-right">
+            <thead class="bg-gray-50 text-gray-400 uppercase text-xs border-b">
+                <tr>
+                    <th class="py-4 px-6">#</th>
+                    <th class="py-4 px-6">ڈونر / ذریعہ</th>
+                    <th class="py-4 px-6">رقم</th>
+                    <th class="py-4 px-6">تفصیل</th>
+                    <th class="py-4 px-6 text-left">تاریخ</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for donation in donations %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="py-4 px-6 text-gray-400">
+                        {{ donations.start_index|add:forloop.counter0 }}
+                    </td>
+                    <td class="py-4 px-6">
+                        {% if donation.donor %}
+                        <a href="{% url 'donor_detail' institution.slug donation.donor.id %}"
+                            class="font-bold text-indigo-600 hover:underline">
+                            {{ donation.donor.name }}
+                        </a>
+                        {% else %}
+                        <span class="font-medium text-gray-700">{{ donation.get_source_display|default:donation.source
+                            }}</span>
+                        {% endif %}
+                        <div class="text-[10px] text-gray-400 mt-0.5">ID: #{{ donation.id }}</div>
+                    </td>
+                    <td class="py-4 px-6 text-emerald-600">
+                        {{ donation.amount|floatformat:0 }} {{ currency_label }}
+                    </td>
+                    <td class="py-4 px-6 text-gray-600">
+                        {{ donation.description|default:"—" }}
+                    </td>
+                    <td class="py-4 px-6 text-gray-500 text-left">
+                        {{ donation.date|date:"d M Y" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="py-12 text-center text-gray-400">
+                        <p>کوئی آمدنی موجود نہیں ہے</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if donations.has_other_pages %}
+    <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center text-sm" dir="ltr">
+        <div class="text-gray-500">
+            Showing {{ donations.start_index }} to {{ donations.end_index }} of {{ donations.paginator.count }}
+        </div>
+        <div class="flex gap-2">
+            {% if donations.has_previous %}
+            <a href="?page={{ donations.previous_page_number }}" hx-get="?page={{ donations.previous_page_number }}"
+                hx-target="#income-table-container" hx-swap="outerHTML" hx-push-url="true"
+                class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 transition shadow-sm">Previous</a>
+            {% endif %}
+
+            {% if donations.has_next %}
+            <a href="?page={{ donations.next_page_number }}" hx-get="?page={{ donations.next_page_number }}"
+                hx-target="#income-table-container" hx-swap="outerHTML" hx-push-url="true"
+                class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 transition shadow-sm">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

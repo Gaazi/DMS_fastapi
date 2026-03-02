@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account Management | Supervisor{% endblock %}
+
+{% block content %}
+<section class="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-slate-950 text-slate-200" x-data="{ tab: 'active', loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+    
+    <div class="max-w-7xl mx-auto space-y-8" 
+         x-show="loaded" 
+         x-transition:enter="transition duration-700 ease-out" 
+         x-transition:enter-start="opacity-0 translate-y-4">
+        
+        <!-- Header & Back Button -->
+        <div class="flex items-center justify-between">
+            <div>
+                <a href="{% url 'dashboard' institution.slug %}" class="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-400 transition-colors mb-2">
+                    <i class="fas fa-arrow-left text-xs"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-widest">Dashboard</span>
+                </a>
+                <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight">پورٹل اکاؤنٹس کنٹرول پینل</h1>
+                <p class="text-slate-400 text-sm mt-1 font-urdu">مجموعی لاگ ان اکاؤنٹس: {{ total }}</p>
+            </div>
+            
+            <div class="flex bg-white/5 border border-white/10 rounded-xl p-1 shadow-inner">
+                <button @click="tab = 'active'" :class="tab === 'active' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all">
+                    فعال (Active)
+                </button>
+                <button @click="tab = 'inactive'" :class="tab === 'inactive' ? 'bg-rose-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
+                    غیر فعال
+                    {% if inactive_users.count > 0 %}
+                    <span class="w-4 h-4 rounded-full bg-white/20 text-[9px] flex items-center justify-center">{{ inactive_users.count }}</span>
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+
+        <!-- System Alerts -->
+        {% if messages %}
+        <div class="space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-2xl flex items-center gap-3 backdrop-blur-sm shadow-xl {% if message.tags == 'error' %}bg-rose-500/10 border border-rose-500/20 text-rose-400{% elif message.tags == 'warning' %}bg-amber-500/10 border border-amber-500/20 text-amber-400{% else %}bg-emerald-500/10 border border-emerald-500/20 text-emerald-400{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+                <p class="text-sm font-medium">{{ message }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Tab 1: INACTIVE USERS (The Khana) -->
+        <div x-show="tab === 'inactive'" x-transition.opacity.duration.300ms class="space-y-4">
+            
+            <div class="bg-rose-500/5 border border-rose-500/10 rounded-2xl p-5 mb-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 shrink-0">
+                        <i class="fas fa-trash-alt text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-rose-400 font-bold mb-1">کلین اپ (Cleanup) زون</h3>
+                        <p class="text-xs text-rose-300/70 font-urdu leading-relaxed">
+                            یہ وہ اکاؤنٹس ہیں جو سسٹم میں موجود تو ہیں لیکن "غیر فعال" ہیں۔ اگر آپ کو ان کی مزید ضرورت نہیں ہے،
+                            تو ان کا پرانا لاگ ان مکمل ڈیلیٹ کر دیں تاکہ سسٹم سے فالتو بوجھ کم ہو۔ ڈیلیٹ کرنے سے ان کی پروفائل یا پرانا ریکارڈ ضائع نہیں ہوگا۔
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for acc in inactive_users %}
+                <div class="bg-white/[0.02] border border-white/5 shadow-xl hover:border-white/10 transition-colors p-5 rounded-3xl relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3 w-full">
+                            <div class="w-10 h-10 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center text-rose-500 shrink-0">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                            <div class="w-full">
+                                <div class="flex items-start justify-between">
+                                    <h4 class="text-white font-bold leading-tight uppercase font-mono">{{ acc.username }}</h4>
+                                    
+                                    {% if not acc.last_login %}
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">Never Logged In</span>
+                                    {% endif %}
+                                </div>
+                                <span class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">ID: {{ acc.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-black/20 rounded-xl p-3 border border-white/5 mb-4">
+                        {% if acc.staff %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 ملازم: <span class="text-white">{{ acc.staff.name }}</span></p>{% endif %}
+                        {% if acc.student %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 طالبعلم: <span class="text-white">{{ acc.student.name }}</span></p>{% endif %}
+                        {% if acc.parent %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 سرپرست: <span class="text-white">{{ acc.parent.name }}</span></p>{% endif %}
+                        
+                        <div class="mt-2 pt-2 border-t border-white/5 flex items-center gap-2">
+                            <i class="far fa-clock text-[9px] text-slate-500"></i>
+                            <span class="text-[10px] text-slate-400">
+                                {% if acc.last_login %}
+                                آخری لاگ ان: <span class="text-indigo-400" title="{{ acc.last_login }}">{{ acc.last_login|timesince }} پہلے</span>
+                                {% else %}
+                                <span class="text-rose-400 font-bold">یہ یوزر کبھی لاگ ان نہیں ہوا</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end gap-2 mt-6">
+                        <form method="post" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="activate">
+                            <input type="hidden" name="user_id" value="{{ acc.id }}">
+                            <button class="h-8 px-3 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 font-bold text-xs transition-colors">
+                                بحال کریں
+                            </button>
+                        </form>
+                        
+                        <form method="post" class="inline" onsubmit="return confirm('کیا آپ واقعی یہ اکاؤنٹ ڈیلیٹ کرنا چاہتے ہیں؟');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="user_id" value="{{ acc.id }}">
+                            <button class="h-8 w-8 flex items-center justify-center rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors" title="ہمیشہ کے لیے ڈیلیٹ">
+                                <i class="fas fa-trash-alt text-[10px]"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full py-12 text-center text-slate-500 border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
+                    <i class="fas fa-check-circle text-3xl mb-3 text-emerald-500/40"></i>
+                    <p class="font-bold text-sm">کوئی غیر فعال اکاؤنٹ موجود نہیں</p>
+                    <p class="text-xs opacity-70 mt-1 font-urdu">سسٹم بالکل صاف ہے!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab 2: ACTIVE USERS -->
+        <div x-show="tab === 'active'" x-transition.opacity.duration.300ms class="space-y-4">
+            
+            <!-- Smart Auto Cleanup Banner -->
+            <div class="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-5 mb-6 flex items-center justify-between shadow-xl">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0 shadow-[inset_0_0_15px_rgba(99,102,241,0.2)]">
+                        <i class="fas fa-robot text-lg"></i>
+                    </div>
+                    <div class="max-w-xl">
+                        <h3 class="text-indigo-400 font-bold mb-1">سمارٹ ماہانہ صفائی (Role-Based Auto Cleanup)</h3>
+                        <p class="text-[11px] text-indigo-300/70 font-urdu leading-relaxed">
+                            روبوٹک صفائی: اساتذہ (3 ماہ)، طلبہ (6 ماہ) اور والدین (12 ماہ) کی غیر فعالیت پر اکاؤنٹ **معطل** کر دیتا ہے۔ مزید یہ کہ جو اکاؤنٹ مصلحت کے تحت معطل کیے گئے ہوں لیکن **18 ماہ** تک دوبارہ استعمال نہ ہوں، انہیں سسٹم سے **مستقل ڈیلیٹ** کر دیا جاتا ہے۔ (اصلی ریکارڈ محفوظ رہے گا)
+                        </p>
+                    </div>
+                </div>
+                
+                <form method="post" onsubmit="return confirm('تنبیہ: یہ روبوٹ تمام ڈورمنٹ (غائب) صارفین کو خود بخود غیر فعال کر دے گا۔ کیا آپ تیار ہیں؟');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="auto_cleanup">
+                    <button class="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs transition-colors shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fas fa-magic"></i>
+                        آٹو کلین اَپ چلائیں
+                    </button>
+                </form>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for acc in active_users %}
+                <div class="bg-white/[0.02] border border-white/5 shadow-xl hover:border-white/10 transition-colors p-5 rounded-3xl relative overflow-hidden group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center text-emerald-400 shadow-[inset_0_0_15px_rgba(16,185,129,0.1)]">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold leading-tight uppercase font-mono">{{ acc.username }}</h4>
+                                <span class="text-[9px] text-emerald-400 font-bold tracking-widest uppercase flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    Online / Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-black/20 rounded-xl p-3 border border-white/5 mb-4">
+                        {% if acc.staff %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 ملازم: <span class="text-white">{{ acc.staff.name }}</span></p>{% endif %}
+                        {% if acc.student %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 طالبعلم: <span class="text-white">{{ acc.student.name }}</span></p>{% endif %}
+                        {% if acc.parent %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 سرپرست: <span class="text-white">{{ acc.parent.name }}</span></p>{% endif %}
+                        
+                        <div class="mt-2 pt-2 border-t border-white/5 flex items-center gap-2">
+                            <i class="far fa-clock text-[9px] text-slate-500"></i>
+                            <span class="text-[10px] text-slate-400">
+                                {% if acc.last_login %}
+                                آخری لاگ ان: <span class="text-indigo-400" title="{{ acc.last_login }}">{{ acc.last_login|timesince }} پہلے</span>
+                                {% else %}
+                                <span class="text-rose-400 font-bold">یہ یوزر کبھی لاگ ان نہیں ہوا</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-4 pt-4 border-t border-white/5">
+                        {% if acc.id == institution.user_id %}
+                            <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded text-[10px] font-bold uppercase tracking-widest border border-indigo-500/30">👑 Institution Owner (Protected)</span>
+                        {% else %}
+                        <form method="post" class="inline" onsubmit="return confirm('کیا آپ اس اکاؤنٹ کو عارضی طور پر بند (Suspend) کرنا چاہتے ہیں؟');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="deactivate">
+                            <input type="hidden" name="user_id" value="{{ acc.id }}">
+                            <button class="h-8 px-4 flex items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20 hover:bg-amber-500/20 transition-colors text-[10px] uppercase tracking-wide gap-2">
+                                <i class="fas fa-ban"></i>
+                                Suspend Account
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full py-8 text-center text-slate-500">
+                    <p class="font-bold text-sm">کوئی فعال اکاؤنٹ نہیں ہے۔</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

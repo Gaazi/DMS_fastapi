@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ institution.name }} - تمام عطیہ دہندگان{% endblock %}
+
+{% block content %}
+<div class="relative z-10" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+    
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" x-show="loaded" x-transition:enter="transition delay-[200ms] duration-1000">
+        <div class="glass-card rounded-[2rem] p-8 border border-white/10 flex items-center gap-6">
+            <div class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                <i class="fas fa-users text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-1">کل عطیہ دہندگان</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-3xl font-black text-white leading-none">{{ total_count }}</h3>
+                    <span class="text-[10px] text-slate-400 uppercase">افراد</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-[2rem] p-8 border border-white/10 flex items-center gap-6">
+            <div class="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                <i class="fas fa-hand-holding-heart text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-1">کل جمع شدہ آمدنی</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-3xl font-black text-white leading-none">{{ overall_total|floatformat:0 }}</h3>
+                    <span class="text-[10px] text-slate-400 uppercase">{{ currency_label }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-[2rem] p-8 border border-white/10 flex items-center justify-between">
+            <div class="space-y-1">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-black">سیکیورٹی لیول</p>
+                <h3 class="text-lg font-black text-emerald-500 flex items-center gap-2">
+                    <i class="fas fa-shield-halved"></i>
+                    تھریٹ لیول: محفوظ
+                </h3>
+            </div>
+            <div class="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div class="w-full h-full bg-emerald-500 animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Directory Card -->
+    <div class="glass-card rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl mb-12"
+         x-show="loaded" x-transition:enter="transition delay-[400ms] duration-1000">
+        
+        <div class="px-10 py-8 border-b border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/[0.02]">
+            <div class="flex items-center gap-5">
+                <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-400 border border-white/10 shadow-inner">
+                    <i class="fas fa-database text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-white tracking-tight uppercase">Donors Directory</h2>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">Master ledger of all contributors</p>
+                </div>
+            </div>
+            
+            <div class="w-full md:w-72 relative">
+                <input type="text" placeholder="تلاش کریں..." 
+                       class="w-full bg-slate-950 border border-white/10 rounded-xl px-5 py-3 text-xs text-white placeholder-slate-600 focus:border-emerald-500/50 transition-all outline-none">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 text-[10px]"></i>
+            </div>
+            
+            <a href="{% url 'donor_create' institution.slug %}"
+               class="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-900/40 transition-all hover:scale-[1.02] flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i> نیا ڈونر
+            </a>
+        </div>
+
+        {% include 'dms/partials/donor_table_partial.html' %}
+    </div>
+
+</div>
+{% endblock %}

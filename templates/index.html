@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>DMS Applications</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
+    <style>
+        body { padding: 2rem; }
+        main { max-width: 720px; margin: 0 auto; }
+        ul { list-style: none; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Select an Application</h1>
+    <ul>
+        {% for app in apps %}
+        <li>
+            <article>
+                <h2>{{ app.name }}</h2>
+                <a role="button" href="/{{ app.slug }}/">Open {{ app.name }}</a>
+            </article>
+        </li>
+        {% endfor %}
+    </ul>
+</main>
+</body>
+</html>

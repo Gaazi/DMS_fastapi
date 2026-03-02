@@ -1,0 +1,157 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ Course.title }} - حاضری کنٹرول{% endblock %}
+
+{% block content %}
+<div class="relative z-10 text-slate-200 selection:bg-indigo-500/30" x-data="{ loaded: false, search: '' }" x-init="setTimeout(() => loaded = true, 50)">
+    
+    <!-- 1. Geometric Background Texture -->
+    <div class="fixed inset-0 -z-10 pointer-events-none opacity-[0.03]" 
+         style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <!-- 3. Intelligence Bar -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+            <!-- Search Slab -->
+            <div class="lg:col-span-8 relative group">
+                <div class="absolute inset-0 bg-indigo-600/20 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+                <div class="relative flex items-center bg-[#0a0a0f] border border-white/10 rounded-3xl p-2 shadow-2xl">
+                    <div class="w-14 h-14 flex items-center justify-center text-slate-600 group-focus-within:text-indigo-400 transition-colors">
+                        <i class="fas fa-search text-xl"></i>
+                    </div>
+                    <input type="text" x-model="search" placeholder="طالب علم کا نام تلاش کریں..." 
+                           class="flex-1 bg-transparent border-none outline-none text-white placeholder:text-slate-600 text-xl py-4 pr-4">
+                    <div class="hidden md:flex items-center gap-2 px-6 border-r border-white/5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
+                        <span class="text-[9px] text-slate-500 uppercase tracking-widest">Active Search</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Progress Slab -->
+            <div class="lg:col-span-4 bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 flex items-center justify-between shadow-2xl">
+                <div>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Students Enrolled</p>
+                    <h3 class="text-4xl text-white leading-none">{{ enrollments|length }}</h3>
+                </div>
+                <div class="w-16 h-16 rounded-2xl bg-indigo-600/10 border border-indigo-600/20 flex items-center justify-center text-indigo-400 text-2xl">
+                    <i class="fas fa-users-viewfinder"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. The Registry: List View (More Premium than Cards) -->
+        <form method="post" class="space-y-8 pb-40">
+            {% csrf_token %}
+            
+            <div class="bg-[#0a0a0f]/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <div class="divide-y divide-white/[0.03]">
+                    {% for student in enrollments %}
+                    <div x-show="!search || '{{ student.full_name|escapejs }}'.toLowerCase().includes(search.toLowerCase())"
+                         x-data="{ status: '{{ student.current_status|default:'' }}' }"
+                         class="flex flex-col lg:flex-row lg:items-center gap-6 p-6 md:p-8 transition-all hover:bg-white/[0.02] group">
+                        
+                        <!-- Profile Identity -->
+                        <div class="flex items-center gap-6 flex-1">
+                            <div class="relative">
+                                <div class="w-16 h-16 rounded-2xl bg-[#12121a] border border-white/10 flex items-center justify-center text-2xl text-white group-hover:border-indigo-500/50 transition-colors">
+                                    {{ student.full_name|first|upper }}
+                                </div>
+                                <div class="absolute -top-2 -right-2 px-2 py-0.5 rounded-md bg-indigo-600/20 border border-indigo-600/30 text-[8px] text-indigo-400 uppercase">
+                                    #{{ forloop.counter }}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-xl md:text-2xl text-white group-hover:text-indigo-400 transition-colors leading-tight">{{ student.full_name }}</h4>
+                                <div class="flex items-center gap-3 mt-1 text-[10px] text-slate-500 uppercase tracking-widest">
+                                    <span>REG: {{ student.id }}</span>
+                                    {% if student.mobile %}<span class="w-1 h-1 rounded-full bg-slate-700"></span><span>{{ student.mobile }}</span>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Physical Interaction Area -->
+                        <div class="flex flex-col md:flex-row items-center gap-6 w-full lg:w-auto">
+                            <!-- High-Contrast Status Picker -->
+                            <div class="flex bg-black/80 rounded-2xl p-1.5 border border-white/10 w-full md:w-80">
+                                {% for value, label in attendance_choices %}
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="student_{{ student.id }}" value="{{ value }}" 
+                                           x-model="status" class="sr-only">
+                                    <div class="py-3 rounded-xl text-[10px] transition-all duration-300 text-center uppercase tracking-tighter"
+                                         :class="status === '{{ value }}' ? 
+                                            (status === 'P' ? 'bg-emerald-600 text-white shadow-lg' : 
+                                             status === 'A' ? 'bg-rose-600 text-white shadow-lg' : 
+                                             'bg-amber-600 text-white shadow-lg') : 
+                                            'text-slate-600 hover:text-slate-400'">
+                                        {{ label }}
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Comment Portal -->
+                            <div class="relative w-full md:w-72 group/input">
+                                <i class="fas fa-plus absolute left-5 top-1/2 -translate-y-1/2 text-slate-700 text-xs group-focus-within/input:text-indigo-400 transition-colors"></i>
+                                <input type="text" name="remarks_{{ student.id }}"
+                                       value="{{ student.current_remarks }}"
+                                       placeholder="Add private note..."
+                                       class="w-full bg-black/60 border border-white/10 text-slate-300 rounded-2xl py-4 pl-12 pr-6 text-xs outline-none focus:border-indigo-600/50 focus:bg-black transition-all">
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-40 text-center opacity-30">
+                        <i class="fas fa-database text-6xl mb-6"></i>
+                        <p class="text-2xl">ڈیٹا بیس میں کوئی طالب علم نہیں ملا</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 5. Gravity Save Module -->
+            <div class="fixed bottom-12 inset-x-4 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-[100] group">
+                <div class="absolute inset-0 bg-indigo-600/30 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <button type="submit" 
+                        class="relative flex items-center bg-[#0a0a0f] border border-white/20 rounded-[3rem] px-4 py-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] hover:border-indigo-600/50 transition-all duration-500 overflow-hidden">
+                    
+                    <div class="flex items-center gap-6 px-10">
+                        <div class="text-right">
+                            <span class="block text-2xl md:text-3xl text-white leading-none mb-1">ڈیٹا محفوظ کریں</span>
+                            <span class="block text-[8px] text-indigo-500 uppercase tracking-[0.5em]">System Synchronized</span>
+                        </div>
+                        <div class="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-[0_0_25px_rgba(79,70,229,0.4)] group-hover:scale-110 transition-transform">
+                            <i class="fas fa-cloud-arrow-up text-xl"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Inner Ripple Effect -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 6. Page Decor -->
+    <div class="fixed top-0 right-0 w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-[200px] -z-20"></div>
+    <div class="fixed bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[180px] -z-20"></div>
+
+</div>
+
+<style>
+    /* Premium Urdu Font Handling */
+    * { font-family: 'Mehr', 'Noto Nastaliq Urdu', serif; }
+    
+    /* Global scrollbar refinement */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); }
+    ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
+
+    /* Custom Input States */
+    input::placeholder { color: #334155; opacity: 1; letter-spacing: 0.1em; }
+    
+    @media (max-width: 768px) {
+        * { font-size: 14px; }
+    }
+</style>
+{% endblock %}

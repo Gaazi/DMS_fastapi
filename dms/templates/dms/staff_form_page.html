@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if editing_staff %}ترمیم: {{ editing_staff.full_name }}{% else %}نیا رکن شامل کریں{% endif %} - {{ institution.name }}
+{% endblock %}
+
+
+{% block content %}
+<style>
+    /* Force date/time icons to be visible */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1) !important; /* Force dark icon if browser tries to show light */
+        opacity: 1 !important;
+        cursor: pointer;
+    }
+    /* If browser is light mode, invert might make it white? 
+       Safest is to force a specific color/icon or check scheme. 
+       But usually invert(1) turns white->black. If it was already black, it becomes white.
+       Risk: If user is in LIGHT mode, icon is BLACK. Invert(1) -> WHITE (Invisible).
+       
+       Better approach: "color-scheme: light" on input handles this. 
+       Maybe previous step failed because Python dict update wasn't flushed or browser cached it?
+       
+       Alternative: Custom background image.
+    */
+    /* Let's try forcing black filter if possible, or just opacity */
+</style>
+<div class="max-w-4xl mx-auto px-4 py-12" dir="rtl">
+    <!-- Breadcrumbs / Back Link -->
+    <div class="mb-8">
+        <a href="{% url 'dms_staff' institution.slug %}" 
+           class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition group">
+            <div class="p-2 rounded-full bg-white shadow-sm border group-hover:bg-indigo-50 transition">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+            <span class="font-bold">واپس فہرست پر جائیں</span>
+        </a>
+    </div>
+
+    <!-- Form Container -->
+    <div class="rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-2xl">
+        {% include 'dms/partials/staff_form_partial.html' %}
+    </div>
+
+    <!-- Help / Info Box -->
+    <div class="mt-8 bg-indigo-50 rounded-2xl p-6 border border-indigo-100 flex gap-4 items-start">
+        <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0">
+            <i class="fas fa-info-circle text-indigo-600"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-indigo-900 mb-1">ضروری معلومات</h4>
+            <p class="text-xs text-indigo-700 leading-relaxed">
+                رکن کو شامل کرنے کے بعد، اس کا **لاگ ان اکاؤنٹ** خود بخود بن جائے گا۔ آپ سسٹم کے ذریعے اسے اس کے رابطے کی معلومات بھیج سکتے ہیں۔ تمام لازمی فیلڈز کو احتیاط سے پُر کریں۔
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

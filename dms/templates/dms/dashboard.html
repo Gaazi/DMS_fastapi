@@ -1,0 +1,605 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ institution.name }} - ڈیش بورڈ{% endblock %}
+
+{% block content %}
+
+{# ===== مرکزی کنٹینر (اینیمیشن کے ساتھ) ===== #}
+<div class="space-y-6 md:space-y-8 animate-fade-in-up">
+
+  {# ======================= #}
+  {# 1. Hero / Stats Grid (Bento Style) #}
+  {# ======================= #}
+  <div class="space-y-4">
+    {# Stats Grid (Unified Premium Design) #}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {% if is_admin %}
+        <!-- 1. Revenue/Income Card -->
+        <a href="{% url 'income' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-emerald-500/20 transition-all group block relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-emerald-500/10 transition-colors"></div>
+            <div class="flex items-start justify-between mb-4 relative z-10">
+                <div class="w-10 h-10 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-arrow-trend-up text-sm"></i>
+                </div>
+                <span class="text-[8px] uppercase tracking-widest text-emerald-500/50 font-bold">Revenue</span>
+            </div>
+            <p class="text-base text-green-400 mb-1 relative z-10">کل آمدنی</p>
+            <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                <h3 class="text-2xl text-green-400">{{ total_donations|default:"0"|floatformat:0 }}</h3>
+            </div>
+        </a>
+
+        <!-- 2. Expenses Card -->
+        <a href="{% url 'expense' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-rose-500/20 transition-all group block relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-rose-500/10 transition-colors"></div>
+            <div class="flex items-start justify-between mb-4 relative z-10">
+                <div class="w-10 h-10 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400 border border-rose-500/20 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-arrow-trend-down text-sm"></i>
+                </div>
+                <span class="text-[8px] uppercase tracking-widest text-rose-500/50 font-bold">Expenses</span>
+            </div>
+            <p class="text-base text-rose-400 mb-1 relative z-10">کل اخراجات</p>
+            <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                <h3 class="text-2xl text-rose-400">{{ total_expenses|default:"0"|floatformat:0 }}</h3>
+            </div>
+        </a>
+
+        <!-- 3. Net Balance Card -->
+        <a href="{% url 'balance' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 {% if balance < 0 %}hover:border-rose-500/20{% else %}hover:border-blue-500/20{% endif %} transition-all group block relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 {% if balance < 0 %}bg-rose-500/5 group-hover:bg-rose-500/10{% else %}bg-blue-500/5 group-hover:bg-blue-500/10{% endif %} blur-3xl -mr-12 -mt-12 transition-colors"></div>
+            <div class="flex items-start justify-between mb-4 relative z-10">
+                <div class="w-10 h-10 {% if balance < 0 %}bg-rose-500/10 text-rose-400 border-rose-500/20{% else %}bg-blue-500/10 text-blue-400 border-blue-500/20{% endif %} rounded-2xl flex items-center justify-center border group-hover:scale-110 transition-transform">
+                    <i class="fas fa-vault text-sm"></i>
+                </div>
+                <span class="text-xs {% if balance < 0 %}text-rose-500/50{% else %}text-blue-500/50{% endif %} font-bold">
+                    {% if balance < 0 %}Debt{% else %}Balance{% endif %}
+                </span>
+            </div>
+            <p class="text-base mb-1 relative z-10">
+                {% if balance < 0 %} <span class="text-rose-400">واجب الادا قرض</span>{% else %} <span class="text-green-500/50">خالص بیلنس</span>{% endif %}
+            </p>
+            <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                <h3 class="text-2xl {% if balance < 0 %}text-rose-400{% else %}text-green-400{% endif %} font-mehr font-bold">
+                    {{ balance|default:"0"|floatformat:0 }}
+                </h3>
+            </div>
+        </a>
+        {% endif %}
+
+        <!-- 4. Students/Members Card -->
+        {% if can_view_academics %}
+        <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-violet-500/20 transition-all group block relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-violet-50/5 blur-3xl -mr-12 -mt-12 group-hover:bg-violet-500/10 transition-colors"></div>
+            <div class="flex items-start justify-between mb-4 relative z-10">
+                <div class="w-10 h-10 bg-violet-50/10 rounded-2xl flex items-center justify-center text-violet-400 border border-violet-500/20 group-hover:scale-110 transition-transform">
+                    <i class="fas {% if institution.type == 'masjid' %}fa-users{% else %}fa-user-graduate{% endif %} text-sm"></i>
+                </div>
+                <span class="text-[8px] uppercase tracking-widest text-violet-500/50 font-bold">
+                    {% if institution.type == 'masjid' %}Members{% else %}Students{% endif %}
+                </span>
+            </div>
+            <p class="text-xs text-violet-400 mb-1 relative z-10">
+                {% if institution.type == 'masjid' %}کل ممبران{% else %}کل طلبہ{% endif %}
+            </p>
+            <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                <h3 class="text-2xl text-violet-400">{{ stats.students|default:"0" }}</h3>
+            </div>
+        </a>
+        {% endif %}
+
+        <!-- 5. Staff Card -->
+        {% if is_staff_admin or is_dms_admin %}
+        <a href="{% url 'dms_staff' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-indigo-500/20 transition-all group block relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-indigo-500/10 transition-colors"></div>
+            <div class="flex items-start justify-between mb-4 relative z-10">
+                <div class="w-10 h-10 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-user-tie text-sm"></i>
+                </div>
+                <span class="text-[8px] uppercase tracking-widest text-indigo-500/50 font-bold">Staff</span>
+            </div>
+            <p class="text-xs text-indigo-400 mb-1 relative z-10">کل عملہ</p>
+            <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                <h3 class="text-2xl text-indigo-400">{{ stats.staff|default:"0" }}</h3>
+            </div>
+        </a>
+        {% endif %}
+
+        <!-- 6. Courses/Programs Card -->
+        {% if can_view_academics %}
+        <a href="{% if institution.type == 'masjid' %}{% url 'program_list' institution.slug %}{% else %}{% url 'dms_course' institution.slug %}{% endif %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-amber-500/20 transition-all group block relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-amber-500/10 transition-colors"></div>
+            <div class="flex items-start justify-between mb-4 relative z-10">
+                <div class="w-10 h-10 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
+                    <i class="fas {% if institution.type == 'masjid' %}fa-microphone-alt{% else %}fa-book-open{% endif %} text-sm"></i>
+                </div>
+                <span class="text-[8px] uppercase tracking-widest text-amber-500/50 font-bold">
+                    {% if institution.type == 'masjid' %}Programs{% else %}Courses{% endif %}
+                </span>
+            </div>
+            <p class="text-xs text-amber-400 mb-1 relative z-10">
+                {% if institution.type == 'masjid' %}پروگرامات{% else %}کورسز{% endif %}
+            </p>
+            <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                <h3 class="text-2xl text-amber-400">{{ stats.courses|default:"0" }}</h3>
+            </div>
+        </a>
+        {% endif %}
+
+        <!-- 7. Attendance/Assets Card -->
+        {% if can_view_academics %}
+            {% if institution.type == 'masjid' %}
+            <a href="{% url 'inventory_dashboard' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-sky-500/20 transition-all group block relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-sky-500/10 transition-colors"></div>
+                <div class="flex items-start justify-between mb-4 relative z-10">
+                    <div class="w-10 h-10 bg-sky-500/10 rounded-2xl flex items-center justify-center text-sky-400 border border-sky-500/20 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-boxes text-sm"></i>
+                    </div>
+                    <span class="text-[8px] uppercase tracking-widest text-sky-500/50 font-bold">Assets</span>
+                </div>
+                <p class="text-xs text-sky-400 mb-1 relative z-10">اثاثہ جات</p>
+                <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                    <h3 class="text-2xl text-sky-400">View</h3>
+                </div>
+            </a>
+            {% else %}
+            <a href="{% url 'student_attendance' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-sky-500/20 transition-all group block relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-sky-500/10 transition-colors"></div>
+                <div class="flex items-start justify-between mb-4 relative z-10">
+                    <div class="w-10 h-10 bg-sky-500/10 rounded-2xl flex items-center justify-center text-sky-400 border border-sky-500/20 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-calendar-check text-sm"></i>
+                    </div>
+                    <span class="text-[8px] uppercase tracking-widest text-sky-500/50 font-bold">Attendance</span>
+                </div>
+                <p class="text-xs text-sky-400 mb-1 relative z-10">حاضری (آج)</p>
+                <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                    <h3 class="text-2xl text-sky-400">{{ today_attendance|default:"0" }}</h3>
+                </div>
+            </a>
+            {% endif %}
+        {% endif %}
+
+        <!-- 8. Reports Card -->
+        {% if can_view_academics %}
+        <a href="{% url 'attendance_report' institution.slug %}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-teal-500/20 transition-all group block relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 blur-3xl -mr-12 -mt-12 group-hover:bg-teal-500/10 transition-colors"></div>
+            <div class="flex items-start justify-between mb-4 relative z-10">
+                <div class="w-10 h-10 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-400 border border-teal-500/20 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-clipboard-list text-sm"></i>
+                </div>
+                <span class="text-[8px] uppercase tracking-widest text-teal-500/50 font-bold">Reports</span>
+            </div>
+            <p class="text-xs text-teal-400 mb-1 relative z-10">رپورٹس</p>
+            <div dir="ltr" class="flex items-baseline gap-1 relative z-10">
+                <h3 class="text-2xl text-teal-400">View</h3>
+            </div>
+        </a>
+        {% endif %}
+    </div>
+  </div>
+
+  {# ======================= #}
+  {# 2. مین گرڈ سیکشن #}
+  {# ======================= #}
+  {# ======================= #}
+  {# 2. Main Bento Grid (Finance & Quick Actions) #}
+  {# ======================= #}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    {# ---- Financial Analysis (Uses 2 columns on large screens) ---- #}
+    {% if is_admin %}
+    <div class="lg:col-span-2 rounded-3xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-indigo-50/80 flex items-center justify-center text-indigo-600">
+                <i class="fas fa-chart-pie text-sm"></i>
+            </span>
+            مالیاتی جائزہ
+        </h3>
+        <select class="text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-600 px-3 py-1.5 outline-none focus:ring-1 focus:ring-indigo-200">
+            <option>This Month</option>
+            <option>Last Month</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {# Income Stats #}
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-sm">Income</span>
+                <span class="text-xs text-emerald-600" id="incomePercent">0%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-200/50 rounded-full overflow-hidden">
+                <div id="incomeBar" class="h-full bg-emerald-500 rounded-full w-0 transition-all duration-1000 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></div>
+            </div>
+            <p class="text-[10px] text-slate-500">Total collected fees & donations</p>
+        </div>
+
+        {# Expense Stats #}
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-sm">Expense</span>
+                <span class="text-xs text-rose-600" id="expensePercent">0%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-200/50 rounded-full overflow-hidden">
+                <div id="expenseBar" class="h-full bg-rose-500 rounded-full w-0 transition-all duration-1000 shadow-[0_0_10px_rgba(244,63,94,0.4)]"></div>
+            </div>
+            <p class="text-[10px] text-slate-500">Operational costs & salaries</p>
+        </div>
+
+        {# Saving Stats #}
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-sm">Savings</span>
+                <span class="text-xs text-blue-600" id="savingPercent">0%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-200/50 rounded-full overflow-hidden">
+                <div id="savingBar" class="h-full bg-blue-500 rounded-full w-0 transition-all duration-1000 shadow-[0_0_10px_rgba(59,130,246,0.4)]"></div>
+            </div>
+            <p class="text-[10px] text-slate-500">Net retained earnings</p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-100/50 flex gap-4 items-start">
+        <div class="bg-white/80 p-2 rounded-full text-amber-500 shadow-sm shrink-0">
+            <i class="fas fa-lightbulb"></i>
+        </div>
+        <div>
+            <h4 class="text-black text-base mb-1">مصنوعی ذہانت کا مالیاتی تجزیہ</h4>
+            <p class="text-black text-sm leading-relaxed font-mehr">
+              {% if balance > total_expenses %}
+              زبردست! آپ کی مالی حالت مستحکم ہے، جو مستقبل کی ترقی کے لیے فنڈز کی اسٹریٹجک تقسیم کی اجازت دیتی ہے۔
+              {% else %}
+              توجہ درکار ہے! اخراجات آمدنی کے قریب پہنچ رہے ہیں۔ برائے مہربانی آپریشنل اخراجات کا جائزہ لیں۔
+              {% endif %}
+            </p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {# ---- Quick Actions (Vertical Stack) ---- #}
+    <div class="rounded-3xl shadow-sm border border-slate-100 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-orange-50/80 flex items-center justify-center text-orange-500">
+                <i class="fas fa-bolt text-sm"></i>
+            </span>
+            فوری اقدامات
+        </h3>
+      </div>
+
+      <div class="space-y-3">
+      {% if is_admin %}
+        <a href="{% url 'income_create' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100/60 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="text-sm">Add Income</h4>
+                <p class="text-xs text-slate-500">Record donation or fee</p>
+            </div>
+            <i class="fas fa-chevron-left text-slate-300 group-hover:-translate-x-1 transition-transform"></i>
+        </a>
+
+        <a href="{% url 'expense_out_create' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+            <div class="w-10 h-10 rounded-xl bg-rose-100/60 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-minus"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="text-sm">Add Expense</h4>
+                <p class="text-xs text-slate-500">Record a new payment</p>
+            </div>
+            <i class="fas fa-chevron-left text-slate-300 group-hover:-translate-x-1 transition-transform"></i>
+        </a>
+      {% endif %}
+
+        {% if institution.type == 'masjid' %}
+        <a href="{% url 'inventory_dashboard' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+            <div class="w-10 h-10 rounded-xl bg-sky-100/60 text-sky-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="text-sm">Check Assets</h4>
+                <p class="text-xs text-slate-500">View inventory status</p>
+            </div>
+            <i class="fas fa-chevron-left text-slate-300 group-hover:-translate-x-1 transition-transform"></i>
+        </a>
+        {% else %}
+        <a href="{% url 'attendance_report' institution.slug %}" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+            <div class="w-10 h-10 rounded-xl bg-blue-100/60 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-user-clock"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="text-sm">Check Attendance</h4>
+                <p class="text-xs text-slate-500">View today's status</p>
+            </div>
+            <i class="fas fa-chevron-left text-slate-300 group-hover:-translate-x-1 transition-transform"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ======================= #}
+  {# 3. Charts & Analytics #}
+  {# ======================= #}
+  {% if is_admin %}
+  <div class="rounded-3xl shadow-sm border border-slate-100 p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <h3 class="text-lg flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-teal-50/80 flex items-center justify-center text-teal-600">
+            <i class="fas fa-chart-line text-sm"></i>
+        </span>
+        مالیاتی گراف
+      </h3>
+
+      <div class="flex bg-slate-100/50 rounded-xl p-1 self-start sm:self-auto border border-slate-200">
+        <button
+          class="chart-type-btn px-4 py-1.5 rounded-lg text-xs transition-all shadow-sm bg-white text-indigo-600 border border-slate-100"
+          data-type="bar">
+          Bar
+        </button>
+        <button
+          class="chart-type-btn px-4 py-1.5 rounded-lg text-xs transition-all"
+          data-type="line">
+          Line
+        </button>
+      </div>
+    </div>
+
+    {# Chart Container #}
+    <div class="h-64 md:h-80 w-full relative">
+      <canvas id="financeChart"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ======================= #}
+  {# 4. Recent Activity Grid #}
+  {# ======================= #}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% if is_admin %}
+      {# Income Card #}
+      <div class="rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-emerald-200 transition-colors">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50/60 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+            <div>
+                <p class="text-sm">Last Income</p>
+                <h4 class="text-lg">{{ latest_donation_amount|default:0|floatformat:0 }}</h4>
+            </div>
+        </div>
+        <div class="text-sm text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg text-sm">
+            Received
+        </div>
+      </div>
+
+      {# Expense Card #}
+      <div class="rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-rose-200 transition-colors">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-rose-50/60 text-rose-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+            <div>
+                <p class="text-sm">Last Expense</p>
+                <h4 class="text-lg">{{ latest_expense_amount|default:0|floatformat:0 }}</h4>
+            </div>
+        </div>
+        <div class="text-sm text-rose-700 bg-rose-50/80 px-2.5 py-1 rounded-lg text-sm">
+            Paid
+        </div>
+      </div>
+      {% endif %}
+
+      {# Attendance/Assets Card #}
+      {% if institution.type == 'masjid' %}
+      <div class="rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-sky-200 transition-colors">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-sky-50/60 text-sky-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div>
+                <p class="text-sm">Total Assets</p>
+                <h4 class="text-lg">View</h4>
+            </div>
+        </div>
+        <div class="text-sm text-sky-700 bg-sky-50/80 px-2.5 py-1 rounded-lg">
+            Inventory
+        </div>
+      </div>
+      {% else %}
+      <div class="rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-colors">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50/60 text-blue-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <p class="text-sm">Today's Attendance</p>
+                <h4 class="text-lg">{{ today_attendance|default:"0" }}</h4>
+            </div>
+        </div>
+        <div class="text-sm text-blue-700 bg-blue-50/80 px-2.5 py-1 rounded-lg">
+            Present
+        </div>
+      </div>
+      {% endif %}
+  </div>
+
+  {# ===== فٹر معلومات ===== #}
+  {# ===== System Status Grid (Premium Light) ===== #}
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+    
+    {# Stat Card 1: Records #}
+    <div class="p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-shadow duration-300">
+       <div class="bg-indigo-50/60 text-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+         <i class="fas fa-database text-sm"></i>
+       </div>
+       <div class="min-w-0">
+         <p class="text-sm">Records</p>
+         <p class="text-sm font-mehr truncate">{{ total_records|default:"0" }}</p>
+       </div>
+    </div>
+
+
+
+  </div>
+
+</div>
+
+<script src="{% static 'js/vendors/chart.umd.min.js' %}"></script>
+
+{% if is_admin %}
+<script>
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // فونٹس کنفیگریشن
+    Chart.defaults.font.family = "'Mehr', 'Noto Nastaliq Urdu', 'Noto Sans Arabic', sans-serif";
+    Chart.defaults.font.size = 14;
+    Chart.defaults.color = '#64748b';
+
+    // ڈیٹا ویری ایبلز
+    const donations = Number('{{ total_donations|default:"0" }}');
+    const expenses = Number('{{ total_expenses|default:"0" }}');
+    const balance = Number('{{ balance|default:"0" }}');
+    const currency = '{{ currency_label|default:"" }}';
+
+    // فیصد کیلکولیشن (نسبت بہ ٹوٹل آمدنی)
+    const incomePercent = donations > 0 ? 100 : 0;
+    const expensePercent = donations > 0 ? ((expenses / donations) * 100).toFixed(1) : (expenses > 0 ? 100 : 0);
+    const savingPercent = donations > 0 ? ((balance / donations) * 100).toFixed(1) : 0;
+
+    // فیصد اپ ڈیٹ (DOM)
+    document.getElementById('incomePercent').textContent = donations > 0 ? "100%" : "0%";
+    document.getElementById('expensePercent').textContent = `${expensePercent}%`;
+    document.getElementById('savingPercent').textContent = `${savingPercent}%`;
+
+    // بارز انیمیشن
+    setTimeout(() => {
+      document.getElementById('incomeBar').style.width = `${incomePercent}%`;
+      document.getElementById('expenseBar').style.width = `${expensePercent}%`;
+      document.getElementById('savingBar').style.width = `${Math.min(savingPercent, 100)}%`;
+    }, 500);
+
+    // چارٹ بنانا
+    const ctx = document.getElementById('financeChart').getContext('2d');
+    let chart = null;
+
+    function createChart(type = 'bar') {
+      if (chart) chart.destroy();
+
+      const gradientDonation = ctx.createLinearGradient(0, 0, 0, 400);
+      gradientDonation.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+      gradientDonation.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
+
+      const gradientExpense = ctx.createLinearGradient(0, 0, 0, 400);
+      gradientExpense.addColorStop(0, 'rgba(244, 63, 94, 0.8)');
+      gradientExpense.addColorStop(1, 'rgba(244, 63, 94, 0.2)');
+
+      const gradientBalance = ctx.createLinearGradient(0, 0, 0, 400);
+      gradientBalance.addColorStop(0, 'rgba(14, 165, 233, 0.8)');
+      gradientBalance.addColorStop(1, 'rgba(14, 165, 233, 0.2)');
+
+      const chartLabels = JSON.parse('{{ chart_data.labels|safe|default:"[]" }}');
+      const chartIncome = JSON.parse('{{ chart_data.income|safe|default:"[]" }}');
+      const chartExpense = JSON.parse('{{ chart_data.expense|safe|default:"[]" }}');
+
+      const data = {
+        labels: chartLabels.length > 0 ? chartLabels : ['No Data'],
+        datasets: [
+          {
+            label: 'آمدنی',
+            data: chartIncome.length > 0 ? chartIncome : [0],
+            backgroundColor: gradientDonation,
+            borderColor: '#10b981',
+            borderWidth: 2,
+            borderRadius: 8,
+            fill: type === 'line',
+            tension: 0.4,
+            pointBackgroundColor: '#fff',
+            pointBorderWidth: 2,
+          },
+          {
+            label: 'اخراجات',
+            data: chartExpense.length > 0 ? chartExpense : [0],
+            backgroundColor: gradientExpense,
+            borderColor: '#f43f5e',
+            borderWidth: 2,
+            borderRadius: 8,
+            fill: type === 'line',
+            tension: 0.4,
+            pointBackgroundColor: '#fff',
+            pointBorderWidth: 2,
+          }
+        ]
+      };
+
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            titleColor: '#1e293b',
+            bodyColor: '#475569',
+            borderColor: '#e2e8f0',
+            borderWidth: 1,
+            padding: 12,
+            titleFont: { family: "'Mehr', serif", size: 16 },
+            bodyFont: { family: "'Mehr', serif", size: 14 },
+            callbacks: {
+              label: function (context) {
+                return ` ${context.dataset.label}: ${context.parsed.y.toLocaleString()}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: {
+              font: { family: "'Mehr', serif", size: 12 },
+              callback: function (value) {
+                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+                return value;
+              }
+            }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 14 } }
+          }
+        }
+      };
+
+      chart = new Chart(ctx, { type, data, options });
+    }
+
+    createChart('bar');
+
+    // ٹوگل بٹن ایکشن
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const type = this.dataset.type;
+
+        // تمام بٹن ری سیٹ کریں
+        document.querySelectorAll('.chart-type-btn').forEach(b => {
+          b.classList.remove('bg-white', 'text-brand-600', 'shadow-sm');
+          b.classList.add('text-gray-500');
+        });
+
+        // ایکٹو بٹن سیٹ کریں
+        this.classList.add('bg-white', 'text-brand-600', 'shadow-sm');
+        this.classList.remove('text-gray-500');
+
+        createChart(type);
+      });
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

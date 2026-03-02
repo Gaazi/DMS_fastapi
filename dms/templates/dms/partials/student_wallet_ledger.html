@@ -1,0 +1,47 @@
+<!-- Wallet Ledger: Compact Mobile-First Table -->
+<section class="mt-4 bg-[#0a0a0f]/40 border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+    <div class="p-4 bg-amber-600/5 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-600/10 flex items-center justify-center text-amber-500 text-sm border border-amber-600/20">
+                <i class="fas fa-wallet text-xs"></i>
+            </div>
+            <h2 class="text-xs text-white">Wallet</h2>
+        </div>
+        <div class="text-[8px] text-amber-500/50 uppercase font-mono">Verified_Ledger</div>
+    </div>
+
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="min-w-full">
+            <thead>
+                <tr class="text-[8px] text-slate-500 uppercase tracking-tighter border-b border-white/5 bg-white/[0.02]">
+                    <th class="px-4 py-2 text-left font-black">Description</th>
+                    <th class="px-4 py-2 text-left font-black">Date</th>
+                    <th class="px-4 py-2 text-center font-black">Type</th>
+                    <th class="px-4 py-2 text-right font-black">Amount</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/[0.03]">
+                {% for tx in wallet_history %}
+                <tr class="group hover:bg-white/[0.02] transition-colors">
+                    <td dir="rtl" class="text-left py-3 text-[10px] text-slate-300 min-w-[120px]">{{ tx.description }}</td>
+                    <td class="px-4 py-3 text-[9px] text-slate-500 font-mono whitespace-nowrap">{{ tx.date|date:"d/m/Y" }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="text-[7px] italic uppercase {% if tx.transaction_type == 'credit' %}text-emerald-500{% else %}text-rose-500{% endif %}">
+                            {{ tx.transaction_type }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border {% if tx.transaction_type == 'credit' %}border-emerald-500/20 bg-emerald-500/5 text-emerald-400{% else %}border-rose-500/20 bg-rose-500/5 text-rose-400{% endif %} text-[10px] font-bold font-mono">
+                            {% if tx.transaction_type == 'credit' %}+{% else %}-{% endif %}{{ tx.amount|floatformat:0 }}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="py-12 text-center opacity-30 italic text-[10px]">کوئی ریکارڈ نہیں</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>

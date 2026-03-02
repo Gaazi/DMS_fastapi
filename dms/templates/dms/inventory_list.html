@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}انوینٹری اور لائبریری - {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 md:space-y-8 animate-fade-in-up" x-data="{ showAddItemModal: false, showIssueModal: false, selectedItem: null, selectedItemName: '' }">
+    
+    {# ہیڈر سیکشن #}
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800">انوینٹری اور لائبریری</h1>
+            <p class="text-slate-500 mt-1 max-w-xl">یہاں سے آپ مدرسے یا مسجد کی کتابیں، اثاثے اور سامان کا ریکارڈ مرتب کر سکتے ہیں اور طلباء / اساتذہ کو جاری کر سکتے ہیں۔</p>
+        </div>
+        <div class="flex gap-2">
+            <button @click="showAddItemModal = true" class="bg-brand-600 text-white px-5 py-2.5 rounded-xl shadow-md shadow-brand-600/20 hover:bg-brand-700 hover:shadow-lg transition-all flex items-center gap-2 font-medium">
+                <i class="fas fa-plus"></i>
+                نیا سامان شامل کریں
+            </button>
+        </div>
+    </div>
+
+    {# اسٹیٹس کارڈز #}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="bg-indigo-50 text-indigo-600 w-12 h-12 flex items-center justify-center rounded-xl shrink-0"><i class="fas fa-boxes text-xl"></i></div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">کل اقسام کا سامان</p>
+                <h3 class="text-2xl font-sans font-bold text-slate-800">{{ items.count }}</h3>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="bg-blue-50 text-blue-600 w-12 h-12 flex items-center justify-center rounded-xl shrink-0"><i class="fas fa-book-open text-xl"></i></div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">موجودہ اسٹاک</p>
+                <h3 class="text-2xl font-sans font-bold text-slate-800">{{ items.count }}</h3>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="bg-amber-50 text-amber-600 w-12 h-12 flex items-center justify-center rounded-xl shrink-0"><i class="fas fa-hand-holding text-xl"></i></div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">جاری شدہ (ایشو)</p>
+                <h3 class="text-2xl font-sans font-bold text-slate-800">{{ pending_returns.count }}</h3>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="bg-rose-50 text-rose-600 w-12 h-12 flex items-center justify-center rounded-xl shrink-0"><i class="fas fa-exclamation-triangle text-xl"></i></div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">واپسی میں تاخیر</p>
+                <h3 class="text-2xl font-sans font-bold text-slate-800">0</h3>
+            </div>
+        </div>
+    </div>
+
+    {# مین ٹیبل / لسٹنگ #}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
+            <h3 class="font-bold text-lg text-slate-800">موجودہ سامان کی فہرست</h3>
+            <div class="relative w-full sm:w-auto">
+                <input type="text" placeholder="تلاش کریں..." class="w-full sm:w-64 pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm transition-all bg-white shadow-sm">
+                <i class="fas fa-search absolute right-3.5 top-3.5 text-slate-400"></i>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
+                        <th class="p-4 font-semibold whitespace-nowrap">نام / ٹائٹل</th>
+                        <th class="p-4 font-semibold whitespace-nowrap text-center">قسم</th>
+                        <th class="p-4 font-semibold whitespace-nowrap text-center">کل اسٹاک</th>
+                        <th class="p-4 font-semibold whitespace-nowrap text-center">موجود (دستیاب)</th>
+                        <th class="p-4 font-semibold whitespace-nowrap text-center">ایکشن</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    {% for item in items %}
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="p-4">
+                            <div class="font-bold text-slate-800">{{ item.name }}</div>
+                            {% if item.author %}<div class="text-xs text-slate-500 mt-0.5">{{ item.author }}</div>{% endif %}
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium border
+                            {% if item.item_type == 'book' %}bg-blue-50 text-blue-700 border-blue-200
+                            {% elif item.item_type == 'asset' %}bg-purple-50 text-purple-700 border-purple-200
+                            {% else %}bg-slate-100 text-slate-700 border-slate-200{% endif %}">
+                                {{ item.get_item_type_display }}
+                            </span>
+                        </td>
+                        <td class="p-4 font-sans font-medium text-slate-700 text-center">{{ item.total_quantity }}</td>
+                        <td class="p-4 font-sans text-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold
+                                {% if item.available_quantity > 0 %}bg-emerald-100 text-emerald-700 border border-emerald-200
+                                {% else %}bg-rose-100 text-rose-700 border border-rose-200{% endif %}">
+                                {{ item.available_quantity }}
+                            </span>
+                        </td>
+                        <td class="p-4 text-center">
+                            {% if item.available_quantity > 0 %}
+                            <button @click="showIssueModal = true; selectedItem = {{ item.id }}; selectedItemName = '{{ item.name|escapejs }}'" class="text-brand-600 bg-brand-50 hover:bg-brand-100 hover:text-brand-700 font-medium px-3 py-1.5 rounded-lg border border-brand-200 transition-colors inline-flex items-center gap-1.5 shadow-sm">
+                                <i class="fas fa-hand-holding text-xs"></i> جاری کریں
+                            </button>
+                            {% else %}
+                            <span class="text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 font-medium inline-block w-24">دستیاب نہیں</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center">
+                            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-box-open text-2xl"></i>
+                            </div>
+                            <h4 class="text-slate-700 font-medium text-lg">کوئی سامان موجود نہیں</h4>
+                            <p class="text-slate-500 mt-1 text-sm">ابھی تک آپ نے کوئی کتاب یا سامان شامل نہیں کیا۔</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    {# 1. Add Item Modal (Premium Dark Style) #}
+    <div x-cloak x-show="showAddItemModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div x-show="showAddItemModal"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="bg-[#080810]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)] border border-white/10 w-full max-w-2xl overflow-hidden"
+             @click.away="showAddItemModal = false">
+             
+            <div class="pb-5 border-b border-white/10 flex justify-between items-center mb-6">
+                <h3 class="text-xl md:text-2xl font-bold text-white flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 shadow-inner">
+                        <i class="fas fa-plus text-lg"></i>
+                    </div>
+                    نیا سامان شامل کریں
+                </h3>
+                <button type="button" @click="showAddItemModal = false" class="text-slate-400 hover:text-rose-400 bg-white/5 hover:bg-rose-500/10 w-10 h-10 rounded-full flex items-center justify-center border border-transparent hover:border-rose-500/20 transition-all">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form action="{% url 'add_item' institution.slug %}" method="POST" class="space-y-6 max-h-[65vh] overflow-y-auto pr-2">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-emerald-400/80 px-1 uppercase tracking-wider">نام / ٹائٹل <span class="text-rose-500">*</span></label>
+                        <input type="text" name="name" required class="w-full bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-emerald-500 focus:bg-white/5 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-600 shadow-inner" placeholder="مثلاً: کرسی، بخاری شریف...">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-emerald-400/80 px-1 uppercase tracking-wider">قسم</label>
+                        <select name="item_type" class="w-full bg-[#0a0a14] text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all shadow-inner">
+                            <option value="book">کتاب (Library)</option>
+                            <option value="asset">اثاثہ (Furniture/Electrics)</option>
+                            <option value="consumable">صرف ہونے والا (Stationery/Cleaning)</option>
+                            <option value="uniform">وردی / لباس</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-emerald-400/80 px-1 uppercase tracking-wider">ابتدائی تعداد / اسٹاک <span class="text-rose-500">*</span></label>
+                        <input type="number" name="total_quantity" min="1" value="1" required class="w-full bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-emerald-500 focus:bg-white/5 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-left font-mono shadow-inner" dir="ltr">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-emerald-400/80 px-1 uppercase tracking-wider">کیٹیگری</label>
+                        <select name="category_id" class="w-full bg-[#0a0a14] text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all shadow-inner">
+                            <option value="">-- منتخب کریں --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-emerald-400/80 px-1 uppercase tracking-wider">مصنف / مؤلف (کتاب کے لیے)</label>
+                        <input type="text" name="author" class="w-full bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-emerald-500 focus:bg-white/5 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-600 shadow-inner" placeholder="مصنف کا نام...">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-emerald-400/80 px-1 uppercase tracking-wider">لوکیشن / الماری</label>
+                        <input type="text" name="location" placeholder="مثلاً: الماری نمبر 2..." class="w-full bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-emerald-500 focus:bg-white/5 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-600 shadow-inner">
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-white/10 flex items-center gap-4 mt-4">
+                    <button type="button" @click="showAddItemModal = false" class="px-8 py-4 bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all font-bold text-sm w-1/3">
+                        منسوخ
+                    </button>
+                    <button type="submit" class="flex-1 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold text-base shadow-xl shadow-emerald-900/40 hover:brightness-110 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
+                        <i class="fas fa-save"></i>
+                        <span>محفوظ کریں</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# 2. Issue Item Modal (Premium Dark Style) #}
+    <div x-cloak x-show="showIssueModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div x-show="showIssueModal"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="bg-[#080810]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)] border border-white/10 w-full max-w-lg overflow-hidden"
+             @click.away="showIssueModal = false">
+             
+            <div class="pb-5 border-b border-white/10 flex justify-between items-center mb-6">
+                <h3 class="text-xl md:text-2xl font-bold text-white flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20 shadow-inner">
+                        <i class="fas fa-hand-holding text-lg"></i>
+                    </div>
+                    سامان جاری کریں
+                </h3>
+                <button type="button" @click="showIssueModal = false" class="text-slate-400 hover:text-rose-400 bg-white/5 hover:bg-rose-500/10 w-10 h-10 rounded-full flex items-center justify-center border border-transparent hover:border-rose-500/20 transition-all">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form action="{% url 'issue_item' institution.slug %}" method="POST" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="item_id" x-model="selectedItem">
+                
+                <div class="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-2xl flex items-center gap-5 shadow-inner">
+                    <div class="w-14 h-14 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                        <i class="fas fa-box-open text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-indigo-400/80 font-bold mb-1.5 uppercase tracking-widest">منتخب سامان</p>
+                        <p class="text-lg font-bold text-white leading-tight" x-text="selectedItemName"></p>
+                    </div>
+                </div>
+
+                <div x-data="{ issueTo: 'student' }" class="space-y-5">
+                    <div>
+                        <label class="text-xs font-semibold text-amber-500/80 px-1 uppercase tracking-wider block mb-2">کسے جاری کرنا ہے؟ <span class="text-rose-500">*</span></label>
+                        <div class="flex p-1 bg-black/40 rounded-xl border border-white/5 shadow-inner">
+                            <button type="button" @click="issueTo = 'student'" :class="issueTo === 'student' ? 'bg-[#151520] text-amber-500 border border-white/10 shadow-lg' : 'text-slate-500 hover:text-slate-300 border border-transparent'" class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all">طالب علم / مصلی</button>
+                            <button type="button" @click="issueTo = 'staff'" :class="issueTo === 'staff' ? 'bg-[#151520] text-amber-500 border border-white/10 shadow-lg' : 'text-slate-500 hover:text-slate-300 border border-transparent'" class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all">اسٹاف ممبر</button>
+                        </div>
+                    </div>
+
+                    <div x-show="issueTo === 'student'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <select name="student_id" :required="issueTo === 'student'" class="w-full bg-[#0a0a14] text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all shadow-inner">
+                            <option value="">طالب علم کا انتخاب کریں...</option>
+                            {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.full_name }} ({{ student.roll_number|default:"-" }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div x-show="issueTo === 'staff'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <select name="staff_id" :required="issueTo === 'staff'" class="w-full bg-[#0a0a14] text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all shadow-inner">
+                            <option value="">اسٹاف کا انتخاب کریں...</option>
+                            {% for s in staff %}
+                            <option value="{{ s.id }}">{{ s.full_name }} ({{ s.role }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-amber-500/80 px-1 uppercase tracking-wider">تعداد <span class="text-rose-500">*</span></label>
+                        <input type="number" name="quantity" min="1" required class="w-full bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-amber-500 focus:bg-white/5 focus:ring-1 focus:ring-amber-500 outline-none transition-all font-mono text-left shadow-inner" dir="ltr" value="1">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-amber-500/80 px-1 uppercase tracking-wider">واپسی کی متوقع تاریخ <span class="text-[10px] text-slate-500 font-normal">(اختیاری)</span></label>
+                        <input type="date" name="due_date" class="w-full bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-amber-500 focus:bg-white/5 focus:ring-1 focus:ring-amber-500 outline-none transition-all font-mono text-left shadow-inner" dir="ltr">
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-white/10 flex items-center gap-4 mt-4">
+                    <button type="button" @click="showIssueModal = false" class="px-8 py-4 bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all font-bold text-sm w-1/3">
+                        منسوخ
+                    </button>
+                    <button type="submit" class="flex-1 py-4 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-base shadow-xl shadow-amber-900/40 hover:brightness-110 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
+                        <i class="fas fa-paper-plane"></i> جاری کریں
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

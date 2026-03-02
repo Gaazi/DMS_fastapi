@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}تمام نوٹیفکیشنز - {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-l from-indigo-400 via-purple-400 to-indigo-400 drop-shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 ring-1 ring-white/5 shadow-inner">
+                    <i class="fa-solid fa-bell text-xl"></i>
+                </div>
+                تمام نوٹیفکیشنز
+            </h1>
+            <p class="text-white/50 text-xs sm:text-sm mt-1.5 font-medium flex items-center gap-2">
+                <i class="fa-solid fa-clock opacity-50"></i>
+                تازہ ترین ڈیش بورڈ سرگرمیاں اور نوٹیفکیشنز
+            </p>
+        </div>
+        
+        <div>
+            <a href="{% url 'dashboard' institution.slug %}" class="flex items-center gap-2 px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-xl border border-white/10 transition duration-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/50 group shadow-lg shadow-black/20">
+                <i class="fas fa-arrow-right group-hover:-translate-x-1 transition-transform"></i>
+                واپسی ڈیش بورڈ
+            </a>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="glass-card rounded-[2rem] p-4 sm:p-6 border border-white/5 shadow-2xl relative overflow-hidden bg-slate-900/40 backdrop-blur-xl">
+        <!-- Shine effect -->
+        <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        
+        <div class="flex flex-col gap-3">
+            {% if notifications %}
+                {% for note in notifications %}
+                <a href="{{ note.url|default:'#' }}" class="group relative flex items-start gap-4 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all duration-300 overflow-hidden ring-1 ring-black/5">
+                    
+                    <!-- Hover Glow -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-{{ note.color|default:'indigo' }}-500/0 via-{{ note.color|default:'indigo' }}-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    
+                    <!-- Icon -->
+                    <div class="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-inner border border-white/5 z-10 bg-{{ note.color|default:'indigo' }}-500/15 text-{{ note.color|default:'indigo' }}-500">
+                        <i class="{{ note.icon|default:'fa-solid fa-circle-info' }}"></i>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0 z-10">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 mb-1">
+                            <h3 class="text-sm sm:text-base font-bold text-slate-100 group-hover:text-white transition-colors truncate">
+                                {{ note.title }}
+                            </h3>
+                            <span class="text-[10px] sm:text-xs font-medium text-slate-400 shrink-0 flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded-md border border-white/5">
+                                <i class="fa-regular fa-clock text-slate-500"></i>
+                                {{ note.time }}
+                            </span>
+                        </div>
+                        
+                        <p class="text-xs sm:text-sm text-slate-300/80 leading-relaxed max-w-3xl">
+                            {{ note.description|default:"کوئی تفصیل موجود نہیں" }}
+                        </p>
+                        
+                        {% if note.amount %}
+                        <div class="mt-2.5 flex items-center gap-2">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-{{ note.color|default:'indigo' }}-500/10 border border-white/10 text-{{ note.color|default:'indigo' }}-400 shadow-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-coins opacity-60"></i>
+                                {{ note.amount }}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="py-16 flex flex-col items-center justify-center text-center">
+                    <div class="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mb-4 border border-white/5 shadow-inner">
+                        <i class="fa-regular fa-bell-slash text-4xl text-slate-500"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-300">کوئی نوٹیفکیشن نہیں</h3>
+                    <p class="text-sm text-slate-500 mt-1 max-w-sm">اس وقت کوئی نئی سرگرمی یا نوٹیفکیشن موجود نہیں ہے۔ جب بھی کوئی نیا کام ہوگا، تفصیلات یہاں آئیں گی۔</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

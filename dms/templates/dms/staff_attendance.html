@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{{ institution.name }} - عملے کی حاضری{% endblock %}
+
+{% block content %}
+<div x-data="{ 
+    present: 0, absent: 0, late: 0, excused: 0, searchQuery: '',
+    updateStats() {
+        this.present = document.querySelectorAll('input[value=present]:checked').length;
+        this.absent = document.querySelectorAll('input[value=absent]:checked').length;
+        this.late = document.querySelectorAll('input[value=late]:checked').length;
+        this.excused = document.querySelectorAll('input[value=excused]:checked').length;
+    }
+}" x-init="setTimeout(() => updateStats(), 300)" class="animate-fade-in-up pb-32" dir="rtl">
+
+    <form method="post" id="attendanceForm" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Header & Stats Card -->
+        <div class="sticky top-4 z-50 px-2">
+            <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-4">
+                <div class="max-w-6xl mx-auto flex flex-col gap-4">
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-gradient-to-tr from-indigo-600 to-blue-400 p-3 rounded-2xl shadow-lg shadow-indigo-200 ring-4 ring-indigo-50">
+                                <i class="fas fa-user-clock text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl text-slate-800 dark:text-white">عملے کی حاضری</h1>
+                                <p class="text-[10px] text-indigo-600 uppercase tracking-widest">{{ institution.name }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <a href="{% url 'dms_staff' institution.slug %}" class="hidden sm:block text-xs text-slate-400 hover:text-slate-600 transition">فہرست میں واپسی ←</a>
+                            <button type="submit" class="group relative flex items-center gap-2 bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-2xl text-sm overflow-hidden transition-all hover:pr-12 active:scale-95">
+                                <span>محفوظ کریں</span>
+                                <i class="fas fa-save absolute left-4 -translate-x-10 group-hover:translate-x-0 transition-transform"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 py-2 rounded-2xl text-center border border-emerald-100">
+                            <p class="text-[9px] text-emerald-600">حاضر</p>
+                            <p class="text-xl text-emerald-700" x-text="present"></p>
+                        </div>
+                        <div class="bg-rose-50 dark:bg-rose-900/20 py-2 rounded-2xl text-center border border-rose-100">
+                            <p class="text-[9px] text-rose-600">غیر حاضر</p>
+                            <p class="text-xl text-rose-700" x-text="absent"></p>
+                        </div>
+                        <div class="bg-amber-50 dark:bg-amber-900/20 py-2 rounded-2xl text-center border border-amber-100">
+                            <p class="text-[9px] text-amber-600">تاخیر</p>
+                            <p class="text-xl text-amber-700" x-text="late"></p>
+                        </div>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 py-2 rounded-2xl text-center border border-blue-100">
+                            <p class="text-[9px] text-blue-600">رخصت</p>
+                            <p class="text-xl text-blue-700" x-text="excused"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="max-w-6xl mx-auto px-4 space-y-4">
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="flex-1 relative group">
+                    <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                    <input type="text" x-model="searchQuery" placeholder="رکن کا نام تلاش کریں..." 
+                           class="w-full bg-white dark:bg-slate-800 border-none rounded-2xl py-4 pr-12 pl-4 shadow-sm focus:ring-2 focus:ring-indigo-500/20 text-sm">
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-1 rounded-2xl shadow-sm flex items-center px-3 min-w-[200px]">
+                    <i class="fas fa-calendar text-indigo-500 ml-2"></i>
+                    <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+                           class="bg-transparent border-none text-xs w-full focus:ring-0"
+                           hx-get="." hx-target="#staff-attendance-body" hx-push-url="true">
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff List Table -->
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <table class="w-full text-right">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] border-b dark:border-slate-800">
+                            <th class="py-4 px-6">رکنِ عملہ</th>
+                            <th class="py-4 px-2 text-center">حاضر</th>
+                            <th class="py-4 px-2 text-center">غیر</th>
+                            <th class="py-4 px-2 text-center">تاخیر</th>
+                            <th class="py-4 px-2 text-center">رخصت</th>
+                            <th class="py-4 px-6">ریمارکس</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-attendance-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                        {% include "dms/partials/staff_attendance_rows.html" %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

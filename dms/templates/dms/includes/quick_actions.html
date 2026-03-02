@@ -1,0 +1,216 @@
+{% if institution %}
+<!-- Quick Action Bar -->
+<div class="quick-action-bar w-full mb-6 md:mb-8 transition-all duration-300 transform translate-y-0"
+     id="quick-actions">
+    
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Context Title -->
+
+
+        <!-- Action Buttons Grid -->
+        <div class="grid grid-cols-5 md:flex md:items-center gap-1 md:gap-3 w-full md:w-auto">
+
+            <!-- Always Visible: Dashboard Link -->
+             <a href="{% url 'dashboard' institution.slug %}" 
+               class="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-2 py-1 px-1 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg group">
+               <i class="fas fa-th-large text-[12px] md:text-sm opacity-50 group-hover:text-blue-400 transition-colors"></i>
+               <span class="text-xs md:text-xs">ڈیش بورڈ</span>
+            </a>
+
+            <!-- 1. Students/Musalleen Context (List, Detail) -->
+            {% if request.resolver_match.url_name == 'students' or request.resolver_match.url_name == 'student_detail' or request.resolver_match.url_name == 'musalleen_list' or request.resolver_match.url_name == 'musalleen_detail' %}
+                <a href="{% if institution.type == 'masjid' %}{% url 'musallee_admission' institution.slug %}{% else %}{% url 'admission' institution.slug %}{% endif %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all active:scale-95 shadow-lg shadow-blue-600/20">
+                   <i class="fas {% if institution.type == 'masjid' %}fa-user-plus{% else %}fa-user-graduate{% endif %} text-[12px] md:text-sm"></i>
+                   <span class="text-xs md:text-xs">
+                       {% if institution.type == 'masjid' %}نیا ممبر{% else %}نیا داخلہ{% endif %}
+                   </span>
+                </a>
+                
+                {% if institution.type != 'masjid' %}
+                <a href="{% url 'student_attendance' institution.slug %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-calendar-check text-[12px] md:text-sm text-emerald-400"></i>
+                   <span class="text-xs md:text-xs">حاضری</span>
+                </a>
+                {% endif %}
+         
+                {% if can_view_academics %}
+                <a href="{% url 'attendance_report' institution.slug %}" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-file-invoice text-[12px] md:text-sm text-indigo-400"></i>
+                   <span class="text-xs md:text-xs">
+                       {% if institution.type == 'masjid' %}رپورٹ{% else %}حاضری رپورٹ{% endif %}
+                   </span>
+                </a>
+                {% endif %}
+
+                <!-- New Applications Button -->
+                {% if is_academic_admin %}
+                <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}?status=pending" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-all active:scale-95 shadow-lg group relative">
+                   <i class="fas fa-inbox text-[12px] md:text-sm"></i>
+                   <span class="text-xs md:text-xs">درخواستیں</span>
+                   
+                   <!-- Show dot if any pending -->
+                   {% if pending_students_count > 0 %}
+                   <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.6)]"></span>
+                   {% endif %}
+                </a>
+                {% endif %}
+            {% endif %}
+
+            <!-- 2. Admission Context -->
+            {% if request.resolver_match.url_name == 'admission' or request.resolver_match.url_name == 'musallee_admission' %}
+                <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas {% if institution.type == 'masjid' %}fa-users{% else %}fa-user-graduate{% endif %} text-[12px] md:text-sm text-blue-400"></i>
+                   <span class="text-xs md:text-xs">
+                       {% if institution.type == 'masjid' %}ممبران لسٹ{% else %}طلبہ لسٹ{% endif %}
+                   </span>
+                </a>
+            {% endif %}
+
+            <!-- 3. Attendance Context (Marking) -->
+            {% if request.resolver_match.url_name == 'student_attendance' %}
+                <a href="{% url 'students' institution.slug %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-users text-[12px] md:text-sm text-blue-400"></i>
+                   <span class="text-xs md:text-xs">طلبہ</span>
+                </a>
+                <a href="{% url 'attendance_report' institution.slug %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-chart-bar text-[12px] md:text-sm text-amber-400"></i>
+                   <span class="text-xs md:text-xs">رپورٹ</span>
+                </a>
+            {% endif %}
+
+            <!-- 4. Attendance Report Context -->
+            {% if request.resolver_match.url_name == 'attendance_report' %}
+                {% if institution.type != 'masjid' %}
+                <a href="{% url 'student_attendance' institution.slug %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-600/20">
+                   <i class="fas fa-calendar-check text-[12px] md:text-sm"></i>
+                   <span class="text-xs md:text-xs">حاضری</span>
+                </a>
+                {% endif %}
+                <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas {% if institution.type == 'masjid' %}fa-users{% else %}fa-user-graduate{% endif %} text-[12px] md:text-sm text-blue-400"></i>
+                   <span class="text-xs md:text-xs">
+                       {% if institution.type == 'masjid' %}ممبران{% else %}طلبہ{% endif %}
+                   </span>
+                </a>
+                <button onclick="window.print()" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-print text-[12px] md:text-sm text-slate-400"></i>
+                   <span class="text-xs md:text-xs">پرنٹ</span>
+                </button>
+            {% endif %}
+
+            <!-- 5. Staff Context -->
+            {% if request.resolver_match.url_name == 'dms_staff' %}
+                {% if can_edit_staff %}
+                <a href="{% url 'dms_staff_create' institution.slug %}" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-all active:scale-95 shadow-lg shadow-blue-600/20">
+                   <i class="fas fa-user-plus text-[12px] md:text-sm"></i>
+                   <span class="text-xs md:text-xs">نیا خادم</span>
+                </a>
+                {% endif %}
+                {% if is_staff_admin %}
+                <a href="{% url 'staff_payroll' institution.slug %}" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-money-bill-wave text-[12px] md:text-sm text-rose-400"></i>
+                   <span class="text-xs md:text-xs">تنخواہ</span>
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'staff_attendance' institution.slug %}" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-calendar-day text-[12px] md:text-sm text-emerald-400"></i>
+                   <span class="text-xs md:text-xs">حاضری</span>
+                </a>
+            {% endif %}
+
+            <!-- 6. Course/Courses Context -->
+             {% if request.resolver_match.url_name == 'dms_course' or request.resolver_match.url_name == 'program_list' %}
+             <a href="#" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                <i class="fas fa-book text-[12px] md:text-sm text-emerald-400"></i>
+                <span class="text-xs md:text-xs">
+                    {% if institution.type == 'masjid' %}نصاب{% else %}سلیبس{% endif %}
+                </span>
+             </a>
+                <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas {% if institution.type == 'masjid' %}fa-users{% else %}fa-user-graduate{% endif %} text-[12px] md:text-sm text-amber-400"></i>
+                   <span class="text-xs md:text-xs">
+                       {% if institution.type == 'masjid' %}ممبران{% else %}طلبہ{% endif %}
+                   </span>
+                </a>
+            {% endif %}
+
+            <!-- 7. Finance Context -->
+            {% if request.resolver_match.url_name == 'balance' or request.resolver_match.url_name == 'income' or request.resolver_match.url_name == 'expense' or 'donor' in request.resolver_match.url_name %}
+                <a href="{% url 'income_create' institution.slug %}" 
+                   class="flex flex-col justify-center gap-0.5 py-0.5 px-2 md:h-10 md:w-20 rounded-xl bg-emerald-600/20 border border-emerald-600/30 text-emerald-400 hover:bg-emerald-600/30 transition-all active:scale-95 shadow-lg">
+                   <div class="flex items-center justify-between gap-1">   
+                      <span class="text-xs">آمدنی</span>
+                       <i class="fas fa-plus text-[10px]"></i>
+                   </div>
+                   <span class="text-xs self-center leading-none">{{ total_donations|default:"0"|floatformat:0 }}</span>
+                </a>
+
+                
+                <a href="{% url 'expense_out_create' institution.slug %}" 
+                   class="flex flex-col justify-center gap-0.5 py-0.5 px-2 md:h-10 md:w-20 rounded-xl bg-rose-600/20 border border-rose-600/30 text-rose-400 hover:bg-rose-600/30 transition-all active:scale-95 shadow-lg">
+                   <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs">خرچ</span>
+                       <i class="fas fa-minus text-[10px]"></i>
+                   </div>
+                   <span class="text-xs self-center leading-none">{{ total_expenses|default:"0"|floatformat:0 }}</span>
+                </a>
+                <a href="{% url 'balance' institution.slug %}" 
+                   class="flex flex-col justify-center gap-0.5 py-0.5 px-2 md:h-10 md:w-20 rounded-xl border {% if balance < 0 %}bg-rose-600/20 border-rose-600/30 text-rose-400 hover:bg-rose-600/30{% else %}bg-blue-600/20 border-blue-600/30 text-blue-400 hover:bg-blue-600/30{% endif %} transition-all active:scale-95 shadow-lg">
+                   <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs">{% if balance < 0 %}قرض{% else %}بیلنس{% endif %}</span>
+                       <i class="fas fa-wallet text-[10px]"></i>
+                   </div>
+                   <span dir="ltr" class="text-xs self-center leading-none">{{ balance|default:"0"|floatformat:0 }}</span>
+                </a>
+                <a href="{% url 'transaction_report' institution.slug %}" target="_blank"
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-file-pdf text-[12px] md:text-sm text-red-400"></i>
+                   <span class="text-xs md:text-xs">رپورٹ</span>
+                </a>
+            {% endif %}
+
+            <!-- 8. Dashboard Context -->
+            {% if request.resolver_match.url_name == 'dashboard' %}
+                {% if can_view_academics %}
+                <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas {% if institution.type == 'masjid' %}fa-users{% else %}fa-user-graduate{% endif %} text-[12px] md:text-sm text-blue-400"></i>
+                   <span class="text-xs md:text-xs">
+                       {% if institution.type == 'masjid' %}ممبران{% else %}طلبہ{% endif %}
+                   </span>
+                </a>
+                {% endif %}
+                
+                {% if is_dms_admin %}
+                <a href="{% url 'balance' institution.slug %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-2 py-1 px-0.5 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas fa-wallet text-[12px] md:text-sm text-amber-400"></i>
+                   <span class="text-xs md:text-xs">فنانس</span>
+                </a>
+                {% endif %}
+                {% if can_view_academics %}
+                <a href="{% if institution.type == 'masjid' %}{% url 'program_list' institution.slug %}{% else %}{% url 'dms_course' institution.slug %}{% endif %}" 
+                   class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-1 px-1 md:px-4 md:h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all active:scale-95 shadow-lg">
+                   <i class="fas {% if institution.type == 'masjid' %}fa-microphone-alt{% else %}fa-graduation-cap{% endif %} text-[12px] md:text-sm text-purple-400"></i>
+                   <span class="text-xs md:text-xs">
+                       {% if institution.type == 'masjid' %}پروگرامات{% else %}کورسز{% endif %}
+                   </span>
+                </a>
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endif %}

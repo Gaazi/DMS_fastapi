@@ -1,0 +1,165 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 pb-12">
+    <!-- Header Section -->
+    <div class="bg-emerald-600 pb-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl text-white">والدین ڈیش بورڈ</h1>
+                    <p class="mt-2 text-emerald-100">
+                        خوش آمدید، {{ parent.full_name }}
+                        {% if institution %}
+                        <span class="mx-2">•</span>
+                        {{ institution.name }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <span
+                        class="inline-flex items-center px-4 py-2 rounded-lg bg-white/10 text-white backdrop-blur-sm border border-white/20">
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        {{ students|length }} بچے
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total Due -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">کل واجب الادا فیس</p>
+                        <h3 class="text-2xl text-gray-900 mt-2">{{ total_due }}</h3>
+                    </div>
+                    <div class="p-2 bg-red-50 rounded-lg">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Paid -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">کل ادا شدہ فیس</p>
+                        <h3 class="text-2xl text-gray-900 mt-2">{{ total_paid }}</h3>
+                    </div>
+                    <div class="p-2 bg-emerald-50 rounded-lg">
+                        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Students -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">فعال بچے</p>
+                        <h3 class="text-2xl text-gray-900 mt-2">{{ students|length }}</h3>
+                    </div>
+                    <div class="p-2 bg-blue-50 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Students List -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-semibold text-gray-900">میرے بچے</h3>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    {% for student in students %}
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                    {{ student.full_name|slice:":1" }}
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">{{ student.full_name }}</h4>
+                                    <p class="text-sm text-gray-500">{{ student.institution.name }}</p>
+                                </div>
+                            </div>
+                            <a href="{% url 'student_dashboard_scoped' student_id=student.id institution_slug=student.institution.slug %}"
+                                class="px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+                                تفصیلات دیکھیں
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-6 text-center text-gray-500">
+                        کوئی طالب علم موجود نہیں
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Attendance -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-semibold text-gray-900">حالیہ حاضری</h3>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    {% for record in attendance %}
+                    <div class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-shrink-0">
+                                    {% if record.status == 'present' %}
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 block"></span>
+                                    {% elif record.status == 'absent' %}
+                                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 block"></span>
+                                    {% elif record.status == 'late' %}
+                                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 block"></span>
+                                    {% else %}
+                                    <span class="w-2.5 h-2.5 rounded-full bg-gray-500 block"></span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ record.student.full_name }}</p>
+                                    <p class="text-xs text-gray-500">{{ record.session.date }}</p>
+                                </div>
+                            </div>
+                            <span class="text-sm font-medium 
+                                {% if record.status == 'present' %}text-emerald-600
+                                {% elif record.status == 'absent' %}text-red-600
+                                {% elif record.status == 'late' %}text-yellow-600
+                                {% else %}text-gray-600{% endif %}">
+                                {{ record.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-6 text-center text-gray-500">
+                        کوئی ریکارڈ موجود نہیں
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

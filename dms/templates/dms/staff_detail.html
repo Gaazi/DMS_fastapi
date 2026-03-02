@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ member.full_name }} | Profile{% endblock %}
+
+{% block content %}
+<section class="min-h-screen py-6 px-4 sm:px-6 lg:px-8 bg-slate-950/40" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+    
+    <div class="max-w-2xl mx-auto space-y-4" 
+         x-show="loaded" 
+         x-transition:enter="transition duration-500 ease-out" 
+         x-transition:enter-start="opacity-0 scale-[0.98]" 
+         x-transition:enter-end="opacity-100 scale-100">
+        
+        <!-- Header Info -->
+        <div class="flex items-center justify-between px-1">
+            <a href="{% url 'dms_staff' institution.slug %}" class="flex items-center gap-2 text-slate-500 hover:text-blue-400 transition-colors">
+                <i class="fas fa-arrow-right text-xs"></i>
+                <span class="text-xs font-bold uppercase tracking-widest">واپس</span>
+            </a>
+            {% if can_edit_staff %}
+            <div class="flex items-center gap-2">
+                <a href="{% url 'dms_staff_edit' institution.slug member.id %}" class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors" title="ترمیم کریں">
+                    <i class="fas fa-pen text-[10px]"></i>
+                </a>
+                
+                {% if not member.user %}
+                <form method="post" action="{% url 'create_portal_account' institution.slug 'staff' member.id %}" onsubmit="return confirm('کیا آپ اس رکن کے لیے نیا لاگ ان (پورٹل اکاؤنٹ) بنانا چاہتے ہیں؟');" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="h-8 px-3 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors gap-2" title="اکاؤنٹ بنائیں">
+                        <i class="fas fa-user-plus text-[10px]"></i>
+                        <span class="text-[10px] font-bold">اکاؤنٹ بنائیں</span>
+                    </button>
+                </form>
+                {% else %}
+                <div class="h-8 px-3 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 gap-2 cursor-help" title="یوزر نیم: {{ member.user.username }}">
+                    <i class="fas fa-check-circle text-[10px]"></i>
+                    <span class="text-[10px] font-bold">اکاؤنٹ موجود ہے</span>
+                </div>
+                {% endif %}
+                <form method="post" action="{% url 'dms_staff' institution.slug %}" onsubmit="return confirm('کیا آپ واقعی اس ملازم کو حذف کرنا چاہتے ہیں؟ اس عمل کو واپس نہیں لایا جا سکتا۔');" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="staff_id" value="{{ member.id }}">
+                    <button type="submit" class="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors" title="حذف کریں">
+                        <i class="fas fa-trash-alt text-[10px]"></i>
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <!-- Lock Indicator for Restricted Access -->
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500/80 shadow-inner" title="Protected Content">
+                <i class="fas fa-lock text-[10px]"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Protected</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Identity Card: Premium Compact -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-5 border border-white/5 shadow-2xl">
+            <div class="absolute top-0 left-0 w-32 h-32 bg-blue-500/10 blur-[80px] -translate-x-1/2 -translate-y-1/2"></div>
+            
+            <div class="flex items-center gap-5 relative z-10">
+                <!-- Small Elegant Avatar -->
+                <div class="w-20 h-20 shrink-0 rounded-2xl bg-black/40 border border-white/10 overflow-hidden shadow-inner flex items-center justify-center">
+                    {% if member.photo %}
+                        <img src="{{ member.photo.url }}" alt="{{ member.full_name }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <span class="text-3xl font-thin text-white/20">{{ member.full_name|first|upper }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="flex-grow">
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">{{ member.full_name }}</h1>
+                        <div class="w-2 h-2 rounded-full {% if member.is_active %}bg-emerald-500 shadow-[0_0_8px_#10b981]{% else %}bg-rose-500{% endif %}"></div>
+                    </div>
+                    <p class="text-blue-400/80 font-urdu text-base">{{ member.get_role_display }}</p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase">#{{ member.id }}</span>
+                        <span class="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase">{{ member.hire_date|date:"M Y"|default:"---" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Grid: Mobile Stack -->
+        <div class="grid grid-cols-2 gap-3">
+            <!-- Salary Box -->
+            <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-center gap-1 shadow-lg">
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">تنخواہ</span>
+                <p dir="rtl" class="text-lg font-bold text-left text-white tabular-nums">Rs: {{ member.base_salary|floatformat:0 }} </p>
+            </div>
+
+            <!-- Shift Box -->
+            <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-center gap-1 shadow-lg">
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">شفٹ</span>
+                <p class="text-sm font-bold text-white tabular-nums uppercase">
+                    {% if member.shift_start %}
+                        {{ member.shift_start|time:"h:i" }} - {{ member.shift_end|time:"h:i A" }}
+                    {% else %}
+                        Not Set
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Phone Box -->
+            <div class="col-span-2 bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center gap-4 shadow-lg group">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/10">
+                    <i class="fas fa-phone-alt text-xs"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold block">رابطہ نمبر</span>
+                    <a href="tel:{{ member.mobile }}" class="text-base text-white font-medium tracking-wide">{{ member.mobile|default:"---" }}</a>
+                </div>
+            </div>
+
+            <!-- Email Box -->
+            <div class="col-span-2 bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center gap-4 shadow-lg">
+                <div class="w-10 h-10 rounded-xl bg-slate-500/10 flex items-center justify-center text-slate-400 border border-white/5">
+                    <i class="fas fa-envelope text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold block">ای میل</span>
+                    <span class="text-sm text-white font-medium truncate block">{{ member.email|default:"---" }}</span>
+                </div>
+            </div>
+
+            <!-- Address Box -->
+            <div class="col-span-2 bg-white/5 rounded-2xl p-4 border border-white/5 shadow-lg">
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold block mb-2">رہائشی پتہ</span>
+                <p class="text-sm text-white/80 font-urdu leading-relaxed">
+                    {{ member.address|default:"معلومات موجود نہیں ہے۔" }}
+                </p>
+            </div>
+
+            <!-- Remarks Box -->
+            <div class="col-span-2 bg-white/5 rounded-2xl p-4 border border-white/5 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-1 h-full bg-blue-500/20"></div>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold block mb-2">ریمارکس / نوٹس</span>
+                <p class="text-sm text-slate-400 font-urdu italic leading-relaxed">
+                    {{ member.notes|default:"کوئی نوٹ موجود نہیں ہے۔" }}
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

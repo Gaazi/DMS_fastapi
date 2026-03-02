@@ -1,0 +1,47 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.so
+*.egg-info/
+.eggs/
+
+# Environments
+.env
+.env.*
+venv/
+.venv/
+ENV/
+
+# IDE / tooling
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+*.log
+*.bak
+.DS_Store
+Thumbs.db
+
+# Django / builds
+*.sqlite3
+*.db
+media/
+staticfiles/
+tmp/
+*.zip
+
+# Node
+node_modules/
+
+new_deploy_key
+new_deploy_key.pub
+verify_output.txt
+
+# Diff & Patch files
+*.diff
+*.patch
+diff*.txt

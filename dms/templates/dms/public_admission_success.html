@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>درخواست موصول - {{ institution.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+        body { font-family: 'Amiri', serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 bg-[url('https://source.unsplash.com/random/1920x1080/?islamic,abstract')] bg-cover bg-center bg-no-repeat relative">
+    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm"></div>
+
+    <div class="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-[3rem] shadow-2xl p-10 text-center animate-bounce-in">
+        <div class="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-8 border-4 border-emerald-500/30 text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+            <i class="fas fa-check text-4xl"></i>
+        </div>
+
+        <h1 class="text-3xl font-bold text-white mb-4">درخواست موصول ہو گئی!</h1>
+
+        <p class="text-slate-300 mb-10 leading-relaxed text-lg">
+            آپ کی داخلہ درخواست کامیابی سے ہمارے پاس پہنچ گئی ہے۔ <br>
+            ادارہ جلد ہی آپ سے رابطہ کرے گا اور مزید کارروائی کے لیے آگاہ کرے گا۔
+        </p>
+
+        <a href="{% url 'dms_login' %}" class="inline-flex items-center gap-3 px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold transition-all shadow-xl active:scale-95 group">
+            <i class="fas fa-home text-xs group-hover:-translate-x-1 transition-transform"></i>
+            واپس ہوم پیج پر جائیں
+        </a>
+    </div>
+
+</body>
+</html>

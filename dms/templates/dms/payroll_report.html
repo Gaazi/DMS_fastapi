@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}پے رول رپورٹ - {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8" dir="rtl">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'dms_staff' institution.slug %}" 
+               class="p-2 rounded-full bg-white shadow-sm border hover:bg-gray-50 transition">
+                <i class="fas fa-arrow-right text-gray-600"></i>
+            </a>
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900">ماہانہ پے رول رپورٹ</h1>
+                <p class="text-gray-500 text-sm">برائے مہینہ: {{ month }}/{{ year }}</p>
+            </div>
+        </div>
+
+        <!-- Month/Year Filter -->
+        <form method="get" class="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border">
+            <select name="month" class="rounded-xl border-gray-200 text-sm py-1.5 focus:ring-indigo-500">
+                <option value="1" {% if month == 1 %}selected{% endif %}>جنوری</option>
+                <option value="2" {% if month == 2 %}selected{% endif %}>فروری</option>
+                <option value="3" {% if month == 3 %}selected{% endif %}>مارچ</option>
+                <option value="4" {% if month == 4 %}selected{% endif %}>اپریل</option>
+                <option value="5" {% if month == 5 %}selected{% endif %}>مئی</option>
+                <option value="6" {% if month == 6 %}selected{% endif %}>جون</option>
+                <option value="7" {% if month == 7 %}selected{% endif %}>جولائی</option>
+                <option value="8" {% if month == 8 %}selected{% endif %}>اگست</option>
+                <option value="9" {% if month == 9 %}selected{% endif %}>ستمبر</option>
+                <option value="10" {% if month == 10 %}selected{% endif %}>اکتوبر</option>
+                <option value="11" {% if month == 11 %}selected{% endif %}>نومبر</option>
+                <option value="12" {% if month == 12 %}selected{% endif %}>دسمبر</option>
+            </select>
+            <input type="number" name="year" value="{{ year }}" class="w-24 rounded-xl border-gray-200 text-sm py-1.5 focus:ring-indigo-500">
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-sm hover:bg-indigo-700 transition">
+                دیکھیں
+            </button>
+        </form>
+    </div>
+
+    <!-- Payroll Table -->
+    <div class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead>
+                    <tr class="bg-slate-900 lg:table-row hidden">
+                        <th class="px-6 py-4 text-sm text-slate-300">نام رکن (عہدہ)</th>
+                        <th class="px-6 py-4 text-sm text-slate-300">بنیادی تنخواہ</th>
+                        <th class="px-6 py-4 text-sm text-slate-300">حاضری (غیر حاضر/لیٹ)</th>
+                        <th class="px-6 py-4 text-sm text-slate-300">کٹوتیاں (کل)</th>
+                        <th class="px-6 py-4 text-sm text-white">قابل ادائیگی رقم</th>
+                        <th class="px-6 py-4 text-sm text-slate-300 text-center">ایکشن</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for res in results %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900">{{ res.staff.full_name }}</div>
+                            <div class="text-xs text-gray-500">{{ res.staff.get_role_display }}</div>
+                        </td>
+                        <td class="px-6 py-4 font-sans text-gray-700">
+                            {{ res.report.base|floatformat:0 }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px]">غیر حاضر: {{ res.report.attendance.absent }}</span>
+                                <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-600 text-[10px]">لیٹ: {{ res.report.attendance.late }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-rose-600 font-sans">{{ res.report.deductions.total|floatformat:0 }}</div>
+                            <div class="text-[9px] text-gray-400">غیر حاضری + لیٹ کٹوتی</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xl text-emerald-600 font-sans tracking-tight">
+                                {{ res.report.final|floatformat:0 }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-100 transition">
+                                <i class="fas fa-print ml-1"></i> رسید
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-20 text-center text-gray-400">
+                            اس مہینے کا کوئی پے رول ڈیٹا موجود نہیں ہے۔
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <div class="bg-emerald-600 p-8 rounded-[2rem] shadow-lg shadow-emerald-200 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full -mr-10 -mt-10"></div>
+            <p class="text-sm opacity-80 mb-1">کل قابلِ ادائیگی تنخواہ</p>
+            <div class="text-4xl font-sans mb-4">
+                {{ total_payable|floatformat:0 }}
+            </div>
+            
+            {% if total_payable > 0 %}
+            <form method="post" action=".">
+                {% csrf_token %}
+                <input type="hidden" name="month" value="{{ month }}">
+                <input type="hidden" name="year" value="{{ year }}">
+                <input type="hidden" name="action" value="bulk_pay">
+                <button type="submit" class="bg-white text-emerald-600 px-6 py-2 rounded-xl text-sm font-bold shadow-lg hover:bg-emerald-50 transition-all active:scale-95 w-full flex items-center justify-center gap-2">
+                    <i class="fas fa-hand-holding-usd"></i> تنخواہیں ادا کریں (Process Payment)
+                </button>
+            </form>
+            {% else %}
+            <p class="text-xs bg-white/20 p-2 rounded-lg inline-block">کوئی بقایا جات نہیں</p>
+            {% endif %}
+
+            <p class="text-[10px] mt-4 opacity-70 italic">* یہ رپورٹ خودکار طور پر حاضری کی بنیاد پر تیار کی گئی ہے۔</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-gray-100">
+             <h3 class="font-bold text-gray-800 mb-4">پرنٹنگ اور ایکسپورٹ</h3>
+             <div class="flex gap-4">
+                 <button onclick="window.print()" class="flex-1 bg-slate-800 text-white py-3 rounded-2xl hover:bg-slate-900 transition flex items-center justify-center gap-2">
+                     <i class="fas fa-file-pdf"></i> PDF ڈاؤن لوڈ کریں
+                 </button>
+                 <button class="flex-1 bg-white border border-gray-200 text-gray-700 py-3 rounded-2xl hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                     <i class="fas fa-file-excel text-emerald-600"></i> ایکسل (Excel)
+                 </button>
+             </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print { display: none; }
+        body { background: white; }
+        .max-w-6xl { max-width: 100%; border: none; box-shadow: none; }
+    }
+</style>
+{% endblock %}

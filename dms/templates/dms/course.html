@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ institution.name }} - کورسز مینجمنٹ{% endblock %}
+
+{% block content %}
+<div class="relative z-10 text-slate-200 selection:bg-indigo-500/30" x-data="{ loaded: false }"
+    x-init="setTimeout(() => loaded = true, 50)">
+
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-12">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+           
+
+            <!-- 4. The Courses Registry (Right / Main) -->
+            <div class="lg:col-span-8" x-show="loaded" x-transition:enter="transition delay-400 duration-1000">
+<!-- Compact Course List Container -->
+<div class="w-full bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-sm">
+    
+    <!-- Header (Optional: Remove if you want even less space) -->
+    <div class="flex items-center justify-between px-3 py-2 bg-white/5 border-b border-white/5">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400">
+                {% if institution.type == 'masjid' %}رجسٹرڈ پروگرامات{% else %}رجسٹرڈ کورسز{% endif %}
+            </span>
+            <span class="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-1.5 rounded">{{ courses|length }}</span>
+        </div>
+        {% if is_academic_admin %}
+        <a href="#course_form" class="flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded text-[10px] transition-all">
+            <i class="fas fa-plus"></i>
+            <span>
+                {% if institution.type == 'masjid' %}نیا پروگرام بنائیں{% else %}نیا کورس بنائیں{% endif %}
+            </span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Rows Container -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4" dir="rtl">
+        {% for course in courses %}
+        <a href="{% if institution.type == 'masjid' %}{% url 'program_detail' institution.slug course.id %}{% else %}{% url 'dms_course_detail' institution.slug course.id %}{% endif %}" class="block group">
+            <!-- Card Content (Grid Item) -->
+            <div class="h-full bg-white/[0.02] border border-white/5 rounded-xl p-4 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all group-hover:-translate-y-1 relative overflow-hidden">
+                
+                <!-- ID Badge -->
+                <div class="absolute top-0 left-0 px-2 py-1 bg-white/5 rounded-br-lg border-b border-r border-white/5">
+                    <span class="text-[10px] font-mono text-slate-500">#{{ forloop.counter|stringformat:"02d" }}</span>
+                </div>
+
+                <!-- Icon & Title -->
+                <div class="flex flex-col items-center text-center mt-2 mb-4">
+
+                    <h4 class="text-sm font-bold text-white line-clamp-2 h-10 flex items-center justify-center group-hover:text-indigo-400 transition-colors">
+                        {{ course.title }}
+                    </h4>
+                </div>
+
+                <!-- Meta Info -->
+                <div class="space-y-2 border-t border-white/5 pt-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <span>زمرہ</span>
+                        <span class="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20 truncate max-w-[80px]">
+                            {{ course.get_category_display }}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs mt-2 pt-2 border-t border-white/5">
+                        <!-- Students Count -->
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-emerald-500/70">{% if institution.type == 'masjid' %}ممبران{% else %}طلبہ{% endif %}:</span>
+                            <span class="text-emerald-400">{{ course.student_count }}</span>
+                        </div>
+
+                        <!-- Teachers Count -->
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-blue-500/70">{% if institution.type == 'masjid' %}خدام{% else %}اساتذہ{% endif %}:</span>
+                            <span class="text-blue-400">{{ course.instructors.count }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </a>
+        {% empty %}
+        <div class="py-6 text-center text-sm text-slate-500">
+            کوئی ریکارڈ نہیں
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+
+            {% if is_academic_admin %}
+            <!-- 3. Tactical Entry Form (Left / Sidebar) -->
+            <div id="course_form" class="lg:col-span-4 space-y-8" x-show="loaded"
+                x-transition:enter="transition delay-200 duration-1000">
+                {% include 'dms/partials/course_form.html' %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

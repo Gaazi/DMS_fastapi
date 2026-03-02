@@ -1,0 +1,46 @@
+<!-- Summary Stats Partial -->
+<div id="income-summary-stats" 
+     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+     hx-get="{% url 'income_list' institution.slug %}" 
+     hx-trigger="every 30s, incomeCreated from:body" 
+     hx-swap="outerHTML">
+  
+  <!-- Total Income -->
+  <div class="bg-white rounded-2xl shadow-sm border p-6 group hover:border-emerald-500/30 transition-all duration-300">
+    <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">کل آمدنی رقم</p>
+    <p class="text-3xl text-emerald-600">
+      {{ total_donations|floatformat:0 }}
+      <span class="text-sm font-normal text-gray-400">{{ currency_label }}</span>
+    </p>
+  </div>
+
+  <!-- Average Income -->
+  <div class="bg-white rounded-2xl shadow-sm border p-6 group hover:border-blue-500/30 transition-all duration-300">
+    <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">اوسط آمدنی</p>
+    <p class="text-3xl text-blue-600">
+      {{ average_donation|floatformat:0 }}
+      <span class="text-sm font-normal text-gray-400">{{ currency_label }}</span>
+    </p>
+  </div>
+
+  <!-- Donation Count -->
+  <div class="bg-white rounded-2xl shadow-sm border p-6 group hover:border-purple-500/30 transition-all duration-300">
+    <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">کل اندراجات</p>
+    <p class="text-3xl text-purple-600">
+      {{ donation_count }}
+    </p>
+  </div>
+
+  <!-- Latest Amount -->
+  <div class="bg-white rounded-2xl shadow-sm border p-6 group hover:border-slate-500/30 transition-all duration-300">
+    <p class="text-xs uppercase tracking-wider text-gray-400 mb-1">تازہ ترین رقم</p>
+    <p class="text-3xl text-slate-700">
+      {% if donations.object_list %}
+        {{ donations.object_list.0.amount|floatformat:0 }}
+      {% else %}
+        0
+      {% endif %}
+      <span class="text-sm font-normal text-gray-400">{{ currency_label }}</span>
+    </p>
+  </div>
+</div>

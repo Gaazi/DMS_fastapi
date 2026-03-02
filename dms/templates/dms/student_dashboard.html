@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ student.full_name }} - اسٹوڈنٹ ڈیش بورڈ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
+        @font-face {
+            font-family: 'Mehr';
+            src: url('https://fonts.gstatic.com/s/notonastaliqurdu/v15/rax_HiS69A-6B1R1E55E_B4pE9-m.woff2') format('woff2');
+        }
+        * { font-family: 'Mehr', 'Noto Nastaliq Urdu', serif; }
+        body { background-color: #020617; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-[#020617] text-slate-200 overflow-x-hidden" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+
+    <!-- Premium Mesh Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-900/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-[-5%] left-[-5%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px] animate-pulse" style="animation-duration: 8s;"></div>
+        <div class="absolute inset-0 opacity-[0.1] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+    </div>
+
+    <div class="relative z-10 max-w-5xl mx-auto px-4 py-8 md:py-12 space-y-8 md:space-y-12">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-right" 
+                x-show="loaded" x-transition:enter="transition duration-1000 ease-out" x-transition:enter-start="opacity-0 translate-y-6">
+            <div class="space-y-3">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    <span class="text-white text-[9px] uppercase">Student Life Dashboard</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl text-white leading-tight">{{ student.full_name }}</h1>
+                <p class="text-slate-400 opacity-80">ادارہ: {{ student.institution.name }}</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <a href="{% url 'guardian_dashboard_scoped' institution_slug=student.institution.slug %}" 
+                   class="px-6 py-3 rounded-2xl bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs hover:bg-blue-500/30 transition-all active:scale-95 shadow-xl flex items-center gap-2">
+                   <i class="fas fa-shield-halved text-[10px]"></i>
+                   <span>گارجین ڈیش بورڈ</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Attendance Recap & Fee Summary -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4" x-show="loaded" x-transition:enter="transition delay-200 duration-1000">
+            <div class="bg-white/[0.03] backdrop-blur-2xl rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col items-center text-center">
+                <p class="text-[7px] md:text-[9px] text-blue-400 uppercase mb-1">حاضری ریکارڈ</p>
+                <h3 class="text-xl md:text-3xl text-white">{{ attendance|length }}</h3>
+            </div>
+            <div class="bg-white/[0.03] backdrop-blur-2xl rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col items-center text-center">
+                <p class="text-[7px] md:text-[9px] text-emerald-400 uppercase mb-1">فیس واؤچرز</p>
+                <h3 class="text-xl md:text-3xl text-white">{{ fees|length }}</h3>
+            </div>
+            <div class="bg-white/[0.03] backdrop-blur-2xl rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col items-center text-center">
+                <p class="text-[7px] md:text-[9px] text-amber-400 uppercase mb-1">حیثیت</p>
+                <span class="text-xs md:text-lg text-white">{% if student.is_active %}فعال{% else %}غیر فعال{% endif %}</span>
+            </div>
+            <div class="bg-white/[0.03] backdrop-blur-2xl rounded-2xl p-4 md:p-6 border border-white/10 flex flex-col items-center text-center">
+                <p class="text-[7px] md:text-[9px] text-purple-400 uppercase mb-1">رول نمبر</p>
+                <h3 class="text-xl md:text-3xl text-white">{{ student.reg_id|default:"—" }}</h3>
+            </div>
+        </section>
+
+        <!-- Attendance & Fees Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" x-show="loaded" x-transition:enter="transition delay-400 duration-1000">
+            
+            <!-- Attendance -->
+            <div class="bg-white/[0.03] backdrop-blur-3xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+                <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between">
+                    <h2 class="text-xl text-white flex items-center gap-3">
+                        <i class="fas fa-calendar-check text-blue-400"></i>
+                        حاضری کی تفصیل
+                    </h2>
+                    <span class="text-[9px] text-slate-500 uppercase">Recent Logs</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-right">
+                        <thead>
+                            <tr class="text-[9px] text-slate-500 uppercase border-b border-white/5 bg-white/5">
+                                <th class="px-6 py-4">تاریخ</th>
+                                <th class="px-6 py-4">حالت</th>
+                                <th class="px-6 py-4">نوٹس</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/[0.02]">
+                            {% for rec in attendance %}
+                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-[11px] text-slate-300">{{ rec.session.date|date:"d M, Y" }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest border
+                                        {% if rec.status == 'present' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                        {% elif rec.status == 'absent' %}bg-rose-500/10 text-rose-400 border-rose-500/20
+                                        {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+                                        {{ rec.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-[10px] text-slate-500 max-w-[120px] truncate" title="{{ rec.remarks }}">{{ rec.remarks|default:'—' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="px-6 py-16 text-center text-slate-600 text-xs">کوئی حاضری ریکارڈ نہیں ہے۔</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Fees -->
+            <div class="bg-white/[0.03] backdrop-blur-3xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+                <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between">
+                    <h2 class="text-xl text-white flex items-center gap-3">
+                        <i class="fas fa-wallet text-emerald-400"></i>
+                        فیس واؤچرز
+                    </h2>
+                    <span class="text-[9px] text-slate-500 uppercase">Financial Status</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-right">
+                        <thead>
+                            <tr class="text-[9px] text-slate-500 uppercase border-b border-white/5 bg-white/5">
+                                <th class="px-6 py-4">عنوان</th>
+                                <th class="px-6 py-4">واجب الادا</th>
+                                <th class="px-6 py-4">حالت</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/[0.02]">
+                            {% for fee in fees %}
+                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 flex flex-col">
+                                    <span class="text-[11px] text-slate-200">{{ fee.title }}</span>
+                                    <span class="text-[8px] text-slate-600 uppercase">{{ fee.due_date|date:"M Y" }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-baseline gap-1 justify-end">
+                                        <span class="text-[13px] text-white">{{ fee.amount_due|floatformat:0 }}</span>
+                                        <span class="text-[8px] text-slate-600 uppercase">PKR</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 rounded-lg text-[9px] uppercase tracking-widest border
+                                        {% if fee.status == 'paid' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                        {% elif fee.status == 'partial' %}bg-blue-500/10 text-blue-400 border-blue-500/20
+                                        {% else %}bg-rose-500/10 text-rose-400 border-rose-500/20{% endif %}">
+                                        {{ fee.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="px-6 py-16 text-center text-slate-600 text-xs">کوئی فیس ریکارڈ نہیں ہے۔</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center pb-8 opacity-30 mt-12">
+            <p class="text-[9px] text-slate-500 uppercase">
+                Student Portal • Secure Educational Cloud 2026
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

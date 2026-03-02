@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}بیک اپ منیجر - ڈی ایم ایس{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8 animate-fade-in-up">
+    {# ہیڈر #}
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute inset-0 hero-pattern opacity-10"></div>
+        <div class="relative z-10">
+            <h1 class="text-3xl">بیک اپ منیجر</h1>
+            <p class="text-blue-200 mt-2">آپ کے سسٹم کے تمام بیک اپس کی ہسٹری اور ون-کلک ری اسٹور</p>
+        </div>
+        <div class="relative z-10">
+            {% if institution %}
+                <a href="{% url 'create_manual_snapshot' institution.slug %}" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl transition shadow-lg shadow-emerald-900/40">
+                    <i class="fas fa-plus"></i>
+                    <span class="font-nastaliq">نیا اسنیپ شاٹ بنائیں</span>
+                </a>
+            {% else %}
+                <a href="{% url 'system_create_manual_snapshot' %}" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl transition shadow-lg shadow-emerald-900/40">
+                    <i class="fas fa-plus"></i>
+                    <span class="font-nastaliq">سسٹم بیک اپ بنائیں</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# اسنیپ شاٹ لسٹ #}
+    <div class="bg-white rounded-2xl shadow-soft overflow-hidden border border-slate-100">
+        <table class="w-full text-right border-collapse">
+            <thead class="bg-slate-50 border-b border-slate-100">
+                <tr class="text-slate-500 font-sans text-sm">
+                    <th class="px-6 py-4">تاریخ و وقت</th>
+                    <th class="px-6 py-4">لیبل / تفصیل</th>
+                    <th class="px-6 py-4">نوعیت</th>
+                    <th class="px-6 py-4">سائز</th>
+                    <th class="px-6 py-4 text-center">ایکشنز</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for snapshot in snapshots %}
+                <tr class="hover:bg-slate-50/50 transition duration-150">
+                    <td class="px-6 py-4 text-slate-600 font-sans text-sm">
+                        {{ snapshot.created_at|date:"d M Y, h:i A" }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-slate-800">{{ snapshot.label }}</div>
+                        {% if snapshot.institution %}
+                            <div class="text-xs text-slate-500">ادارہ: {{ snapshot.institution.name }}</div>
+                        {% else %}
+                            <div class="text-xs text-indigo-500">مکمل سسٹم بیک اپ</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if snapshot.backup_type == 'automated' %}
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">Automated</span>
+                        {% else %}
+                            <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">Manual</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-slate-500 text-sm">
+                        {{ snapshot.size|filesizeformat }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center justify-center gap-3">
+                            {% if snapshot.institution %}
+                                <a href="{% url 'restore_snapshot_ajax' snapshot.institution.slug snapshot.id %}" 
+                                   class="flex items-center gap-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-lg transition text-sm"
+                                   onclick="return confirm('کیا آپ واقعی اس بیک اپ کو ری اسٹور کرنا چاہتے ہیں؟ موجودہ ڈیٹا تبدیل ہو سکتا ہے۔')">
+                                    <i class="fas fa-history"></i>
+                                    <span class="font-nastaliq">ری اسٹور</span>
+                                </a>
+                                
+                                <a href="{% url 'download_snapshot_file' snapshot.institution.slug snapshot.id %}" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="ڈاؤن لوڈ کریں">
+                                    <i class="fas fa-download"></i>
+                                </a>
+
+                                <a href="{% url 'delete_snapshot' snapshot.institution.slug snapshot.id %}" 
+                                   class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition" 
+                                   onclick="return confirm('کیا آپ اسے ہمیشہ کے لیے حذف کرنا چاہتے ہیں؟')" title="حذف کریں">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'system_restore_snapshot_ajax' snapshot.id %}" 
+                                   class="flex items-center gap-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-lg transition text-sm"
+                                   onclick="return confirm('کیا آپ واقعی اس بیک اپ کو ری اسٹور کرنا چاہتے ہیں؟ پورے سسٹم کا ڈیٹا تبدیل ہو سکتا ہے۔')">
+                                    <i class="fas fa-history"></i>
+                                    <span class="font-nastaliq">ری اسٹور</span>
+                                </a>
+
+                                <a href="{% url 'system_download_snapshot_file' snapshot.id %}" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="ڈاؤن لوڈ کریں">
+                                    <i class="fas fa-download"></i>
+                                </a>
+
+                                <a href="{% url 'system_delete_snapshot' snapshot.id %}" 
+                                   class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition" 
+                                   onclick="return confirm('کیا آپ اسے ہمیشہ کے لیے حذف کرنا چاہتے ہیں؟')" title="حذف کریں">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-folder-open text-5xl mb-4 opacity-20"></i>
+                            <p class="font-nastaliq">ابھی تک کوئی اسنیپ شاٹ نہیں نکالا گیا۔</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

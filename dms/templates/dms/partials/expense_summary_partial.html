@@ -1,0 +1,65 @@
+<div class="grid grid-cols-4 gap-2" id="expense-summary-container" 
+     hx-get="{% url 'expense' institution.slug %}" 
+     hx-trigger="every 60s, expenseCreated from:body" 
+     hx-target="#expense-summary-container" 
+     hx-swap="outerHTML">
+    
+    <!-- Total Expenses -->
+    <a href="{% url 'expense' institution.slug %}" class="relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl rounded-xl p-3 md:p-6 border border-white/10 group hover:border-rose-500/30 hover:bg-white/[0.07] hover:-translate-y-1 transition-all duration-300 shadow-xl cursor-pointer block">
+        <div class="relative z-10 flex flex-col items-center text-center">
+            <div class="w-8 h-8 md:w-12 md:h-12 bg-rose-500/10 rounded-lg flex items-center justify-center text-rose-400 mb-2 border border-rose-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-money-bill-trend-up text-xs md:text-lg"></i>
+            </div>
+             <p class="text-[11px] md:text-sm text-white mb-1">کل اخراجات</p>
+            <div class="flex items-baseline gap-1">
+                <h3 class="text-xs md:text-2xl text-white">{{ total_expenses|floatformat:0 }}</h3>
+                <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
+            </div>
+        </div>
+    </a>
+
+    <!-- Latest Entry -->
+    <a href="{% url 'expense' institution.slug %}" class="relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl rounded-xl p-3 md:p-6 border border-white/10 group hover:border-blue-500/30 hover:bg-white/[0.07] hover:-translate-y-1 transition-all duration-300 shadow-xl cursor-pointer block">
+        <div class="relative z-10 flex flex-col items-center text-center">
+            <div class="w-8 h-8 md:w-12 md:h-12 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-400 mb-2 border border-blue-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-clock-rotate-left text-xs md:text-lg"></i>
+            </div>
+            <p class="text-[11px] md:text-sm text-white mb-1">تازہ ترین</p>
+            <div class="flex items-baseline gap-1">
+                <h3 class="text-xs md:text-2xl text-white">
+                    {% with latest=expenses.0 %}
+                        {% if latest %}{{ latest.amount|floatformat:0 }}{% else %}0{% endif %}
+                    {% endwith %}
+                </h3>
+                <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
+            </div>
+        </div>
+    </a>
+
+    <!-- Average Expense -->
+    <a href="{% url 'expense' institution.slug %}" class="relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl rounded-xl p-3 md:p-6 border border-white/10 group hover:border-orange-500/30 hover:bg-white/[0.07] hover:-translate-y-1 transition-all duration-300 shadow-xl cursor-pointer block">
+        <div class="relative z-10 flex flex-col items-center text-center">
+            <div class="w-8 h-8 md:w-12 md:h-12 bg-orange-500/10 rounded-lg flex items-center justify-center text-orange-400 mb-2 border border-orange-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-chart-line text-xs md:text-lg"></i>
+            </div>
+            <p class="text-[11px] md:text-sm text-white mb-1">اوسط</p>
+            <div class="flex items-baseline gap-1">
+                <h3 class="text-xs md:text-2xl text-white">{{ average_expense|default:0|floatformat:0 }}</h3>
+                <span class="text-[8px] md:text-sm text-slate-500">:{{ currency_label }}</span>
+            </div>
+        </div>
+    </a>
+
+    <!-- Total Count -->
+    <a href="{% url 'expense' institution.slug %}" class="relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl rounded-xl p-3 md:p-6 border border-white/10 group hover:border-purple-500/30 hover:bg-white/[0.07] hover:-translate-y-1 transition-all duration-300 shadow-xl cursor-pointer block">
+        <div class="relative z-10 flex flex-col items-center text-center">
+            <div class="w-8 h-8 md:w-12 md:h-12 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-400 mb-2 border border-purple-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-file-invoice-dollar text-xs md:text-lg"></i>
+            </div>
+            <p class="text-[11px] md:text-sm text-white mb-1">اندراجات</p>
+            <div class="flex items-baseline gap-1">
+                <h3 class="text-xs md:text-2xl text-white">{{ expenses.paginator.count|default:0 }}</h3>
+            </div>
+        </div>
+    </a>
+</div>

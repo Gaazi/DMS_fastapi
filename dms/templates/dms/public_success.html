@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شکریہ - {{ institution.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+        body { font-family: 'Amiri', serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6">
+
+    <div class="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 text-center animate-bounce-in border border-slate-100">
+        <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-8 border-4 border-emerald-50 text-emerald-600 shadow-inner">
+            <i class="fas fa-check text-4xl"></i>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <h1 class="text-3xl font-bold text-slate-800 mb-4">{{ message }}</h1>
+            {% endfor %}
+        {% else %}
+            <h1 class="text-3xl font-bold text-slate-800 mb-4">جزاک اللہ خیر!</h1>
+        {% endif %}
+
+        <p class="text-slate-500 mb-10 leading-relaxed">
+            آپ کا عطیہ کامیابی سے موصول ہو گیا ہے۔ اللہ تعالیٰ آپ کی اس کاوش کو قبول فرمائے اور دارین کی سعادتیں عطا فرمائے۔
+        </p>
+
+        <a href="{% url 'dms_login' %}" class="inline-flex items-center gap-3 px-10 py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold transition-all shadow-xl active:scale-95">
+            <i class="fas fa-arrow-right text-xs"></i>
+            واپس ہوم پیج پر جائیں
+        </a>
+    </div>
+
+</body>
+</html>

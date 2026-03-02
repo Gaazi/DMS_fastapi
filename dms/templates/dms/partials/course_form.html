@@ -1,0 +1,121 @@
+<div class="bg-[#0a0a0f] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
+    <div class="absolute inset-0 bg-indigo-600/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+    </div>
+
+    <div class="flex items-center gap-4 mb-8 border-b border-white/5 pb-4">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 flex items-center justify-center text-indigo-400 text-xl border border-indigo-600/20">
+            <i class="fas {% if editing_course %}fa-edit{% else %}fa-plus-circle{% endif %}"></i>
+        </div>
+        <h2 class="text-2xl text-white">
+            {% if editing_course %}ترمیم کریں{% else %}{% if institution.type == 'masjid' %}نیا پروگرام{% else %}نیا کورس{% endif %}{% endif %}
+        </h2>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% if editing_course %}
+        <input type="hidden" name="course_id" value="{{ editing_course.id }}">
+        {% endif %}
+
+        <div class="space-y-4">
+            {% load widget_tweaks %}
+            
+            <!-- Title -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">{% if institution.type == 'masjid' %}پروگرام کا نام{% else %}کورس کا نام{% endif %}</label>
+                {{ form.title|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Category -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">زمرہ</label>
+                    {{ form.category|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                </div>
+                
+                <!-- Capacity -->
+                {% if institution.type != 'masjid' %}
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">گنجائش</label>
+                    {{ form.capacity|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Instructors (New Field) -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">اساتذہ (Instructors)</label>
+                <div class="bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 max-h-40 overflow-y-auto text-white text-sm">
+                    {{ form.instructors }}
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1 mr-1">ایک سے زیادہ اساتذہ منتخب کیے جا سکتے ہیں</p>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تفصیل</label>
+                {{ form.description|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Admission Fee -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">{% if institution.type == 'masjid' %}ممبرشپ فیس{% else %}داخلہ فیس{% endif %}</label>
+                    {{ form.admission_fee|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                </div>
+                <!-- Course Fee -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">{% if institution.type == 'masjid' %}ماہانہ تعاون{% else %}کورس فیس{% endif %}</label>
+                    {{ form.course_fee|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Fee Type -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">فیس کی قسم</label>
+                    {{ form.fee_type|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                </div>
+                <!-- Status -->
+                <div class="flex items-center h-full pt-6">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <div class="relative">
+                            {{ form.is_active|add_class:"sr-only peer" }}
+                            <div class="w-10 h-5 bg-white/10 rounded-full shadow-inner transition-colors peer-checked:bg-emerald-500/20"></div>
+                            <div class="absolute left-0 top-0 w-5 h-5 bg-slate-400 rounded-full shadow transition-transform peer-checked:translate-x-full peer-checked:bg-emerald-400"></div>
+                        </div>
+                        <span class="text-sm text-slate-400 group-hover:text-white transition-colors">ایکٹو ہے؟</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Start Date -->
+                {% if institution.type != 'masjid' %}
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تاریخ آغاز</label>
+                    {{ form.start_date|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                </div>
+                <!-- End Date -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تاریخ اختتام</label>
+                    {{ form.end_date|add_class:"w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm" }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-4 mt-8 pt-6 border-t border-white/5">
+            <button type="submit"
+                class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-sm shadow-[0_10px_30px_rgba(79,70,229,0.3)] hover:scale-[1.02] hover:bg-indigo-500 active:scale-95 transition-all">
+                {% if editing_course %}تبدیلیاں محفوظ کریں{% else %}{% if institution.type == 'masjid' %}پروگرام شامل کریں{% else %}کورس شامل کریں{% endif %}{% endif %}
+            </button>
+            {% if editing_course %}
+            <a href="{% url 'dms_course' institution.slug %}"
+                class="w-full py-4 bg-white/5 text-slate-400 rounded-2xl text-sm text-center hover:bg-white/10 transition-all">
+                منسوخ کریں
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>

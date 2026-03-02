@@ -1,0 +1,186 @@
+{% load static %}
+<div class="relative bg-slate-900 text-white shadow-xl pb-1 mb-0.5" 
+     x-data="dmsHeader({
+         unread: '{{ dms_header.unread_count|default:0 }}',
+         notificationsUrl: '{{ dms_header.notifications_url|default:" #"|escapejs }}',
+         notificationsJson: '{{ dms_header.notifications_json|escapejs }}',
+         user: {
+             name: '{{ dms_header.user.name|default:"منتظم"|escapejs }}',
+             email: '{{ dms_header.user.email|default:""|escapejs }}',
+             role: '{{ dms_header.user.role|default:""|escapejs }}',
+             initials: '{{ dms_header.user.initials|default:"DMS"|escapejs }}'
+         }
+     })" 
+     x-init="init()">
+
+    <!-- Horizon Glow -->
+    <div class="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50"></div>
+    <div class="hero-pattern absolute inset-0 opacity-10 pointer-events-none"></div>
+
+    <div class="relative max-w-7xl mx-auto px-2 sm:px-6 lg:px-5 pt-1">
+
+        <div class="flex items-center justify-between">
+
+            <!-- Brand -->
+            <div x-show="true" x-transition:enter="transition ease-out duration-700 delay-100"
+                x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+                {% include "dms/includes/brand.html" %}
+            </div>
+
+            <!-- Desktop Nav (Visible only on Large Screens) -->
+            <div
+                class="hidden lg:flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 mx-4 shadow-glass hover:bg-white/15 transition-all duration-300">
+                {% include "dms/includes/nav_dms.html" %}
+            </div>
+
+            <!-- Right Side (Unified Action Bar) -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                
+                <!-- Home Link -->
+                <a href="{% if institution or current_institution %}{% url 'dashboard' institution.slug|default:current_institution.slug %}{% else %}{% url 'dms' %}{% endif %}" 
+                   class="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-300 group text-white/70 hover:text-emerald-400"
+                   title="ہوم پیج">
+                    <i class="fa-solid fa-house text-lg transition-transform group-hover:scale-110"></i>
+                </a>
+
+                <!-- Notifications -->
+                {% include "dms/includes/notifications.html" %}
+
+                <!-- User Controls -->
+                {% include "dms/includes/user_controls.html" %}
+
+                <!-- Divider -->
+                <div class="hidden md:block w-px h-6 bg-white/10 mx-1"></div>
+
+                <!-- Actions -->
+                {% if request.user.is_authenticated %}
+                    {% include "dms/includes/account_switcher.html" %}
+                    
+                    <a href="{% url 'dms_logout' %}" 
+                       class="group flex items-center justify-center w-10 h-10 md:w-auto md:h-auto md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10 hover:bg-rose-500/10 hover:border-rose-500/50 transition-all duration-300 md:gap-2 text-rose-500 hover:text-rose-400"
+                       title="لاگ آؤٹ">
+                        <span class="hidden md:block text-sm font-mehr">خروج</span>
+                        <i class="fa-solid fa-power-off text-lg md:text-base"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'dms_login' %}" 
+                       class="group flex items-center justify-center w-10 h-10 md:w-auto md:h-auto md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all duration-300 md:gap-2 text-emerald-500 hover:text-emerald-400"
+                       title="لاگ ان">
+                        <span class="hidden md:block text-sm font-mehr">لاگ ان</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket text-lg md:text-base"></i>
+                    </a>
+                {% endif %}
+
+                <!-- Mobile Button -->
+                <button
+                    class="lg:hidden w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white/80 active:scale-95 transition-all"
+                    @click="toggle('mobile')">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+ 
+            </div>
+        </div>
+
+        <!-- Mobile Nav Section (New Row below Header) -->
+         {% comment %} 
+        <div class="lg:hidden mt-3 pb-1 overflow-x-auto no-scrollbar">
+            <div class="flex items-center gap-2 px-1">
+                 {% include "dms/includes/nav_dms.html" %}
+            </div>
+        </div>
+        {% endcomment %}
+
+        <!-- Mobile Menu -->
+         <div>
+             {% include "dms/includes/mobile_menu.html" %}
+         </div>
+    </div>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('dmsHeader', (config) => ({
+            mobileOpen: false,
+            userOpen: false,
+            notificationsOpen: false,
+            notifications: [],
+            unread: parseInt(config.unread || 0),
+            notificationsUrl: config.notificationsUrl || '#',
+            admin: config.user || {},
+            
+            get avatarText() {
+                if (this.admin.initials) return this.admin.initials;
+                if (this.admin.name) return this.admin.name.trim().slice(0, 2);
+                return 'د';
+            },
+            
+            toggle(which) {
+                if (which === 'mobile') {
+                    this.mobileOpen = !this.mobileOpen;
+                    this.notificationsOpen = false;
+                    this.userOpen = false;
+                } else if (which === 'user') {
+                    this.userOpen = !this.userOpen;
+                    this.mobileOpen = false;
+                    this.notificationsOpen = false;
+                } else if (which === 'notifications') {
+                    this.notificationsOpen = !this.notificationsOpen;
+                    this.mobileOpen = false;
+                    this.userOpen = false;
+                    if (this.notificationsOpen) {
+                        this.markAsRead();
+                    }
+                }
+            },
+            
+            markAsRead() {
+                if (this.unread > 0 && this.notifications.length > 0) {
+                    // Get latest notification ID to store
+                    const latestId = this.notifications[0].id;
+                    localStorage.setItem('dms_last_read_notification', latestId);
+                    this.unread = 0;
+                }
+            },
+
+            openNotification(note) {
+                const url = note.url || this.notificationsUrl;
+                if (url) window.location.href = url;
+            },
+            
+            init() {
+                try {
+                    const data = config.notificationsJson || '';
+                    let tempNotifs = data ? JSON.parse(data) : [];
+                    
+                    if (tempNotifs.length > 0) {
+                        const lastReadId = localStorage.getItem('dms_last_read_notification');
+                        
+                        // If we have a last read notification
+                        if (lastReadId) {
+                            const readIndex = tempNotifs.findIndex(n => n.id === lastReadId);
+                            
+                            if (readIndex !== -1) {
+                                // Keep only the notifications that are NEWER (before the read index in the array)
+                                this.notifications = tempNotifs.slice(0, readIndex);
+                                this.unread = this.notifications.length;
+                            } else {
+                                // Last read not found in this batch (very old), show all as new
+                                this.notifications = tempNotifs;
+                                this.unread = this.notifications.length;
+                            }
+                        } else {
+                            // Never read anything
+                            this.notifications = tempNotifs;
+                            this.unread = this.notifications.length;
+                        }
+                    } else {
+                        this.notifications = [];
+                        this.unread = 0;
+                    }
+                } catch (e) {
+                    console.error('Error parsing notifications:', e);
+                    this.notifications = [];
+                    this.unread = 0;
+                }
+            }
+        }))
+    });
+</script>

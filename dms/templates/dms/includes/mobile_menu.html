@@ -1,0 +1,22 @@
+<div x-show="mobileOpen" x-transition.opacity class="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md lg:hidden"
+    @click="toggle('mobile')" x-cloak>
+</div>
+
+<div x-show="mobileOpen" x-transition:enter="transition ease-out duration-300 transform"
+    x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+    x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-x-0"
+    x-transition:leave-end="translate-x-full"
+    class="fixed inset-y-0 right-0 z-50 w-72 bg-slate-900 shadow-2xl lg:hidden overflow-y-auto border-l border-white/10" x-cloak>
+
+    <div class="p-6 border-b border-white/5 flex justify-between items-center bg-slate-950/50">
+        <span class="font-bold text-white text-xl">مینو</span>
+        <button @click="toggle('mobile')" class="text-slate-400 hover:text-white transition focus:outline-none bg-white/5 p-2 rounded-lg">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+    </div>
+
+    <!-- MOBILE NAV -->
+    <nav class="flex flex-col gap-4 p-6">
+        {% include "dms/includes/nav_dms.html" %}
+    </nav>
+</div>

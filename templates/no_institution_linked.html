@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    
+    <!-- Background Effects -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute top-40 -left-20 w-72 h-72 bg-emerald-500/20 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="max-w-md w-full space-y-8 bg-white/5 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/10 relative z-10">
+        
+        {% if pending %}
+    <div class="text-center">
+        <div class="mx-auto h-24 w-24 bg-amber-500/10 rounded-full flex items-center justify-center mb-6 ring-2 ring-amber-500/20 relative">
+            <i class="fas fa-file-invoice-dollar text-amber-500 text-4xl animate-bounce"></i>
+            <span class="absolute top-0 right-0 h-4 w-4 bg-amber-500 rounded-full animate-ping"></span>
+        </div>
+
+        <h2 class="text-3xl font-extrabold text-white mb-2 tracking-widest uppercase italic">Pending Approval</h2>
+        <h3 class="text-lg text-indigo-400 font-medium mb-6">{{ institution.name }}</h3>
+        
+        <div class="bg-slate-800/50 border border-amber-500/30 rounded-2xl p-6 mb-8 text-right backdrop-blur-md shadow-2xl">
+            <p class="text-amber-100 text-base leading-relaxed mb-4">
+                آپ کے ادارے کی رجسٹریشن ابھی مکمل نہیں ہوئی ہے۔ ڈیش بورڈ کو فعال کرنے کے لئے اینتظامیہ سے رابطہ کریں:
+            </p>
+        </div>
+
+        <div class="space-y-3">
+            <a href="https://wa.me/919557237119?text=السلام علیکم! میرا ادارہ پینڈنگ ہے، براہ مہربانی اپروو کر دیں۔" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-lg">
+                <i class="fab fa-whatsapp text-lg"></i> رابطہ کریں (9557237119)
+            </a>
+            
+            <a href="https://wa.me/918983376649?text=السلام علیکم! میرا ادارہ پینڈنگ ہے، براہ مہربانی اپروو کر دیں۔" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg">
+                <i class="fab fa-whatsapp text-lg"></i> رابطہ کریں (8983376649)
+            </a>
+            
+            <a href="{% url 'dms_logout' %}" class="flex items-center justify-center gap-2 w-full py-3 px-4 border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl text-sm transition-all">
+                <i class="fas fa-sign-out-alt"></i> لاگ آؤٹ
+            </a>
+        </div>
+    </div>
+
+        {% else %}
+            <!-- Registration Form State -->
+            <div class="text-center mb-8">
+                <div class="mx-auto h-16 w-16 bg-indigo-500/10 rounded-full flex items-center justify-center mb-4 ring-1 ring-indigo-500/30">
+                    <i class="fas fa-mosque text-indigo-400 text-2xl"></i>
+                </div>
+                <!-- <h2 class="text-2xl font-bold text-white mb-2">نیا ادارہ رجسٹر کریں</h2> -->
+                <h2 class="text-3xl font-extrabold text-white mb-2">خوش آمدید!</h2>
+                
+                <p class="text-gray-300 text-lg mb-8 leading-relaxed">
+                    آپ کا اکاؤنٹ کامیابی کے ساتھ بن گیا ہے، لیکن ابھی آپ کسی ادارے (مدرسہ،مکتب یامسجد) کے ساتھ منسلک نہیں ہیں۔
+                </p>
+
+                <div class="bg-indigo-500/10 border-l-4 border-indigo-500 p-4 mb-6 rounded-r-lg">
+                    <p class="text-sm text-indigo-200 leading-relaxed text-right">
+                        براہ کرم یہ فارم پر کرکے بھیجیں۔ اور منتظم (Admin) سے رابطہ کریں تاکہ وہ آپ کے ادارے کو فعال کردیں۔ جیسے ہی آپ کا ادارہ فعال ہوگا آپ کو ڈیش بورڈ تک رسائی مل جائے گی۔
+                    </p>
+                </div>
+
+                <div class="mt-4 text-center text-sm text-slate-500">
+                    اگر آپ کو کوئی مشکل پیش آ رہی ہے تو ہیلپ لائن پر رابطہ کریں۔
+                </div>
+            </div>
+
+            <form method="POST" class="space-y-5">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="space-y-1 text-right">
+                    <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mr-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <p class="text-rose-400 text-xs mt-1 mr-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all active:scale-95">
+                        درخواست جمع کروائیں
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 text-center border-t border-white/10 pt-6">
+                <p class="text-slate-500 text-xs mb-4">پہلے سے رجسٹرڈ ہیں؟</p>
+                <a href="{% url 'dms_logout' %}" class="text-slate-400 hover:text-white text-sm transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-arrow-right"></i> واپس لاگ ان پر جائیں
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

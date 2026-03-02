@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}سسٹم لاگز - {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl">سسٹم لاگز (System Audit Logs)</h1>
+        <a href="{% url 'dashboard' institution.slug %}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition">
+            <i class="fas fa-arrow-right ml-2"></i> واپسی ڈیش بورڈ
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-right">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">وقت</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">صارف</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">عمل</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">ماڈل</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">آبجیکٹ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-sm text-gray-500 font-sans">{{ log.timestamp|date:"d M Y, h:i A" }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            {% if log.user %}{{ log.user.username }}{% else %}<span class="text-gray-400">سسٹم</span>{% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if log.action == 'create' %}
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded-md text-xs">تخلیق</span>
+                            {% elif log.action == 'update' %}
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-xs">تبدیلی</span>
+                            {% elif log.action == 'delete' %}
+                                <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded-md text-xs">حذف (Trash)</span>
+                            {% elif log.action == 'restore' %}
+                                <span class="bg-teal-100 text-teal-700 px-2 py-1 rounded-md text-xs">بحالی</span>
+                            {% elif log.action == 'hard_delete' %}
+                                <span class="bg-red-100 text-red-700 px-2 py-1 rounded-md text-xs">مکمل خاتمہ</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 font-sans">{{ log.model_name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ log.object_repr }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-400">کوئی ریکارڈ موجود نہیں ہے۔</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

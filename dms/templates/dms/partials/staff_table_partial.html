@@ -1,0 +1,131 @@
+<section id="staff-table-container">
+    <!-- Tactical Registry Header -->
+  
+ <!-- Staff Directory -->
+    <div class="glass-card rounded-[2.5rem] overflow-hidden mb-12" x-show="loaded" x-transition:enter="transition delay-[600ms] duration-1000">
+        <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between bg-white/5">
+            <h2 class="text-xl text-white">عملہ کی فہرست</h2>
+            <div class="flex items-center gap-3">
+            {% if can_edit_staff %}
+            <!-- Tactical New Staff Trigger -->
+            <a href="{% url 'dms_staff_create' institution.slug %}"  
+               class="group/plus relative px-5 py-2 rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 shadow-2xl">
+                <div class="absolute inset-0 bg-emerald-500/10 border border-emerald-500/30 group-hover/plus:bg-emerald-500/20 group-hover/plus:border-emerald-500/50 transition-colors"></div>
+                
+                <div class="relative flex items-center gap-3">
+                    <span class="relative flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-base">{% if institution.type == 'masjid' %}نیا خادم{% else %}نیا استاد/رکن{% endif %}</span>
+                    <i class="fas fa-plus text-[10px] text-emerald-500 group-hover/plus:rotate-180 transition-transform duration-500"></i>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+        </div>
+
+    {% for member in staff_members %}
+    <div class="group relative px-0.5 md:px-2 py-0.5 flex items-center transition-all duration-500 hover:bg-white/[0.04] border-b border-white/5 gap-0.5 md:gap-2 overflow-hidden">
+        
+        <!-- Targeting Background Effect -->
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+
+        <!-- Whole Row Interactive Link -->
+        <a href="{% url 'dms_staff_detail' institution.slug member.id %}" class="absolute inset-0 z-40" aria-label="View Staff Profile"></a>
+
+        <!-- Tactical Locked-On Indicator -->
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-blue-500 rounded-r-full scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-center shadow-[0_0_20px_#3b82f6]"></div>
+        
+        <!-- Col 1: Tactical ID Stack -->
+        <div class="flex flex-col shrink-0 items-center justify-center gap-0.5 ltr:border-r rtl:border-l rtl:border-r-0 border-white/10 relative z-20 w-[45px] md:w-[65px] min-h-[3.5rem] md:h-16 bg-black/20 ltr:rounded-l-lg rtl:rounded-r-lg">
+            <div class="flex flex-col items-center">
+                <span class="text-[8px] text-blue-500/50 font-mono uppercase leading-none mb-1 tracking-widest font-black">ID_SEQ</span>
+                <span class="text-sm md:text-lg text-blue-400 font-mono font-black tabular-nums leading-none">{{ forloop.counter|stringformat:"02d" }}</span>
+            </div>
+            <div class="w-6 h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
+            <div class="flex flex-col items-center">
+                <span class="text-[8px] text-slate-500 uppercase leading-none mb-1 tracking-tighter">ID</span>
+                <span class="text-xs md:text-sm text-white/80 font-mono font-black tabular-nums leading-none">#{{ member.id }}</span>
+            </div>
+        </div>
+
+
+
+ <!-- Col 3: Encrypted Identity Data -->
+        <div class="flex-grow min-w-0 flex flex-col justify-center z-20 pointer-events-none px-0.5 lg:px-2">
+            <div class="flex items-center gap-1 mb-1">
+                <h4 class="text-base md:text-2xl text-white truncate leading-tight group-hover:text-blue-50 transition-colors">{{ member.full_name }}</h4>
+                 {% if not member.is_active %}
+                    <div class="px-0.5 py-0.5 rounded-sm bg-rose-600/20 border border-rose-500/30">
+                        <span class="text-[7px] md:text-[8px] text-rose-500 uppercase tracking-widest">OFFLINE</span>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="space-y-1.5 mt-0.5">
+                <div class="flex items-center gap-1 text-xs md:text-base text-blue-500/80 leading-none">
+                    <div class="w-5 shrink-0 flex items-center justify-start opacity-40">
+                        <i class="fas fa-user-friends text-[10px] md:text-sm"></i>
+                    </div>
+                    <span class="truncate">{{ member.mobile }}</span>
+                </div>
+
+                {% if member.mobile %}
+                <div class="relative z-50 pointer-events-auto">
+                    <a href="tel:{{ member.mobile }}" class="flex items-center gap-1 text-xs md:text-sm hover:text-blue-400 transition-all group/tel">
+                        <div class="w-5 shrink-0 flex items-center justify-start opacity-30 group-hover/tel:opacity-100 transition-opacity">
+                            <i class="fas fa-phone-alt scale-85"></i>
+                        </div>
+                        <span class="tabular-nums">{{ member.get_role_display }}</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+
+
+        <!-- Col 3: Bio-Metrics & Ledger -->
+        <div class="flex items-center gap-0.5 md:gap-1 shrink-0 z-20 pl-0.5"> 
+            <!-- Ledger Status Area (Symmetric) -->
+            <div class="w-[52px] md:w-[75px] flex flex-col shrink-0 transition-all duration-500">
+                <!-- Status Row -->
+                <div class="flex-1 flex flex-col items-center justify-center">
+                    <span class="text-[9px] md:text-sm uppercase leading-none mb-0.5 {% if member.has_pending_salary %}text-rose-500{% else %}text-emerald-500{% endif %}">SALARY</span>
+                    <span class="text-xs md:text-base leading-none {% if member.has_pending_salary %}text-rose-500{% else %}text-emerald-500{% endif %}">{% if member.has_pending_salary %}DUE{% else %}PAID{% endif %}</span>
+                </div>
+                <!-- Amount Row -->
+                <div class="flex-1 flex flex-col items-center justify-center mt-1 pt-1">
+                    <span class="text-sm md:text-base tabular-nums leading-none {% if member.has_pending_salary %}text-rose-500{% else %}text-white/60{% endif %}">
+                        {% if member.has_pending_salary %}{{ member.month_due_amount|floatformat:0 }}{% else %}
+                        <i class="fas fa-check-double text-emerald-500/80 text-[10px] md:text-sm"></i>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+
+
+            <!-- Attendance Data Area (Symmetric) -->
+            <div class="flex flex-col w-[52px] md:w-[75px] shrink-0">
+                <!-- Presents Row -->
+                <div class="flex-1 flex flex-col items-center justify-center" dir="ltr">
+                    <span class="text-[9px] md:text-sm text-emerald-500 uppercase leading-none mb-0.5">PRES</span>
+                    <span class="text-sm md:text-base font-mono text-white tabular-nums leading-none">{{ member.month_presents }}</span>
+                </div>
+                <!-- Absents Row -->
+                <div class="flex-1 flex flex-col items-center justify-center mt-1 pt-1" dir="ltr">
+                    <span class="text-[9px] md:text-sm text-rose-500 uppercase leading-none mb-0.5">ABS</span>
+                    <span class="text-sm md:text-base font-mono text-white tabular-nums leading-none">{{ member.month_absents }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="py-24 flex flex-col items-center justify-center text-center px-10">
+        <i class="fas fa-user-slash text-2xl text-slate-800 mb-4 animate-pulse"></i>
+        <h3 class="text-slate-500 font-urdu">عملے کا کوئی ریکارڈ موجود نہیں ہے</h3>
+    </div>
+    {% endfor %}
+</section>

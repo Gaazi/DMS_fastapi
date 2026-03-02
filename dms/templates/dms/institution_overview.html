@@ -1,0 +1,159 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}ادارہ پورٹ فولیو{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-10 space-y-9" dir="rtl">
+  <div class="bg-white shadow rounded-2xl border p-6 flex flex-col gap-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl text-gray-800">تمام اداروں کا خلاصہ</h1>
+        <p class="text-sm text-gray-500 mt-2">مساجد، مدارس اور مکتب سب کا مجموعی منظر ایک جگہ، ہر ورک اسپیس میں جانے کے
+          تیز لنکس کے ساتھ۔</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        {% if request.user.is_superuser %}
+        <form method="get" action="{% url 'all_institutions_export' %}"
+          class="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg shadow">
+          <label for="global-backup-format" class="text-sm text-blue-700">مکمل بیک اپ ڈاؤن لوڈ</label>
+          <select id="global-backup-format" name="format"
+            class="text-sm rounded-md border-gray-200 focus:ring-blue-500 focus:border-blue-500">
+            <option value="combined">دونوں</option>
+            <option value="json">JSON</option>
+            <option value="sheet">شیٹ</option>
+          </select>
+          <button type="submit"
+            class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition">ڈاؤن لوڈ
+            کریں</button>
+        </form>
+        {% endif %}
+        <a href="{% url 'dms' %}"
+          class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 shadow hover:bg-gray-200 transition text-sm">واپس انتخاب
+          پر</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-2xl shadow-lg p-6">
+      <h2 class="text-sm uppercase tracking-wide opacity-80">مجموعی ادارے</h2>
+      <p class="text-3xl font-semibold mt-2">{{ totals.institutions }}</p>
+    </div>
+    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-2xl shadow-lg p-6">
+      <h2 class="text-sm uppercase tracking-wide opacity-80">کل آمدنی</h2>
+      <p class="text-3xl font-semibold mt-2">{{ currency_label }}: {{ totals.income|floatformat:0 }}</p>
+    </div>
+    <div class="bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl shadow-lg p-6">
+      <h2 class="text-sm uppercase tracking-wide opacity-80">کل اخراجات</h2>
+      <p class="text-3xl font-semibold mt-2">{{ currency_label }}: {{ totals.expense|floatformat:0 }}</p>
+    </div>
+  </div>
+
+
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% for key, item in type_summary.items %}
+    <div class="bg-white border rounded-2xl shadow-sm p-6 flex flex-col gap-4">
+
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs uppercase text-gray-400">{{ key|capfirst }}</p>
+          <h3 class="text-xl font-semibold text-gray-800">
+            {{ item.meta.title }}
+          </h3>
+        </div>
+        <a href="{% url 'institution_type_list' key %}"
+          class="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+          فہرست دیکھیں
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+        <div>
+          <p class="text-gray-500">ادارے</p>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ item.institution_count }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-gray-500">طلبہ / شرکاء</p>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ item.student_count }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-gray-500">عملہ</p>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ item.staff_count }}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-gray-500">کورسز</p>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ item.course_count }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-sm">
+        <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
+          آمدنی:
+          {{ currency_label|default_if_none:"" }}
+          {{ item.total_income|floatformat:0 }}
+        </span>
+
+        <span class="px-3 py-1 rounded-full bg-rose-50 text-rose-700">
+          اخراجات:
+          {{ currency_label|default_if_none:"" }}
+          {{ item.total_expense|floatformat:0 }}
+        </span>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+
+  <div class="bg-white rounded-2xl border shadow p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">تفصیلی فہرست</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50 text-gray-600">
+          <tr>
+            <th class="px-3 py-2 text-right">ادارہ</th>
+            <th class="px-3 py-2 text-right">قسم</th>
+            <th class="px-3 py-2 text-right">پتہ</th>
+            <th class="px-3 py-2 text-right">آمدنی</th>
+            <th class="px-3 py-2 text-right">اخراجات</th>
+            <th class="px-3 py-2 text-right">عمل</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {% for inst in institutions %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-3 py-2 font-semibold text-gray-800">{{ inst.name }}</td>
+            <td class="px-3 py-2 text-gray-600">{{ inst.get_type_display }}</td>
+            <td class="px-3 py-2 text-gray-500">{{ inst.address|default:"—" }}</td>
+            <td class="px-3 py-2 text-emerald-700">{{ currency_label }}: {{ inst.income_total|floatformat:0 }}</td>
+            <td class="px-3 py-2 text-rose-700">{{ currency_label }}: {{ inst.expense_total|floatformat:0 }}</td>
+            <td class="px-3 py-2 space-x-2 space-x-reverse">
+              <a href="{% url 'dashboard' inst.slug %}" class="text-blue-600 text-sm hover:underline">ڈیش
+                بورڈ</a>
+              <a href="{% url 'institution_detail' inst.slug %}"
+                class="text-gray-600 text-sm hover:underline">تفصیل</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="px-3 py-4 text-center text-gray-500">کوئی ادارہ موجود نہیں ہے۔</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

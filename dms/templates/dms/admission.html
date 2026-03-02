@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block title %}{{ institution.name }} - {% if editing_student %}{% if institution.type == 'masjid' %}ترمیم ممبر{% else %}ترمیم ریکارڈ{% endif %}{% else %}{% if institution.type == 'masjid' %}نیا ممبر{% else %}نیا داخلہ{% endif %}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="relative z-10" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+    
+    <!-- Premium Header Area -->
+    <header class="relative flex flex-col items-center justify-center gap-4 mb-12 text-center"
+            x-show="loaded" x-transition:enter="transition duration-1000 ease-out">
+        <h1 class="text-4xl md:text-6xl text-white">
+            {% if editing_student %}
+                {% if institution.type == 'masjid' %}ممبر کی معلومات تبدیل کریں{% else %}طالب علم کی معلومات تبدیل کریں{% endif %}
+            {% else %}
+                {% if institution.type == 'masjid' %}نیا ممبر فارم{% else %}نیا داخلہ فارم{% endif %}
+            {% endif %}
+        </h1>
+        
+        <p class="text-slate-400 text-lg opacity-60">
+            برائے مہربانی درج ذیل تفصیلات کو درست طریقے سے پُر کریں۔
+        </p>
+    </header>
+
+<div class="glass-card rounded-3xl p-1 sm:p-2 shadow-2xl border border-white/10">
+    <form method="post" action="." class="space-y-5">
+        {% csrf_token %}
+
+        <!-- Error Handling (Short & Clean) -->
+        {% if form.errors %}
+            <div class="text-rose-400 text-[10px] bg-rose-500/5 p-3 rounded-xl">
+                برائے مہربانی نام درست درج کریں
+            </div>
+        {% endif %}
+
+        <!-- Hidden inputs for logic -->
+        {% if editing_student %}
+            <input type="hidden" name="student_id" value="{{ editing_student.id }}">
+            <input type="hidden" name="action" value="save">
+        {% endif %}
+
+        <!-- NAME FIELD (SIMPLE VERSION) -->
+        <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-1">
+                <label class="text-[11px] text-emerald-400">
+                    {% if institution.type == 'masjid' %}ممبر کا نام{% else %}{{ form.name.label }}{% endif %}
+                </label>
+                {% if editing_student %}
+                <div class="flex items-center gap-2">
+                     <span class="text-[10px] text-emerald-500 font-mono font-bold tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                        {% if institution.type == 'masjid' %}MEMBER ID{% else %}ROLL NO{% endif %}: {{ editing_student.reg_id }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if institution.type == 'masjid' %}
+                {{ form.name|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all"|attr:"placeholder:ممبر کا نام..." }}
+            {% else %}
+                {{ form.name|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all"|attr:"placeholder:طالب علم کا نام..." }}
+            {% endif %}
+        </div>
+
+
+            <!-- 2. GUARDIAN & CONTACT DETAILS -->
+            <div class="grid grid-cols-1 {% if institution.type != 'masjid' %}sm:grid-cols-2{% endif %} gap-4">
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.father_name.label }}</label>
+                    {{ form.father_name|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                </div>
+                
+                {% if institution.type != 'masjid' %}
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.guardian_name.label }}</label>
+                    <div class="flex gap-2">
+                        {{ form.guardian_name|add_class:"flex-1 bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50"|attr:"placeholder:والد کے علاوہ اگر کوئی سرپرست ہو تو نام لکھیں..." }}
+                        {{ form.guardian_relation|add_class:"w-[110px] bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-2 h-11 text-xs outline-none focus:border-emerald-500/50 [&>option]:text-black" }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+
+            <!-- 3. CONTACT DETAILS -->
+            <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.mobile.label }}</label>
+                    {{ form.mobile|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.mobile2.label }}</label>
+                    {{ form.mobile2|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                </div>
+            </div>
+
+            <!-- 4. PERSONAL INFO: Gender & Date of Birth -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.gender.label }}</label>
+                    {{ form.gender|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black" }}
+                </div>
+                {% if institution.type != 'masjid' %}
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.date_of_birth.label }}</label>
+                    {{ form.date_of_birth|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [color-scheme:dark]" }}
+                </div>
+                {% endif %}
+            </div>
+            
+
+            <!-- 5. EMAIL, BLOOD GROUP & FEE START -->
+            <div class="grid {% if institution.type != 'masjid' %}grid-cols-3 sm:grid-cols-3 gap-4{% else %}grid-cols-1 sm:grid-cols-1 gap-4{% endif %}">
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.email.label }}</label>
+                    {{ form.email|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-1 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                </div>
+                {% if institution.type != 'masjid' %}
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.blood_group.label }}</label>
+                    {{ form.blood_group|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] text-emerald-400 px-1">{{ form.fee_start_month.label }}</label>
+                    {{ form.fee_start_month|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 6. ADDRESS SECTION -->
+            <div class="space-y-1">
+                <label class="text-[11px] text-emerald-400 px-1">{{ form.address.label }}</label>
+                {{ form.address|add_class:"w-full bg-transparent !text-emerald-400 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500/50" }}
+            </div>
+
+            <!-- Include Course, Fees & Payment Partial -->
+            {% include "dms/partials/course_fees_partial.html" %}
+
+            <!-- Submit Button -->
+            <div class="pt-6">
+                <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r {% if editing_student %}from-indigo-600 to-blue-700{% else %}from-emerald-600 to-teal-700{% endif %} text-white font-bold shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+                    <i class="fas {% if editing_student %}fa-save{% else %}fa-user-check{% endif %}"></i>
+                    <span>{% if editing_student %}داخلہ محفوظ کریں{% else %}داخلہ مکمل کریں{% endif %}</span>
+                </button>
+            </div>
+        </form>
+
+{% comment %}
+    <!-- Suggestions List -->
+    {% if existing_students %}
+    <datalist id="student-list">
+        {% for s in existing_students %}
+            <option value="{{ s.full_name }} [{{ s.reg_id }}]"></option>
+        {% endfor %}
+    </datalist>
+    {% endif %}
+{% endcomment %}
+</div>
+    </div>
+</div>
+{% endblock %}

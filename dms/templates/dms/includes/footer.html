@@ -1,0 +1,34 @@
+<footer class="relative bg-slate-950 border-t border-white/5 mt-auto overflow-hidden {% if institution and not is_dms_student and not is_dms_parent %}lg:pb-0 pb-[35px]{% endif %}">
+    <!-- Premium Glow Effect -->
+    <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-slate-950 to-slate-950 pointer-events-none"></div>
+
+    <div class="relative max-w-7xl mx-auto px-2 py-0.5 md:py-4 sm:px-4 lg:px-6 flex flex-col md:flex-row justify-between items-center gap-0.5 z-10">
+        <!-- Brand & Copyright -->
+        <div class="flex flex-row items-center gap-3 md:gap-6">
+            <div class="flex items-center gap-1.5 md:gap-3">
+                <div class="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-emerald-500"></span>
+                </div>
+                <span class="text-slate-100 font-bold tracking-widest text-[9px] md:text-sm uppercase opacity-90">DMS - Digital Management System</span>
+            </div>
+            <span class="hidden sm:inline text-slate-700">|</span>
+            <p class="text-xs md:text-sm whitespace-nowrap text-slate-400">
+                &copy; <span x-text="new Date().getFullYear()"></span> جملہ حقوق محفوظ ہیں۔
+            </p>
+        </div>
+        
+        <!-- Links (Buttons) -->
+        <div class="flex gap-2 md:gap-4">
+            <a href="#" class="px-2 py-0.5 md:px-4 md:py-2 bg-slate-800/50 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/30 rounded md:rounded-lg text-[9px] md:text-xs font-semibold tracking-wider uppercase text-slate-500 hover:text-emerald-400 transition-all duration-300">Help</a>
+            <a href="#" class="px-2 py-0.5 md:px-4 md:py-2 bg-slate-800/50 hover:bg-blue-500/20 border border-white/5 hover:border-blue-500/30 rounded md:rounded-lg text-[9px] md:text-xs font-semibold tracking-wider uppercase text-slate-500 hover:text-blue-400 transition-all duration-300">Privacy</a>
+            <a href="#" class="px-2 py-0.5 md:px-4 md:py-2 bg-slate-800/50 hover:bg-indigo-500/20 border border-white/5 hover:border-indigo-500/30 rounded md:rounded-lg text-[9px] md:text-xs font-semibold tracking-wider uppercase text-slate-500 hover:text-indigo-400 transition-all duration-300">Contact</a>
+        </div>
+    </div>
+
+    {# Tactical Mobile Bottom Navigation with Space #}
+    <div class="mt-2 md:hidden">
+        {% include "dms/includes/nav_bottom_tactical.html" %}
+    </div>
+</footer>

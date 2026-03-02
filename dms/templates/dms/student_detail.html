@@ -1,0 +1,95 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ student.full_name }} - {% if institution.type == 'masjid' %}ممبر پروفائل{% else %}تعلیمی پروفائل{% endif %}{% endblock %}
+
+{% block content %}
+<div class="relative z-10 text-slate-200" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+    
+    <!-- Master Profile HUD: Intelligence Data Hub -->
+    {% include "dms/partials/student_profile_hud.html" %}
+
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        
+        <!-- Breadcrumb & Navigation -->
+        <nav class="flex items-center gap-4 mb-10 text-[10px] uppercase text-slate-500"
+             x-show="loaded" x-transition:enter="transition duration-700 ease-out" x-transition:enter-start="opacity-0 -translate-x-4">
+            <a href="{% url 'dashboard' institution.slug %}" class="hover:text-indigo-400 transition-colors">Dashboard</a>
+            <i class="fas fa-chevron-left text-[8px] opacity-30"></i>
+            <a href="{% url 'students' institution.slug %}" class="hover:text-indigo-400 transition-colors">Student Registry</a>
+            <i class="fas fa-chevron-left text-[8px] opacity-30"></i>
+            <span class="text-indigo-400">{{ student.full_name }}</span>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <!-- Left Column: Details & History -->
+            <div class="lg:col-span-8 space-y-10" x-show="loaded" x-transition:enter="transition delay-300 duration-1000">
+                
+                <!-- Featured Component Inclusion: Financial HUD -->
+                {% include "dms/partials/student_fee.html" %}
+
+                <!-- Fee Ledger Slab -->
+                {% include "dms/partials/student_fee_ledger.html" %}
+
+                <!-- Wallet Ledger: Compact Mobile-First Table -->
+                {% include "dms/partials/student_wallet_ledger.html" %}
+
+                <!-- Course & Fee Structure Card -->
+                {% include "dms/partials/student_courses_card.html" %}
+            </div>
+
+            <!-- Right Column: Stats & Sidebars -->
+            <aside class="lg:col-span-4 space-y-10" x-show="loaded" x-transition:enter="transition delay-500 duration-1000">
+                
+                
+                <!-- Attendance History -->
+                <div class="bg-[#0a0a0f]/50 border border-white/5 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden relative">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-white/5 pb-6">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl text-white">
+                                {% if institution.type == 'masjid' %}نمازوں کا ریکارڈ{% else %}حاضری کا ریکارڈ{% endif %}
+                            </h3>
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        </div>
+                        
+                        <!-- Integrated Stats Area -->
+                        <div class="flex items-center gap-3">
+                            <!-- Total Logs Stat -->
+                            <div class="bg-indigo-500/5 border border-indigo-500/10 rounded-xl px-3 py-1.5 flex flex-col items-center min-w-[70px]">
+                                <span class="text-[7px] text-indigo-400 uppercase font-bold tracking-tighter">Total Logs</span>
+                                <span class="text-xs font-bold text-white leading-none">{{ total_daily_records }}</span>
+                            </div>
+                            <!-- Attendance Stat -->
+                            <div class="bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-3 py-1.5 flex flex-col items-center min-w-[70px]">
+                                <span class="text-[7px] text-emerald-400 uppercase font-bold tracking-tighter">
+                                    {% if institution.type == 'masjid' %}Presence{% else %}Attendance{% endif %}
+                                </span>
+                                <span class="text-xs font-bold text-white leading-none">{{ attendance_percentage }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        {% for record in attendance %}
+                        <div class="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
+                            <div class="flex items-center gap-4">
+                                <div class="w-2 h-2 rounded-full {% if record.status == 'present' %}bg-emerald-500{% elif record.status == 'absent' %}bg-rose-500{% else %}bg-amber-500{% endif %} shadow-lg"></div>
+                                <div>
+                                    <p class="text-xs text-white">{{ record.session.date|date:"D, d M" }}</p>
+                                    <p class="text-[8px] text-slate-500 uppercase">{{ record.session.course.title }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[9px] uppercase {% if record.status == 'present' %}text-emerald-400{% elif record.status == 'absent' %}text-rose-400{% else %}text-amber-400{% endif %}">
+                                    {{ record.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="py-8 text-center opacity-20 italic">No recent attendance</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,184 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% load dms_tags %}
+{% block title %}{{ institution.name }} - آمدنی کا ریکارڈ{% endblock %}
+
+{% block content %}
+<div class="relative z-10" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+
+
+
+    <!-- Summary Stats (Live via HTMX) -->
+    <div x-show="loaded" x-transition:enter="transition delay-[200ms] duration-1000">
+        {% include 'dms/partials/finance_summary_unified.html' %}
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-show="loaded"
+        x-transition:enter="transition delay-[400ms] duration-1000">
+
+        <!-- Table Section -->
+        <section id="recent-income-container" hx-get="{% url 'income' institution.slug %}"
+            hx-trigger="incomeCreated from:body" hx-select="#recent-income-container" hx-swap="outerHTML"
+            class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-2xl">
+            <div class="px-6 py-6 border-b border-white/5 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                        <i class="fas fa-history text-sm"></i>
+                    </div>
+                    <h2 class="text-xl text-white">حالیہ آمدنی</h2>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto" dir="ltr">
+                <table class="min-w-full text-left">
+                    <thead>
+                        <tr
+                            class="text-[9px] text-slate-500 uppercase tracking-widest border-b border-white/5 bg-white/5">
+                            <th class="px-2 py-2 md:px-4 md:py-3 w-8">#</th>
+                            <th class="px-2 py-2 md:px-4 md:py-3">Amount</th>
+                            <th class="px-2 py-2 md:px-4 md:py-3">Source</th>
+                            <th class="px-2 py-2 md:px-4 md:py-3">Date</th>
+                            <th class="px-2 py-2 md:px-4 md:py-3">Payer</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/[0.02]">
+                        {% for income in incomes %}
+                        <tr class="group hover:bg-white/[0.05] transition-all cursor-pointer"
+                            data-url="{% url 'income_detail' institution.slug income.id %}"
+                            onclick="window.location.href=this.dataset.url;">
+                            <td class="px-2 py-2 md:px-4 md:py-3 text-xs text-slate-500 font-mono">
+                                {{ incomes.start_index|add:forloop.counter0 }}
+                            </td>
+                            <td class="px-2 py-2 md:px-4 md:py-3 cursor-pointer">
+                                <div class="flex items-baseline gap-1 group-hover:opacity-75 transition-opacity">
+                                    <span class="text-base text-emerald-40">
+                                        {{ income.amount|floatformat:0 }}</span>
+                                    <span class="text-[8px] text-slate-600 uppercase">{{ currency_label }}</span>
+                                </div>
+                            </td>
+                            <td class="px-2 py-2 md:px-4 md:py-3">
+                                <span
+                                    class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] group-hover:bg-emerald-500/20 transition-colors">
+                                    {{ income.get_source_display }}
+                                </span>
+                            </td>
+                            <td class="px-2 py-2 md:px-4 md:py-3">
+                                <span
+                                    class="text-[11px] text-slate-300 font-mono group-hover:text-emerald-400 transition-colors">
+                                    {{ income.date|date:"d/m/y" }}
+                                </span>
+                            </td>
+                            <td class="px-2 py-2 md:px-4 md:py-3">
+                                {% if income.donor %}
+                                <a href="{% url 'donor_detail' institution.slug income.donor.id %}"
+                                    class="text-[11px] text-blue-400 hover:text-blue-300 hover:underline relative z-10"
+                                    onclick="event.stopPropagation()">
+                                    {{ income.donor.name }}
+                                </a>
+                                {% elif income.payment_record.student %}
+                                <a href="{% url 'student_detail' institution.slug income.payment_record.student.id %}"
+                                    class="text-[11px] text-blue-400 hover:text-blue-300 hover:underline relative z-10"
+                                    onclick="event.stopPropagation()">
+                                    {{ income.payment_record.student.full_name }}
+                                </a>
+                                {% else %}
+                                <span class="text-[11px] text-slate-500 italic">Anonymous</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-20 text-center opacity-30 text-xs">کوئی آمدنی موجود نہیں۔
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="px-6 py-4 bg-black/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] border-t border-white/5"
+                dir="ltr">
+                <div class="text-slate-500 font-mono tracking-widest uppercase text-xs">
+                    Page <span class="text-white">{{ page_obj.number }}</span> of {{ page_obj.paginator.num_pages }}
+                </div>
+
+                <div class="flex gap-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?{% url_replace page=page_obj.previous_page_number %}"
+                        class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold tracking-wider">
+                        <i class="fas fa-chevron-left mr-1"></i> Prev
+                    </a>
+                    {% endif %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?{% url_replace page=page_obj.next_page_number %}"
+                        class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold tracking-wider">
+                        Next <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Top Donors -->
+            <div id="top-donors-container" hx-get="{% url 'income' institution.slug %}"
+                hx-trigger="incomeCreated from:body" hx-select="#top-donors-container" hx-swap="outerHTML"
+                class="glass-card rounded-3xl p-6 shadow-2xl">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xs text-slate-500 uppercase tracking-[0.3em]">V.I.P Donors</h3>
+                    <a href="{% url 'donor' institution.slug %}"
+                        class="text-[9px] text-emerald-400 hover:text-emerald-300 font-black uppercase tracking-widest px-3 py-1 bg-emerald-400/10 rounded-lg border border-emerald-400/20 transition-all">فہرست
+                        دیکھیں</a>
+                </div>
+                <div class="space-y-4">
+                    {% for donor in top_donors %}
+                    <div
+                        class="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all group">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400 text-[10px]">
+                                {{ forloop.counter }}
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-slate-200">{{ donor.name }}</span>
+                                <span class="text-[8px] text-slate-500 uppercase">{{ donor.count }} Transactions</span>
+                            </div>
+                        </div>
+                        <span class="text-xs text-emerald-400">{{ donor.total|floatformat:0 }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-[10px] text-center text-slate-600">کوئی ڈیٹا نہیں</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Monthly Flow -->
+            <div class="glass-card rounded-3xl p-6 shadow-2xl">
+                <h3 class="text-xs text-slate-500 uppercase tracking-[0.3em] mb-6">Monthly Flow</h3>
+                <div class="space-y-4">
+                    {% for row in monthly_totals %}
+                    <div>
+                        <div class="flex justify-between text-[9px] text-slate-400 mb-2">
+                            <span>{{ row.month|date:"F Y" }}</span>
+                            <span class="text-white">{{ row.total|floatformat:0 }} {{ currency_label }}</span>
+                        </div>
+                        <div class="w-full bg-white/5 rounded-full h-1 overflow-hidden">
+                            {% widthratio row.total total_amount 100 as row_percent %}
+                            <div class="h-full bg-blue-500/50" :style="'width: {{ row_percent }}%'"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-[10px] text-center text-slate-600">کوئی ڈیٹا نہیں</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

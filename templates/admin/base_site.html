@@ -1,0 +1,195 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{# --- 1. STYLES & FONTS (From old base.html) --- #}
+{% block extrahead %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri&family=Aref+Ruqaa+Ink&family=Reem+Kufi+Ink&display=swap"
+    rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{# --- 2. BRANDING (From old base.html) --- #}
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}"
+        style="text-decoration: none; color: white; display: flex; align-items: center; gap: 10px;">
+        <span style="font-family: 'Mehr', serif;">DMS</span>
+        <span
+            style="background: linear-gradient(to left, #34d399, #2dd4bf); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Mehr', serif;">System</span>
+    </a>
+</h1>
+{% endblock %}
+
+{# --- 3. LINKS & BUTTONS (New Trash + Old Links) --- #}
+{% block userlinks %}
+
+{# --- DYNAMIC RECYCLE BIN & LINKS --- #}
+<div style="display: flex; align-items: center; gap: 15px;">
+
+    {# 1. RECYCLE BIN (TRASH) #}
+    {# VISIBLE IF: Institution Context is Active OR via JS for Superuser #}
+    <a href="{% if current_institution %}/{{ current_institution.slug }}/trash/{% else %}#{% endif %}" target="_blank"
+        id="admin-trash-btn" {% if current_institution %}
+        style="display: inline-flex; align-items: center; gap: 5px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; text-decoration: none; font-size: 0.75rem; transition: all 0.2s;"
+        {% else %}
+        style="display: none; align-items: center; gap: 5px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; text-decoration: none; font-size: 0.75rem; transition: all 0.2s;"
+        {% endif %}>
+        <i class="fa-solid fa-trash"></i>
+        <span style="font-family: 'Mehr', serif;">Trash</span>
+    </a>
+
+    {# 2. VIEW SITE / DASHBOARD #}
+    {% if site_url %}
+    <a href="{{ site_url }}" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;"
+        onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">
+        <i class="fas fa-external-link-alt"></i> {% translate 'View site' %}
+    </a>
+    {% endif %}
+
+    {# 3. BACKUP / RESTORE CONTROLS #}
+    {% if current_institution %}
+    <span style="color: #475569;">|</span>
+    <a href="{% url 'institution_export_sheet' current_institution.slug %}"
+        style="color: #10b981; font-weight: bold; text-decoration: none;">
+        <i class="fas fa-file-excel"></i> Ledger
+    </a>
+    <a href="{% url 'create_manual_snapshot' current_institution.slug %}"
+        style="color: #6366f1; font-weight: bold; text-decoration: none;">
+        <i class="fas fa-database"></i> Backup
+    </a>
+    <form method="post" action="{% url 'institution_import_restore' current_institution.slug %}"
+        enctype="multipart/form-data" style="display: inline;" id="admin-restore-form">
+        {% csrf_token %}
+        <label style="color: #f59e0b; cursor: pointer;">
+            <i class="fas fa-upload"></i> Restore
+            <input type="file" name="backup_file" style="display: none;"
+                onchange="document.getElementById('admin-restore-form').submit()">
+        </label>
+    </form>
+    <a href="{% url 'backup_manager' current_institution.slug %}" style="color: #ea580c; text-decoration: none;">
+        <i class="fas fa-clock-rotate-left"></i> History
+    </a>
+
+    {% elif user.is_superuser %}
+    <span style="color: #475569;">|</span>
+
+    {# Superuser Global Controls #}
+    <div
+        style="display: inline-flex; align-items: center; gap: 8px; background: #1e293b; padding: 4px 8px; border-radius: 8px; border: 1px solid #334155;">
+
+        {# Institution Selector #}
+        <select id="header-inst-select" onchange="updateAdminHeaderActions(this)"
+            style="background: #0f172a; color: white; border: 1px solid #475569; border-radius: 4px; font-size: 12px; padding: 4px; outline: none;">
+            <option value="">Select Institution...</option>
+            {% for inst in dms_header.all_institutions %}
+            <option value="{{ inst.slug }}"
+                data-backup-url="{% url 'system_create_manual_snapshot' %}?inst_slug={{ inst.slug }}"
+                data-restore-url="{% url 'institution_import_restore' inst.slug %}"
+                data-trash-url="/{{ inst.slug }}/trash/">
+                {{ inst.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        {# Actions for Selected Institution #}
+        <button onclick="triggerAdminBackup()" title="Backup Selected"
+            style="background: none; border: none; color: #10b981; cursor: pointer; font-size: 14px;">
+            <i class="fas fa-save"></i>
+        </button>
+
+        <form method="post" enctype="multipart/form-data" style="display: inline;" id="header-specific-restore-form">
+            {% csrf_token %}
+            <label title="Restore to Selected" style="cursor: pointer; color: #f59e0b; font-size: 14px;">
+                <i class="fas fa-upload"></i>
+                <input type="file" name="backup_file" style="display: none;" onchange="triggerAdminRestore(this)">
+            </label>
+        </form>
+    </div>
+
+    {# Global System Actions #}
+    <a href="{% url 'system_create_manual_snapshot' %}" title="Full System Backup"
+        style="color: #6366f1; margin-left: 5px;">
+        <i class="fas fa-server"></i>
+    </a>
+    <a href="{% url 'system_backup_manager' %}" title="Backup History" style="color: #ea580c;">
+        <i class="fas fa-history"></i>
+    </a>
+
+    {% endif %}
+
+    {# 4. USER UTILS #}
+    <span style="color: #475569;">|</span>
+
+    {% if user.has_usable_password %}
+    <a href="{% url 'admin:password_change' %}" style="text-decoration: none; color: #94a3b8;">
+        <i class="fas fa-key"></i>
+    </a>
+    {% endif %}
+
+    <form id="logout-form" method="post" action="{% url 'admin:logout' %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px;"
+            title="{% translate 'Log out' %}">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </form>
+
+    {% include 'admin/color_theme_toggle.html' %}
+
+</div>
+
+{# --- JAVASCRIPT FOR DYNAMIC ACTIONS --- #}
+<script>
+    const isContextActive = "{{ current_institution|yesno:'true,false' }}" === "true";
+
+    function updateAdminHeaderActions(select) {
+        const option = select.options[select.selectedIndex];
+        const trashBtn = document.getElementById('admin-trash-btn');
+
+        if (option.value) {
+            // Show and Update Trash Button
+            const trashUrl = option.getAttribute('data-trash-url');
+            if (trashUrl) {
+                trashBtn.href = trashUrl;
+                trashBtn.style.display = 'inline-flex';
+            }
+        } else {
+            // Hide Trash Button (if not in direct context)
+            if (!isContextActive) {
+                trashBtn.style.display = 'none';
+                trashBtn.href = '#';
+            }
+        }
+    }
+
+    function triggerAdminBackup() {
+        const sel = document.getElementById('header-inst-select');
+        const opt = sel.options[sel.selectedIndex];
+        if (opt.value) {
+            window.location.href = opt.getAttribute('data-backup-url');
+        } else {
+            alert('Please select an institution first!');
+        }
+    }
+
+    function triggerAdminRestore(input) {
+        const sel = document.getElementById('header-inst-select');
+        const opt = sel.options[sel.selectedIndex];
+        const form = document.getElementById('header-specific-restore-form');
+
+        if (opt.value) {
+            form.action = opt.getAttribute('data-restore-url');
+            form.submit();
+        } else {
+            alert('Please select an institution first!');
+            input.value = '';
+        }
+    }
+</script>
+{% endblock %}

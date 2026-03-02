@@ -1,0 +1,228 @@
+/* === Django Admin Urdu Fix (Final) === */
+
+/* 1. The Core Fix (Height 48px as requested) */
+input[type="text"], 
+input[type="number"], 
+input[type="email"],
+input[type="password"],
+textarea, 
+select, 
+.vTextField, 
+.vIntegerField,
+.select2-selection--single {
+    box-sizing: border-box;
+    height: 48px !important; /* The magic number for Urdu */
+    padding-bottom: 5px !important;
+    padding-top: 5px !important;
+    line-height: normal !important;
+    font-family: 'Mehr', 'Arial', sans-serif !important;
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    vertical-align: middle !important;
+    font-size: 16px !important; /* Readable text */
+}
+
+/* Fix for Select2 to match 48px */
+.select2-container .select2-selection--single {
+    height: 48px !important;
+    padding-top: 8px !important;
+}
+
+.select2-selection__rendered {
+    line-height: 2 !important;
+    padding-bottom: 0 !important;
+}
+
+/* 2. Desktop Layout (Clean) */
+.form-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    overflow: hidden; 
+}
+
+.form-row img, .form-row input {
+    vertical-align: middle;
+}
+
+.form-row .field-box {
+    float: left; 
+    margin-right: 20px;
+}
+
+label {
+    display: inline-block;
+    vertical-align: middle;
+    padding-right: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 3. Mobile Responsiveness */
+@media (max-width: 767px) {
+    .form-row, .form-row .field-box {
+        display: block;
+        float: none !important;
+        width: 100% !important;
+        margin: 0 0 15px 0 !important;
+    }
+
+    .form-row label {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 8px; /* More space for touch */
+    }
+
+    input[type="text"], 
+    input[type="number"], 
+    select, 
+    .select2-container {
+        width: 100% !important;
+    }
+
+    /* Discount Row Flex Logic (One Row on Mobile) */
+    .form-row.field-adm_discount_type,
+    .form-row.field-crs_discount_type {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .form-row.field-adm_discount_type .field-box,
+    .form-row.field-crs_discount_type .field-box {
+        width: auto !important;
+        flex: 1 !important;
+        margin: 0 !important;
+    }
+
+    .form-row.field-adm_discount_type .field-box label,
+    .form-row.field-crs_discount_type .field-box label {
+        display: block !important;
+        font-size: 12px !important;
+        color: #666;
+    }
+}
+
+.upload-section {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+}
+
+/* === Externalized Inline Styles from base_site.html === */
+
+:root {
+    --primary: #0f172a;
+    --secondary: #1e293b;
+    --accent: #0ea5e9;
+}
+
+body, #header, .module h2, .module caption, .inline-group h2, .button, input, select, textarea, .breadcrumbs {
+    font-family: 'smartfont', 'Mehr', 'Amiri', 'Noto Nastaliq Urdu', sans-serif !important;
+    line-height: 2.2 !important;
+}
+
+#header {
+    background: #020617 !important;
+    border-bottom: 1px solid #1e293b;
+    padding: 15px 40px !important;
+}
+
+#branding h1 {
+    font-family: 'Mehr', serif !important;
+    font-size: 24px !important;
+    color: #e2e8f0 !important;
+}
+
+/* User Tools Flex */
+#user-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.module h2, .module caption {
+    background: #1e293b !important;
+    font-weight: 700 !important;
+    padding: 10px 15px !important;
+}
+
+div.breadcrumbs {
+    background: #0f172a !important;
+    border-bottom: 1px solid #1e293b;
+    color: #94a3b8 !important;
+    padding: 12px 40px !important;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #0ea5e9 !important;
+    border-radius: 10px !important;
+    padding: 10px 25px !important;
+    font-weight: bold !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+}
+
+.button:hover, input[type=submit]:hover {
+    background: #0284c7 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+#changelist .results table thead th {
+     background: #1e293b !important;
+     color: #f1f5f9 !important;
+}
+
+/* Responsive & RTL adjustments */
+body.rtl {
+    text-align: right;
+}
+
+.font-kufi { font-family: 'Reem Kufi Ink', sans-serif !important; }
+
+/* === Recycle Bin Button Styles === */
+.recycle-bin-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2), 0 2px 4px -1px rgba(220, 38, 38, 0.1) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.recycle-bin-btn:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 8px -1px rgba(220, 38, 38, 0.3), 0 4px 6px -1px rgba(220, 38, 38, 0.15) !important;
+}
+
+.recycle-bin-btn:active {
+    transform: translateY(0) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.recycle-bin-btn i {
+    font-size: 14px !important;
+}
+
+/* Responsive adjustments for header buttons */
+@media (max-width: 768px) {
+    .recycle-bin-btn {
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+    }
+    .recycle-bin-btn span {
+        display: none; /* Hide text on very small screens if needed, or keep short */
+    }
+}

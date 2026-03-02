@@ -1,0 +1,118 @@
+﻿{% extends 'base.html' %}
+{% block title %}{{ type_meta.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-10 space-y-8">
+
+  <!-- Header -->
+  <div
+    class="bg-white shadow rounded-2xl border p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl text-gray-800">{{ type_meta.title }}</h1>
+      <p class="text-sm text-gray-500 mt-1">{{ type_meta.description }}</p>
+    </div>
+
+    <div class="flex gap-3 flex-wrap">
+      {% for key, meta in type_choices.items %}
+      <a href="{% url 'institution_type_list' key %}" class="px-4 py-2 rounded-lg text-sm font-medium transition
+         {% if key == institution_type %}
+           bg-indigo-600 text-white shadow
+         {% else %}
+           bg-gray-100 text-gray-700 hover:bg-gray-200
+         {% endif %}">
+        {{ meta.title }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if institutions %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    {% for inst in institutions %}
+    <div class="bg-white border rounded-2xl shadow-sm p-6 flex flex-col gap-4">
+
+      <!-- Title -->
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800">{{ inst.name }}</h2>
+        {% if inst.address %}
+        <p class="text-sm text-gray-500 mt-1">{{ inst.address }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Stats -->
+      <dl class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+        <div>
+          <dt class="font-medium text-gray-800">کل آمدنی</dt>
+          <dd class="text-green-600 font-semibold">
+            {{ inst.currency_label|default_if_none:currency_label }}
+            {{ inst.total_income|default:0|floatformat:0 }}
+          </dd>
+        </div>
+
+        <div>
+          <dt class="font-medium text-gray-800">کل اخراجات</dt>
+          <dd class="text-red-600 font-semibold">
+            {{ inst.currency_label|default_if_none:currency_label }}
+            {{ inst.total_expense|default:0|floatformat:0 }}
+          </dd>
+        </div>
+
+        <div>
+          <dt class="font-medium text-gray-800">بیلنس</dt>
+          <dd class="font-semibold
+              {% if inst.balance|default:0 >= 0 %}
+                text-green-600
+              {% else %}
+                text-red-600
+              {% endif %}">
+            {{ inst.currency_label|default_if_none:currency_label }}
+            {{ inst.balance|default:0|floatformat:0 }}
+          </dd>
+        </div>
+
+        <div>
+          <dt class="font-medium text-gray-800">کورسز</dt>
+          <dd>{{ inst.course_count|default:0 }}</dd>
+        </div>
+
+        {% if institution_type != 'masjid' %}
+        <div>
+          <dt class="font-medium text-gray-800">طلبہ</dt>
+          <dd>{{ inst.student_count|default:0 }}</dd>
+        </div>
+        {% endif %}
+
+        <div>
+          <dt class="font-medium text-gray-800">عملہ</dt>
+          <dd>{{ inst.staff_count|default:0 }}</dd>
+        </div>
+      </dl>
+
+      <!-- Actions -->
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'dashboard' inst.slug %}"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">
+          ڈیش بورڈ کھولیں
+        </a>
+        <a href="{% url 'income' inst.slug %}"
+          class="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition">
+          آمدنی
+        </a>
+        <a href="{% url 'expense' inst.slug %}"
+          class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
+          اخراجات
+        </a>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="bg-white border rounded-2xl shadow-sm p-10 text-center text-gray-500">
+    کوئی ادارہ موجود نہیں۔ براہِ کرم پہلے ادارہ شامل کریں۔
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

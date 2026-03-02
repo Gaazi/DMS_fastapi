@@ -1,0 +1,273 @@
+/* Global Styles */
+body {
+    font-family: 'smartfont', 'Mehr', serif;
+    background-color: #020617;
+    color: #e2e8f0;
+    line-height: 1.8;
+    overflow-x: hidden;
+}
+
+.font-urdu,
+.font-mehr {
+    font-family: 'Mehr', serif;
+}
+
+.font-nastaliq {
+    font-family: 'Mehr', serif;
+}
+
+/* Premium Mesh Background */
+.mesh-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.orb-1 {
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 60%;
+    height: 60%;
+    background: rgba(30, 58, 138, 0.2);
+    border-radius: 100%;
+    filter: blur(60px);
+    animation: pulse-slow 15s infinite alternate;
+}
+
+.orb-2 {
+    position: absolute;
+    bottom: -5%;
+    left: -5%;
+    width: 50%;
+    height: 50%;
+    background: rgba(88, 28, 135, 0.2);
+    border-radius: 100%;
+    filter: blur(60px);
+    animation: pulse-slow 12s infinite alternate-reverse;
+}
+
+.noise-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    mix-blend-mode: overlay;
+    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+}
+
+@keyframes pulse-slow {
+    0% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.4;
+    }
+
+    100% {
+        transform: scale(1.1) translate(30px, 30px);
+        opacity: 0.7;
+    }
+}
+
+/* Specific Font Classes */
+.reem-kufi-ink-regular {
+    font-family: "Reem Kufi Ink", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.aref-ruqaa-ink-regular {
+    font-family: "Aref Ruqaa Ink", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.aref-ruqaa-ink-bold {
+    font-family: "Aref Ruqaa Ink", serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.amiri-regular {
+    font-family: "Amiri", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.amiri-bold {
+    font-family: "Amiri", serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.noto-nastaliq-urdu-regular {
+    font-family: "Noto Nastaliq Urdu", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.noto-nastaliq-urdu-bold {
+    font-family: "Noto Nastaliq Urdu", serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}
+
+/* Components */
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.hero-pattern {
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.1;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* Student Form Inputs */
+.student-input-wrapper input,
+.student-input-wrapper select,
+.student-input-wrapper textarea {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.student-input-wrapper input:focus,
+.student-input-wrapper select:focus,
+.student-input-wrapper textarea:focus {
+    border-color: #3b82f6;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Unified Glass Input System */
+.glass-input {
+    width: 100%;
+    background-color: rgba(15, 23, 42, 0.5);
+    /* bg-slate-900/50 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* border-white/10 */
+    border-radius: 0.75rem;
+    /* rounded-xl */
+    padding: 0.75rem 1rem;
+    /* px-4 py-3 */
+    color: white;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+    border-color: #10b981;
+    /* border-emerald-500 */
+    background-color: rgba(15, 23, 42, 0.7);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+.glass-input::placeholder {
+    color: #475569;
+    /* text-slate-600 */
+}
+
+.glass-label {
+    display: block;
+    font-size: 0.75rem;
+    /* text-xs */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #34d399;
+    /* text-emerald-400 */
+    margin-bottom: 0.5rem;
+}
+
+/* Utils */
+[x-cloak] {
+    display: none !important;
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+
+/* HTMX Registry Transitions */
+#student-list-container {
+    transition: all 0.4s ease;
+}
+
+.htmx-request #student-list-container {
+    opacity: 0.5;
+    filter: blur(4px);
+}
+
+/* Utility: Hide Scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Autocomplete Background Override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #020617 inset !important;
+    -webkit-text-fill-color: #34d399 !important;
+    transition: background-color 5000s ease-in-out 0s;
+    caret-color: #34d399;
+}

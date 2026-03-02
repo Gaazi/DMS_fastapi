@@ -1,0 +1,123 @@
+<div class="m-0.5 bg-[#0a0a0f]/50 backdrop-blur-xl border-y md:border border-white/5 rounded-none md:rounded-3xl overflow-hidden shadow-2xl" id="attendance-table-container">
+    <div class="overflow-x-auto scrollbar-hide">
+        <table class="w-full text-right border-collapse table-fixed md:table-auto">
+            <thead>
+                <tr class="text-[7px] md:text-[9px] text-slate-500 uppercase tracking-tighter border-b border-white/5 bg-white/5">
+                    <th class="px-0.5 py-1.5 w-8 md:w-16 text-center">ID</th>
+                    <th class="px-1 py-1.5 w-auto">NAME</th>
+                    <th class="px-0 py-1.5 w-8 text-center text-emerald-500">P</th>
+                    <th class="px-0 py-1.5 w-8 text-center text-rose-500">A</th>
+                    <th class="px-0 py-1.5 w-8 text-center text-amber-500">L</th>
+                    <th class="px-0 py-1.5 w-8 text-center text-blue-500">E</th>
+                    <th class="px-1 py-1.5 text-center w-20 md:w-48">NOTES</th>
+                    <th class="px-1 py-1.5 w-6 text-center">ST</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/[0.03]">
+                {% for student in members %}
+                <tr x-data="{ 
+                        status: '{% if student.is_absent %}absent{% elif student.is_late %}late{% elif student.is_excused %}excused{% else %}present{% endif %}' 
+                    }" 
+                    x-show="!searchQuery || '{{ student.full_name|escapejs }}'.toLowerCase().includes(searchQuery.toLowerCase())"
+                    class="group transition-all hover:bg-white/[0.01]">
+
+                    <!-- Minimized Tactical ID -->
+                    <td class="px-0.5 py-1">
+                        <div class="flex flex-col items-center justify-center py-0.5 bg-black/40 rounded border border-white/5 w-full">
+                            <span class="text-[9px] md:text-xs text-blue-400 font-mono leading-none">{{ forloop.counter|stringformat:"02d" }}</span>
+                            <span class="text-[8px] md:text-xs text-blue-600 font-mono leading-none mt-0.5">#{{ student.reg_id|default:student.id }}</span>
+                        </div>
+                    </td>
+
+                    <td class="px-1 py-1">
+                        <a href="{% url 'student_detail' institution.slug student.id %}" 
+                           class="block font-bold text-white text-[10px] md:text-sm truncate hover:text-blue-400 transition-colors">
+                            {{ student.full_name }}
+                        </a>
+                    </td>
+
+                    <!-- Attendance Radios (Tactical Dots - Improved Hit Area) -->
+                    <td class="px-0 py-1 text-center">
+                        <label class="relative inline-flex items-center justify-center cursor-pointer p-2 -m-2">
+                            <input type="radio" name="student_{{ student.id }}" value="present" x-model="status" @change="updateStats()" class="sr-only">
+                            <div class="w-3.5 h-3.5 md:w-5 md:h-5 rounded-full border transition-all flex items-center justify-center"
+                                 :class="status === 'present' ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_5px_#10b981]' : 'border-white/10 group-hover:border-white/20'">
+                                <i class="fas fa-check text-[5px] md:text-[8px] text-white" x-show="status === 'present'"></i>
+                            </div>
+                        </label>
+                    </td>
+
+                    <td class="px-0 py-1 text-center">
+                        <label class="relative inline-flex items-center justify-center cursor-pointer p-2 -m-2">
+                            <input type="radio" name="student_{{ student.id }}" value="absent" x-model="status" @change="updateStats()" class="sr-only">
+                            <div class="w-3.5 h-3.5 md:w-5 md:h-5 rounded-full border transition-all flex items-center justify-center"
+                                 :class="status === 'absent' ? 'bg-rose-500 border-rose-500 shadow-[0_0_5px_#f43f5e]' : 'border-white/10 group-hover:border-white/20'">
+                                <i class="fas fa-times text-[5px] md:text-[8px] text-white" x-show="status === 'absent'"></i>
+                            </div>
+                        </label>
+                    </td>
+
+                    <td class="px-0 py-1 text-center">
+                        <label class="relative inline-flex items-center justify-center cursor-pointer p-2 -m-2">
+                            <input type="radio" name="student_{{ student.id }}" value="late" x-model="status" @change="updateStats()" class="sr-only">
+                            <div class="w-3.5 h-3.5 md:w-5 md:h-5 rounded-full border transition-all flex items-center justify-center"
+                                 :class="status === 'late' ? 'bg-amber-500 border-amber-500 shadow-[0_0_5px_#f59e0b]' : 'border-white/10 group-hover:border-white/20'">
+                                <i class="fas fa-clock text-[5px] md:text-[8px] text-white" x-show="status === 'late'"></i>
+                            </div>
+                        </label>
+                    </td>
+
+                    <td class="px-0 py-1 text-center">
+                        <label class="relative inline-flex items-center justify-center cursor-pointer p-2 -m-2">
+                            <input type="radio" name="student_{{ student.id }}" value="excused" x-model="status" @change="updateStats()" class="sr-only">
+                            <div class="w-3.5 h-3.5 md:w-5 md:h-5 rounded-full border transition-all flex items-center justify-center"
+                                 :class="status === 'excused' ? 'bg-blue-500 border-blue-500 shadow-[0_0_5px_#3b82f6]' : 'border-white/10 group-hover:border-white/20'">
+                                <i class="fas fa-id-badge text-[5px] md:text-[8px] text-white" x-show="status === 'excused'"></i>
+                            </div>
+                        </label>
+                    </td>
+
+                    <!-- Notes (Smart Expand) -->
+                    <td class="px-1 py-1 relative">
+                        <input type="text" name="remarks_{{ student.id }}" value="{{ student.current_remarks }}"
+                            class="w-full bg-black/20 border border-white/5 rounded px-1 py-0.5 text-[8px] md:text-[10px] text-slate-400 
+                                   focus:scale-125 focus:z-50 focus:bg-slate-900 focus:text-white focus:text-[12px] focus:py-1.5 focus:px-2 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.4)]
+                                   outline-none transition-all duration-300 placeholder:opacity-5"
+                            placeholder="...">
+                    </td>
+
+                    <!-- Compact Status Indicator -->
+                    <td class="px-1 py-1 text-center">
+                        <div class="inline-block w-1.5 h-1.5 rounded-full"
+                             :class="{ 
+                                'bg-emerald-500 blur-[1px] shadow-[0_0_5px_#10b981]': status === 'present',
+                                'bg-rose-500 blur-[1px] shadow-[0_0_5px_#f43f5e]': status === 'absent',
+                                'bg-amber-500 blur-[1px] shadow-[0_0_5px_#f59e0b]': status === 'late',
+                                'bg-blue-500 blur-[1px] shadow-[0_0_5px_#3b82f6]': status === 'excused',
+                                'bg-white/5': !status
+                             }"></div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="py-20 text-center">
+                        <div class="flex flex-col items-center justify-center opacity-20">
+                            <i class="fas fa-users-slash text-2xl mb-2"></i>
+                            <p class="text-xs uppercase tracking-widest font-mono">No Registry Data</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table Footer with Submit Action -->
+    <div class="border-t border-white/5 bg-white/[0.02] p-2 md:p-4">
+        <button type="submit" 
+                class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 font-bold text-sm transition-all flex items-center justify-center gap-2 group">
+            <i class="fas fa-save group-hover:scale-110 transition-transform"></i>
+            <span>حاضری محفوظ کریں</span>
+        </button>
+    </div>
+</div>

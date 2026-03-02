@@ -1,0 +1,87 @@
+<section id="expense-table-container">
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-left" dir="ltr">
+            <thead>
+                <tr class="border-b border-white/5 text-[9px] text-slate-500 uppercase tracking-widest">
+                    <th class="px-2 py-2 md:px-4 md:py-3 font-medium">#</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 font-medium">Amount</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 font-medium">Category</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 font-medium">Date</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 font-medium">Description</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/[0.02]">
+                {% for expense in expenses %}
+                <tr class="group hover:bg-white/[0.05] transition-all duration-300 cursor-pointer"
+                    data-url="{% url 'expense_detail' institution.slug expense.id %}"
+                    onclick="window.location.href=this.dataset.url;">
+                    <td class="px-2 py-2 md:px-4 md:py-3">
+                        <span class="text-[10px] text-slate-600 group-hover:text-rose-400 transition-colors">
+                            #{{ expenses.start_index|add:forloop.counter0 }}</span>
+                    </td>
+                    <td class="px-2 py-2 md:px-4 md:py-3">
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-base text-white group-hover:text-rose-400 transition-colors">
+                                <span class="text-[8px] text-slate-600 uppercase">{{ currency_label }}</span>
+                                {{ expense.amount|floatformat:0 }}</span>
+                        </div>
+                    </td>
+                    <td class="px-2 py-2 md:px-4 md:py-3">
+                        <span
+                            class="text-white px-2 py-0.5 rounded text-[9px] group-hover:bg-rose-500/10 group-hover:text-rose-400 border border-white transition-all">
+                            {{ expense.get_category_display }}
+                        </span>
+                    </td>
+                    <td class="px-2 py-2 md:px-4 md:py-3">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-300">{{ expense.date|date:"d/m/Y" }}</span>
+                            <span class="text-[8px]">{{ expense.date|time:"H:iA" }}</span>
+                        </div>
+                    </td>
+                    <td class="px-2 py-2 md:px-4 md:py-3">
+                        <p class="text-[11px] text-slate-400 max-w-[150px] truncate group-hover:text-slate-200"
+                            title="{{ expense.description }}">{{ expense.description|default:"—" }}
+                        </p>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-20 text-center text-slate-500">
+                        <div class="flex flex-col items-center opacity-30">
+                            <i class="fas fa-folder-open text-2xl mb-3"></i>
+                            <p class="text-sm tracking-widest">کوئی اندراج نہیں ہے</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Compact Pagination -->
+    {% if expenses.has_other_pages %}
+    <div class="px-6 py-5 bg-black/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] border-t border-white/5"
+        dir="ltr">
+        <div class="text-slate-600 tracking-widest uppercase">
+            Showing <span class="text-white">{{ expenses.start_index }}-{{ expenses.end_index }}</span>
+        </div>
+        <div class="flex gap-2">
+            {% if expenses.has_previous %}
+            <button hx-get="?page={{ expenses.previous_page_number }}" hx-target="#expense-table-container"
+                hx-swap="outerHTML" hx-push-url="true"
+                class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:bg-white hover:text-black transition-all active:scale-95 uppercase tracking-widest">
+                PREV
+            </button>
+            {% endif %}
+
+            {% if expenses.has_next %}
+            <button hx-get="?page={{ expenses.next_page_number }}" hx-target="#expense-table-container"
+                hx-swap="outerHTML" hx-push-url="true"
+                class="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:bg-white hover:text-black transition-all active:scale-95 uppercase tracking-widest">
+                NEXT
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</section>

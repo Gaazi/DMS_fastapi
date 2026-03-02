@@ -1,0 +1,149 @@
+<!doctype html>
+{% load static %}
+<html lang="ur" dir="rtl" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#020617">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{% static 'icons/icon-512.png' %}">
+    <title>{% block title %}ڈیجیٹل مینجمنٹ سسٹم{% endblock %}</title>
+    <link rel="preload" href="{% static 'fonts/mehr.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'css/fontawesome.all.min.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Aref+Ruqaa+Ink&family=Reem+Kufi+Ink&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+    <script src="{% static 'js/tailwind_config.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
+    <style>
+        /* Critical CSS Fallback to prevent FOUC */
+        body { background-color: #020617; color: white; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col overflow-x-hidden font-smart selection:bg-indigo-500/30">
+
+    {% block body_structure %}
+    
+    <!-- Global Premium Mesh Background -->
+    <div class="mesh-bg">
+        <div class="orb-1"></div>
+        <div class="orb-2"></div>
+        <div class="noise-overlay"></div>
+    </div>
+
+    {# Header Include #}
+    {% include "dms/includes/header_dms.html" %}
+    
+    <main class="flex-grow w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-0 pb-4 md:py-8 relative z-10 flex flex-col justify-center">
+        {# Dynamic Institution Header for all child pages #}
+        {% block institution_header %}
+            {% include "dms/includes/institution_header.html" %}
+        {% endblock %}
+
+        {# Dynamic Quick Actions Bar #}
+        {% block quick_actions %}
+            {% include "dms/includes/quick_actions.html" %}
+        {% endblock %}
+
+        {# ===== Alerts / Messages Section ===== #}
+        {% include "includes/messages.html" %}
+        
+        {# ===== Main Content Block ===== #}
+        <div class="w-full">
+            {% block content %}{% endblock %}
+        </div>
+
+    </main>
+
+    {# Footer Include #}
+    {% include "dms/includes/footer.html" %}
+    
+    <div id="receipt-container"></div>
+    {% endblock %}
+
+
+
+    {# PWA Update Notification (Ultra Compact) #}
+    <div id="pwa-update-toast" 
+         class="fixed bottom-24 md:bottom-8 right-6 md:right-8 w-auto max-w-[180px] z-[200] transform translate-y-40 transition-all duration-700 cubic-bezier(0.34, 1.56, 0.64, 1)" 
+         x-data="{ show: false }" 
+         x-show="show" 
+         x-init="$watch('show', (val) => { if(val) { setTimeout(() => { show = false; $el.classList.add('translate-y-40'); $el.classList.remove('translate-y-0'); }, 3000); } })"
+         @pwa-update-found.window="show = true; $el.classList.remove('translate-y-40'); $el.classList.add('translate-y-0')"
+         x-cloak>
+        <div onclick="window.location.reload()" class="bg-slate-900/98 backdrop-blur-3xl border border-emerald-500/40 p-1.5 rounded-2xl shadow-[0_8px_30px_-5px_rgba(16,185,129,0.3)] flex items-center gap-2 cursor-pointer active:scale-95 transition-all">
+            <div class="w-7 h-7 flex-shrink-0 bg-emerald-500/10 rounded-full border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <i class="fas fa-sync-alt animate-spin-slow text-[9px]"></i>
+            </div>
+            <div class="pr-1">
+                <h4 class="text-white font-bold text-[10px] leading-tight">اپ ڈیٹ دستیاب</h4>
+            </div>
+        </div>
+    </div>
+
+    {# PWA Install Toast (Ultra Compact - Enhanced) #}
+    <div id="pwa-install-toast" 
+         class="fixed bottom-24 md:bottom-8 right-6 md:right-8 w-auto max-w-[200px] z-[200] transform translate-y-40 transition-all duration-700 cubic-bezier(0.34, 1.56, 0.64, 1)" 
+         x-data="{ show: false }" 
+         x-show="show" 
+         x-init="$watch('show', (val) => { if(val) { setTimeout(() => { show = false; $el.classList.add('translate-y-40'); $el.classList.remove('translate-y-0'); }, 7000); } })"
+         @pwa-installable.window="show = true; $el.classList.remove('translate-y-40'); $el.classList.add('translate-y-0')"
+         @pwa-install-hide.window="show = false; $el.classList.add('translate-y-40'); $el.classList.remove('translate-y-0')"
+         x-cloak>
+        <div onclick="installPWA()" class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-0.5 rounded-xl shadow-[0_0_30px_-5px_rgba(124,58,237,0.5)] cursor-pointer active:scale-95 transition-all hover:shadow-[0_0_40px_-5px_rgba(124,58,237,0.7)] group">
+            
+            <!-- Animated Border/Glow -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] animate-shimmer"></div>
+
+            <div class="bg-gray-900/90 backdrop-blur-xl rounded-[10px] p-2 flex items-center gap-2 relative z-10 h-full border border-white/10">
+                
+                <div class="w-7 h-7 flex-shrink-0 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-lg shadow-lg flex items-center justify-center text-white ring-1 ring-white/10 animate-pulse-slow">
+                    <i class="fas fa-download text-[10px]"></i>
+                </div>
+                
+                <div class="pr-0.5">
+                    <h4 class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300 text-sm leading-normal py-0.5">
+                        ایپ انسٹال کریں
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Offline Notification Toast (Ultra Compact) #}
+    <div id="offline-toast" 
+         class="fixed bottom-24 md:bottom-8 left-6 md:left-8 w-auto max-w-[180px] z-[200] transform translate-y-40 transition-all duration-700 cubic-bezier(0.34, 1.56, 0.64, 1)" 
+         x-data="{ show: !navigator.onLine }" 
+         x-show="show" 
+         x-init="
+            window.addEventListener('offline', () => show = true);
+            window.addEventListener('online', () => show = false);
+            $watch('show', val => { 
+                if(val) { $el.classList.remove('translate-y-40'); $el.classList.add('translate-y-0') } 
+                else { $el.classList.add('translate-y-40'); $el.classList.remove('translate-y-0') } 
+            });
+            if(show) { $el.classList.remove('translate-y-40'); $el.classList.add('translate-y-0'); }
+         "
+         x-cloak>
+        <div class="bg-rose-900/98 backdrop-blur-3xl border border-rose-500/40 p-1.5 rounded-2xl shadow-[0_8px_30px_-5px_rgba(244,63,94,0.3)] flex items-center gap-2 cursor-default">
+            <div class="w-7 h-7 flex-shrink-0 bg-rose-500/10 rounded-full border border-rose-500/30 flex items-center justify-center text-rose-400">
+                <i class="fas fa-wifi-slash text-[9px] animate-pulse"></i>
+            </div>
+            <div class="pr-1">
+                <h4 class="text-white font-bold text-[10px] leading-tight">انٹرنیٹ منقطع</h4>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/vendors/tailwindcss.js' %}"></script>
+    <script src="{% static 'js/vendors/htmx.min.js' %}" defer></script>
+    <script defer src="{% static 'js/vendors/alpine.min.js' %}"></script>
+    <script src="{% static 'js/pwa_app.js' %}" defer></script>
+</body>
+</html>

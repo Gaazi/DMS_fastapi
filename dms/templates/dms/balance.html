@@ -1,0 +1,231 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% load dms_tags %}
+{% block title %}{{ institution.name }} - فنانشل بیلنس{% endblock %}
+
+{% block content %}
+<div class="relative z-10" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 50)">
+
+    <!-- Summary Stats (Live via HTMX) -->
+    <div x-show="loaded" x-transition:enter="transition delay-[200ms] duration-1000">
+        {% include 'dms/partials/finance_summary_unified.html' %}
+    </div>
+
+    <!-- Ledger Table -->
+    <section class="glass-card rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl mb-6" x-show="loaded"
+        x-transition:enter="transition delay-[600ms] duration-1000" dir="ltr">
+        <div
+            class="px-4 py-4 md:px-6 md:py-6 border-b border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div
+                    class="w-10 h-10 md:w-12 md:h-12 bg-blue-500/10 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-400 text-lg md:text-xl border border-blue-500/20 shadow-inner">
+                    <i class="fas fa-list-check"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl text-white">تفصیلی ریکارڈ (Ledger)</h2>
+                    <p class="text-[8px] md:text-[9px] text-slate-500 uppercase tracking-[0.2em]">Live Transaction
+                        Ledger</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left bg-black/20 md:bg-transparent">
+                <thead class="bg-white/5">
+                    <tr class="text-xs md:text-sm text-white">
+                        <th class="px-2 py-2 md:px-4 md:py-3 text-slate-500 text-left w-8">#</th>
+                        <th class="px-2 py-2 md:px-4 md:py-3 text-slate-300 text-left" dir="ltr">Transaction</th>
+                        <th class="px-2 py-2 md:px-4 md:py-3 text-center">Type</th>
+                        <th class="px-2 py-2 md:px-4 md:py-3 text-blue-400/80 text-left" dir="ltr">Balance</th>
+                        <th class="px-2 py-2 md:px-4 md:py-3">Date</th>
+                        <th class="px-2 py-2 md:px-4 md:py-3">Details</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/[0.02]">
+                    {% for tx in recent_transactions %}
+                    <tr class="group hover:bg-white/[0.02] transition-colors cursor-pointer"
+                        data-url="{% if tx.transaction_type == 'income' %}{% url 'income_detail' institution.slug tx.id %}{% else %}{% url 'expense_detail' institution.slug tx.id %}{% endif %}"
+                        onclick="window.location=this.dataset.url;">
+                        <!-- 0. Serial -->
+                        <td class="px-2 py-2 md:px-4 md:py-3 text-xs text-slate-600 font-mono">
+                            {{ page_obj.start_index|add:forloop.counter0 }}
+                        </td>
+
+                        <!-- 1. Amount -->
+                        <td class="px-2 py-2 md:px-4 md:py-3 font-amiri text-sm md:text-base whitespace-nowrap text-left"
+                            dir="ltr">
+                            {% if tx.transaction_type == 'income' %}
+                            <span class="text-emerald-400 font-bold">{{ tx.amount|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="text-rose-400 font-bold">{{ tx.amount|floatformat:0 }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- 2. Type -->
+                        <td class="px-2 py-2 md:px-4 md:py-3 text-center whitespace-nowrap">
+                            {% if tx.transaction_type == 'income' %}
+                            <span
+                                class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] uppercase tracking-wider">In</span>
+                            {% else %}
+                            <span
+                                class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] uppercase tracking-wider">Out</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- 3. Balance -->
+                        <td class="px-2 py-2 md:px-4 md:py-3 font-amiri text-sm md:text-base text-blue-300 whitespace-nowrap text-left"
+                            dir="ltr">Rs: {{ tx.running_balance|floatformat:0|cut:"-" }} </td>
+
+                        <!-- 4. Date -->
+                        <td class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] md:text-[10px] text-slate-300 font-mono">
+                                    {{ tx.date|date:"d/m/y" }}</span>
+                            </div>
+                        </td>
+
+
+
+                        <!-- 5. Description -->
+                        <td
+                            class="px-2 py-2 md:px-4 md:py-3 text-[10px] md:text-[11px] text-slate-400 max-w-[120px] md:max-w-[200px] truncate">
+                            <a href="{% if tx.transaction_type == 'income' %}{% url 'income_detail' institution.slug tx.id %}{% else %}{% url 'expense_detail' institution.slug tx.id %}{% endif %}"
+                                class="hover:text-blue-400 hover:underline transition-colors block truncate group-hover:text-white"
+                                title="View Details">
+                                {% if tx.transaction_type == 'income' %}
+                                {{ tx.source }} - {{ tx.description }}
+                                {% else %}{{ tx.get_category_display }} - {{ tx.description }}{% endif %}
+                                <i class="fas fa-arrow-right text-[8px] opacity-0 group-hover:opacity-100 transition-opacity ml-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-20 text-center opacity-30 text-xs">کوئی ریکارڈ موجود نہیں۔</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="px-4 py-4 md:px-6 md:py-6 bg-black/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] border-t border-white/5"
+            dir="ltr">
+            <div class="text-slate-500 font-mono tracking-widest uppercase text-xs">
+                Page <span class="text-white">{{ page_obj.number }}</span> of {{ page_obj.paginator.num_pages }}
+            </div>
+
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?{% url_replace page=page_obj.previous_page_number %}"
+                    class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:bg-blue-500 hover:text-white transition-all text-xs font-bold tracking-wider">
+                    <i class="fas fa-chevron-left mr-1"></i> Prev
+                </a>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                <a href="?{% url_replace page=page_obj.next_page_number %}"
+                    class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:bg-blue-500 hover:text-white transition-all text-xs font-bold tracking-wider">
+                    Next <i class="fas fa-chevron-right ml-1"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Charts Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" x-show="loaded"
+        x-transition:enter="transition delay-[400ms] duration-1000">
+        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-8">
+            <div class="flex items-center justify-between mb-6 md:mb-8">
+                <h3 class="text-sm md:text-lg text-white flex items-center gap-2 md:gap-3">
+                    <i class="fas fa-chart-bar text-blue-500"></i>
+                    مالیاتی موازنہ
+                </h3>
+                <div class="flex gap-1 bg-white/5 rounded-lg p-0.5 border border-white/5">
+                    <button
+                        class="chart-toggle px-3 py-1 rounded-md text-[9px] uppercase tracking-widest bg-blue-500 text-white transition-all shadow-sm"
+                        data-chart="bar">BAR</button>
+                    <button
+                        class="chart-toggle px-3 py-1 rounded-md text-[9px] uppercase tracking-widest text-slate-400 hover:bg-white/5 transition-all"
+                        data-chart="line">LINE</button>
+                </div>
+            </div>
+            <div class="h-48 md:h-64">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-3xl p-2 md:p-8">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-lg text-white flex items-center gap-3">
+                    <i class="fas fa-chart-pie text-purple-500"></i>
+                    تناسبی تقسیم
+                </h3>
+            </div>
+            <div class="h-64">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const donations = parseFloat('{{ total_amount|stringformat:".2f"|default:"0" }}');
+        const expenses = parseFloat('{{ total_expenses|stringformat:".2f"|default:"0" }}');
+        const balance = parseFloat('{{ balance|stringformat:".2f"|default:"0" }}');
+
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.5)';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+
+        const mainChartCtx = document.getElementById('mainChart');
+        let mainChart = null;
+
+        function renderMainChart(type = 'bar') {
+            if (mainChart) mainChart.destroy();
+            mainChart = new Chart(mainChartCtx, {
+                type: type,
+                data: {
+                    labels: ['آمدنی', 'اخراجات', 'بیلنس'],
+                    datasets: [{
+                        data: [donations, expenses, balance],
+                        backgroundColor: type === 'bar' ? ['rgba(16, 185, 129, 0.6)', 'rgba(244, 63, 94, 0.6)', 'rgba(59, 130, 246, 0.6)'] : 'rgba(59, 130, 246, 0.1)',
+                        borderColor: type === 'bar' ? ['#10b981', '#f43f5e', '#3b82f6'] : '#3b82f6',
+                        borderWidth: 2,
+                        fill: type === 'line', tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        const pieChartCtx = document.getElementById('pieChart');
+        new Chart(pieChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['آمدنی', 'اخراجات'],
+                datasets: [{
+                    data: [donations, expenses],
+                    backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(244, 63, 94, 0.8)'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
+        });
+
+        renderMainChart('bar');
+        document.querySelectorAll('.chart-toggle').forEach(btn => {
+            btn.onclick = function () {
+                document.querySelectorAll('.chart-toggle').forEach(b => b.classList.remove('bg-blue-500', 'text-white'));
+                this.classList.add('bg-blue-500', 'text-white');
+                renderMainChart(this.dataset.chart);
+            }
+        });
+    });
+</script>
+{% endblock %}

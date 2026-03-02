@@ -1,0 +1,147 @@
+{% if institution and not is_dms_student and not is_dms_parent %}
+<!-- Tactical Mobile Command Dock (Minimized) -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 z-[200]" x-data="{ fullMenu: false }">
+    
+    <!-- Full Command Overlay (Compact) -->
+    <div x-show="fullMenu" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-full"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-full"
+         class="fixed inset-0 bg-slate-950/98 backdrop-blur-3xl z-[201] p-4 pb-24 overflow-y-auto"
+         x-cloak>
+        
+        <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-3">
+            <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                <h2 class="text-xs text-white font-bold uppercase tracking-wider">Navigation</h2>
+            </div>
+            <button @click="fullMenu = false" class="text-slate-500 p-2">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+            <!-- Densely Packed Grid -->
+            <a href="{% url 'dashboard' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-th-large text-base mb-1 text-blue-400"></i>
+                <span class="text-[10px] font-bold">ڈیش بورڈ</span>
+            </a>
+
+            {% if can_view_academics %}
+            <a href="{% url 'students' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-users text-base mb-1 text-emerald-400"></i>
+                <span class="text-[10px] font-bold">طلبہ</span>
+            </a>
+
+            <a href="{% url 'student_attendance' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-user-check text-base mb-1 text-blue-400"></i>
+                <span class="text-[10px] font-bold">حاضری</span>
+            </a>
+            {% endif %}
+
+            {% if is_dms_admin %}
+            <a href="{% url 'income_list' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-wallet text-base mb-1 text-emerald-400"></i>
+                <span class="text-[10px] font-bold">آمدنی</span>
+            </a>
+            {% endif %}
+
+            {% if is_dms_admin %}
+            <a href="{% url 'expense' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-hand-holding-dollar text-base mb-1 text-rose-400"></i>
+                <span class="text-[10px] font-bold">اخراجات</span>
+            </a>
+
+            <a href="{% url 'balance' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-scale-balanced text-base mb-1 text-amber-400"></i>
+                <span class="text-[10px] font-bold">بیلنس</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'dms_course' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-graduation-cap text-base mb-1 text-indigo-400"></i>
+                <span class="text-[10px] font-bold">کورسز</span>
+            </a>
+
+            {% if is_dms_admin %}
+            <a href="{% url 'dms_staff' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-user-tie text-base mb-1 text-slate-400"></i>
+                <span class="text-[10px] font-bold">عملہ</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'attendance_report' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-clipboard-list text-base mb-1 text-sky-400"></i>
+                <span class="text-[10px] font-bold">رپورٹس</span>
+            </a>
+
+            <a href="{% url 'inventory_dashboard' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-boxes-stacked text-base mb-1 text-amber-500"></i>
+                <span class="text-[10px] font-bold">انونٹری</span>
+            </a>
+
+            <a href="{% url 'timetable' institution.slug %}" class="flex flex-col items-center justify-center p-3 bg-white/[0.03] border border-white/5 rounded-2xl text-white">
+                <i class="fas fa-calendar-alt text-base mb-1 text-blue-400"></i>
+                <span class="text-[10px] font-bold">ٹائم ٹیبل</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- The Dock Bar (Minimized - Now 7 Items) -->
+    <div class="px-2 pb-1 pt-1 mt-1 relative">
+        <div class="max-w-md mx-auto bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl overflow-hidden">
+            <div class="grid grid-cols-7 items-center">
+                
+                <a href="{% url 'dashboard' institution.slug %}" 
+                   class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'dashboard' %}text-blue-400 bg-blue-500/10{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-th-large text-xs"></i>
+                </a>
+                {% if can_view_academics %}
+                <a href="{% url 'students' institution.slug %}" 
+                   class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'students' %}text-emerald-400 bg-emerald-500/10{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-users text-xs"></i>
+                </a>
+
+                <a href="{% url 'student_attendance' institution.slug %}" 
+                   class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'student_attendance' %}text-blue-400 bg-blue-500/10{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-user-check text-xs"></i>
+                </a>
+                {% endif %}
+
+                <!-- Focused Orb -->
+                <button @click="fullMenu = !fullMenu" 
+                        class="flex flex-col items-center justify-center py-0.5 transition-all">
+                    <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-lg transform active:scale-75 transition-transform"
+                         :class="fullMenu ? 'rotate-45 bg-rose-600' : ''">
+                        <i class="fas fa-plus text-[10px]" x-show="!fullMenu"></i>
+                        <i class="fas fa-times text-[10px]" x-show="fullMenu"></i>
+                    </div>
+                </button>
+
+                {% if is_dms_admin %}
+                <a href="{% url 'income_list' institution.slug %}" 
+                   class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'income_list' %}text-emerald-400 bg-emerald-500/10{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-wallet text-xs"></i>
+                </a>
+
+                <a href="{% url 'expense' institution.slug %}" 
+                   class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'expense' %}text-rose-400 bg-rose-500/10{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-hand-holding-dollar text-xs"></i>
+                </a>
+
+                <a href="{% url 'balance' institution.slug %}" 
+                   class="flex flex-col items-center justify-center py-2 transition-all {% if request.resolver_match.url_name == 'balance' %}text-amber-400 bg-amber-500/10{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-scale-balanced text-xs"></i>
+                </a>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+

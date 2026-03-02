@@ -1,0 +1,163 @@
+<!-- Master Profile HUD: Compact Nebula Intelligence Hub -->
+<div dir="ltr" class="text-left relative overflow-hidden bg-[#080810] border border-white/10 rounded-[2.5rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)] mb-8 text-slate-200 transition-all duration-700" x-show="loaded" x-transition:enter="transition duration-700 ease-out">
+    <!-- Multi-Layered Premium Nebula Background -->
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.1),transparent_70%)] pointer-events-none"></div>
+    <div class="absolute -top-32 -right-32 w-80 h-80 bg-indigo-600/15 rounded-full blur-[110px] pointer-events-none"></div>
+    <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-violet-600/10 rounded-full blur-[110px] pointer-events-none"></div>
+    
+    <!-- Ultra-Thin Glass Gloss Overlay -->
+    <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none border-t border-white/10 rounded-t-[2.5rem]"></div>
+    
+    <!-- System Status Header -->
+    <div class="relative z-10 px-6 py-3 bg-white/[0.02] border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_10px_#34d399]{% else %}bg-rose-500{% endif %}"></div>
+            {% if student.is_active %}
+            <span class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Data_Nexus: Online</span>
+            {% else %}
+            <span class="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em]">Data_Nexus: Offline</span>
+            {% endif %}
+        </div>
+        <div class="flex items-center gap-3 no-print">
+            <button onclick="window.print()" class="text-[9px] text-slate-400 hover:text-white uppercase font-black tracking-widest"><i class="fas fa-print mr-1.5 opacity-70"></i>Report</button>
+            
+            {% if is_academic_admin %}
+            {% if not student.user %}
+            <form method="POST" action="{% url 'create_portal_account' institution.slug 'student' student.id %}" onsubmit="return confirm('کیا آپ اس طالب علم کا آن لائن پورٹل اکاؤنٹ بنانا چاہتے ہیں؟');" class="inline m-0 p-0">
+                {% csrf_token %}
+                <button type="submit" class="text-[9px] text-cyan-400 font-black uppercase tracking-widest hover:text-cyan-300 transition-colors mr-3">
+                    <i class="fas fa-user-plus mr-1.5 opacity-70"></i>Create Account
+                </button>
+            </form>
+            {% else %}
+            <span class="text-[9px] text-emerald-400 font-black uppercase tracking-widest mr-3 cursor-help" title="یوزر نیم: {{ student.user.username }}">
+                <i class="fas fa-check-circle mr-1.5 opacity-70"></i>Has Account
+            </span>
+            {% endif %}
+            
+            {% if can_edit_staff %}
+            <form method="POST" action="{% url 'promote_to_staff' institution.slug student.id %}" onsubmit="return confirm('کیا آپ اس ممبر کا ڈیٹا کاپی کر کے انہیں اسٹاف (عملے) میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
+                {% csrf_token %}
+                <button type="submit" class="text-[9px] text-fuchsia-400 font-black uppercase tracking-widest hover:text-fuchsia-300 transition-colors mr-3 cursor-pointer">
+                    <i class="fas fa-award mr-1.5 opacity-70"></i>Assign Role
+                </button>
+            </form>
+            {% endif %}
+
+            <a href="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}?edit={{ student.id }}" class="text-[9px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300 transition-colors"><i class="fas fa-edit mr-1.5 opacity-70"></i>Modify</a>
+
+            <form method="POST" class="inline m-0 p-0">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_status">
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+                {% if not student.is_active %}
+                <input type="hidden" name="is_active" value="on">
+                {% endif %}
+                <button type="submit" class="text-[9px] {% if student.is_active %}text-amber-400 hover:text-amber-300{% else %}text-emerald-400 hover:text-emerald-300{% endif %} font-black uppercase tracking-widest transition-colors">
+                    <i class="fas {% if student.is_active %}fa-ban{% else %}fa-check-circle{% endif %} mr-1.5 opacity-70"></i>{% if student.is_active %}Suspend{% else %}Activate{% endif %}
+                </button>
+            </form>
+            
+            <form method="POST" action="{% if institution.type == 'masjid' %}{% url 'musalleen_list' institution.slug %}{% else %}{% url 'students' institution.slug %}{% endif %}" onsubmit="return confirm('کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟');" class="inline m-0 p-0">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+                <button type="submit" class="text-[9px] text-rose-400 font-black uppercase tracking-widest hover:text-rose-300 transition-colors">
+                    <i class="fas fa-trash-alt mr-1.5 opacity-70"></i>Delete
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="p-2 space-y-2">
+        <!-- Top Identity Layer: Info Left, Photo Right -->
+        <div class="flex items-center justify-between gap-2">
+            <!-- Text Info Cluster (Left) -->
+            <div class="flex-grow min-w-0 space-y-1 text-left">
+                <div>
+                    <h1 class="text-2xl font-black text-white tracking-tighter leading-none mb-1 truncate">{{ student.name }}</h1>
+                    <div class="flex items-center gap-2">
+                        <p class="text-[14px] text-slate-200">{% if institution.type == 'masjid' %}Guardian/Ref:{% else %}Father:{% endif %} {{ student.guardian_name }}</p>
+                    </div>
+                </div>
+                
+                <!-- Primary Contact Node -->
+                <div class="inline-flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/10 px-3 py-1 rounded-lg">
+                    <i class="fas fa-phone text-[8px] text-emerald-500/50"></i>
+                    <a href="tel:{{ student.mobile }}" class="text-[11px] font-mono font-bold text-emerald-400">
+                        {{ student.mobile|default:"--NO_CELL--" }}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Photo Module (Right) -->
+            <div class="relative shrink-0">
+                <div class="w-20 h-20 rounded-[1.5rem] bg-black border border-white/10 overflow-hidden shadow-2xl flex items-center justify-center">
+                    {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="w-full h-full object-cover grayscale-[0.2] contrast-125">
+                    {% else %}
+                        <span class="text-3xl font-thin text-white/10">{{ student.name|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="absolute -bottom-2 -right-2 bg-indigo-600 text-white text-xs font-mono font-bold px-1.5 py-0.5 rounded shadow-lg uppercase">{% if student.reg_id %}{{ student.reg_id }}{% else %}#{{ student.id }}{% endif %}</div>
+            </div>
+        </div>
+
+        <!-- Tactical Information Stream: The "Button" Matrix -->
+        <div dir="ltr" class="text-left flex flex-wrap gap-2 border-t border-b border-white/5 py-4">
+            <!-- GENDER -->
+            <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg hover:border-emerald-500/30 hover:bg-white/20 transition-all group shadow-sm">
+                <span class="text-[9px] font-bold text-slate-400">Gender:</span>
+                <span class="text-xs font-black text-white">{{ student.get_gender_display }}</span>
+            </div>
+            <!-- SECONDARY PHONE -->
+            {% if student.mobile2 %}
+            <a href="tel:{{ student.mobile2 }}" class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg hover:border-emerald-500/30 hover:bg-white/20 transition-all group shadow-sm">
+                <span class="text-[8px] font-black text-slate-500 group-hover:text-emerald-400">No_2:</span>
+                <span class="text-xs font-mono font-bold text-white">{{ student.mobile2 }}</span>
+            </a>
+            {% endif %}
+            <!-- EMAIL -->
+            {% if student.email %}
+            <a href="mailto:{{ student.email }}" class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg hover:border-indigo-500/30 hover:bg-white/20 transition-all group shadow-sm">
+                <span class="text-[8px] font-black text-slate-500 group-hover:text-indigo-400">MAIL:</span>
+                <span class="text-xs font-mono font-bold text-white">{{ student.email }}</span>
+            </a>
+            {% endif %}
+
+            <!-- BLOOD GROUP -->
+            {% if student.blood_group %}
+            <div class="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1.5 rounded-lg shadow-sm">
+                <span class="text-[8px] font-black text-rose-500/70">BLOOD:</span>
+                <span class="text-xs font-black text-rose-400">{{ student.blood_group }}</span>
+            </div>
+            {% endif %}
+
+            <!-- DATE OF BIRTH -->
+            {% if student.date_of_birth %}
+            <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg shadow-sm">
+                <span class="text-[8px] font-black text-slate-500">DOB:</span>
+                <span class="text-xs font-mono font-bold text-white uppercase">{{ student.date_of_birth|date:"d M Y" }}</span>
+            </div>
+            {% endif %}
+
+            <!-- JOINED DATE -->
+            <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg shadow-sm">
+                <span class="text-[8px] font-black text-slate-500">JOIN:</span>
+                <span class="text-xs font-mono font-bold text-white">{{ student.enrollment_date|date:"d/m/y" }}</span>
+            </div>
+        </div>
+
+        <!-- Locational Node -->
+        <div class="flex items-start gap-3 bg-white/[0.03] p-4 rounded-2xl border border-white/10">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
+                <i class="fas fa-map-marker-alt text-xs"></i>
+            </div>
+            <div class="min-w-0">
+                <span class="text-[8px] font-black text-slate-500 uppercase mb-1 block">Vector_Location:</span>
+                <p class="text-xs text-white font-urdu leading-snug">{{ student.address|default:"Vectors_Undefined" }}</p>
+            </div>
+        </div>
+    </div>
+</div>

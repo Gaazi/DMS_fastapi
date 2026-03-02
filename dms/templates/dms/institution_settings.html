@@ -1,0 +1,180 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{{ institution.name }} - ادارہ ترتیبات{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <form method="POST" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+
+        <!-- Page Header -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-6">
+            <div>
+                <h1 class="text-3xl font-light text-white">
+                    <span class="font-bold">Settings</span> & Preferences
+                </h1>
+                <p class="text-slate-300 mt-2">Update your institution's profile, branding, and system preferences.</p>
+            </div>
+            {% if is_admin %}
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 text-sm font-medium transition-all">
+                <i class="fas fa-save mr-2"></i> Save Changes
+            </button>
+            {% endif %}
+        </div>
+        
+        <!-- Branding Section -->
+        <div class="border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-8">
+                <!-- Logo Upload -->
+                <div class="flex-shrink-0 relative group/logo">
+                    <div class="w-32 h-32 rounded-2xl bg-black/40 border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden relative">
+                        {% if institution.logo %}
+                            <img src="{{ institution.logo.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <i class="fas fa-image text-3xl text-white/20"></i>
+                        {% endif %}
+                        
+                        {% comment  %}
+                        <!-- {% if user.is_superuser or user.is_staff or is_dms_staff %} -->
+                        <!--{% if user.is_superuser or user.is_staff %}-->
+                        {% endcomment %}
+                        {% if user.is_superuser %}
+                        <!-- Hover Overlay -->
+                        <div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity cursor-pointer">
+                            <i class="fas fa-camera text-white mb-1"></i>
+                            <span class="text-[10px] text-white/80 uppercase tracking-wider">Change Logo</span>
+                        </div>
+                        <input type="file" name="logo" class="absolute inset-0 opacity-0 cursor-pointer">
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex-1 space-y-4 w-full">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Institution Branding</h3>
+                        <p class="text-sm text-slate-400">Upload your official logo. Recommended size: 512x512px.webp format</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div class="group/input">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within/input:text-indigo-400 transition-colors font-mehr">
+                                Institution Name in Urdu
+                            </label>
+                            <input type="text" name="name_in_urdu" value="{{ institution.name_in_urdu }}" {% if not is_admin %}disabled{% endif %}
+                                class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all placeholder-slate-600 disabled:opacity-50 disabled:cursor-not-allowed font-mehr">
+                        </div>
+                        <div class="group/input">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within/input:text-indigo-400 transition-colors font-mehr">
+                                Institution Name
+                            </label>
+                            <input type="text" name="name" value="{{ institution.name }}" {% if not is_admin %}disabled{% endif %}
+                                class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all placeholder-slate-600 disabled:opacity-50 disabled:cursor-not-allowed font-mehr">
+                        </div>
+
+                        <div class="group/input">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within/input:text-indigo-400 transition-colors font-mehr">
+                                Institution Type
+                            </label>
+                            <select name="institution_type" {% if not is_admin %}disabled{% endif %} class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed font-mehr">
+                                <option value="masjid" class="bg-slate-900 text-white" {% if institution.type == 'masjid' %}selected{% endif %}>Masjid</option>
+                                <option value="madrasa" class="bg-slate-900 text-white" {% if institution.type == 'madrasa' %}selected{% endif %}>Madrasa</option>
+                                <option value="maktab" class="bg-slate-900 text-white" {% if institution.type == 'maktab' %}selected{% endif %}>Maktab</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Preferences -->
+        <div class="border border-white/10 rounded-2xl p-6 bg-white/5">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2 font-mehr">
+                <i class="fas fa-user-cog text-slate-400"></i> Account Preferences
+            </h3>
+            
+            <div class="flex items-center justify-between">
+                <div>
+                     <h4 class="text-sm font-semibold text-white font-mehr">Default Institution</h4>
+                     <p class="text-xs text-slate-400 mt-1 font-mehr">
+                        When you login, you will be automatically redirected to this institution's dashboard.
+                     </p>
+                </div>
+                
+                <div>
+                    {% if institution.is_default %}
+                        <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="text-sm font-medium font-mehr">Currently Default</span>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'set_default_institution' institution.slug %}" 
+                           class="flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 rounded-lg text-amber-500 transition-all group">
+                            <i class="far fa-star group-hover:fas transition-all"></i>
+                            <span class="text-sm font-medium font-mehr">Set as Default</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Location -->
+        <div class="border border-white/10 rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2 font-mehr">
+                <i class="fas fa-map-marker-alt text-slate-400"></i> Contact & Location
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="group/input">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within/input:text-indigo-400 transition-colors font-mehr">
+                        Phone Number
+                    </label>
+                    <input type="tel" name="phone" value="{{ institution.phone|default:'' }}" placeholder="+91 300 0000000" {% if not is_admin %}disabled{% endif %}
+                        class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all placeholder-slate-600 disabled:opacity-50 disabled:cursor-not-allowed font-mehr">
+                </div>
+
+                <div class="group/input">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within/input:text-indigo-400 transition-colors font-mehr">
+                        Email Address
+                    </label>
+                    <input type="email" name="email" value="{{ institution.email|default:'' }}" placeholder="info@example.com" {% if not is_admin %}disabled{% endif %}
+                        class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all placeholder-slate-600 disabled:opacity-50 disabled:cursor-not-allowed font-mehr">
+                </div>
+
+                <div class="md:col-span-2 group/input">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within/input:text-indigo-400 transition-colors font-mehr">
+                        Full Address
+                    </label>
+                    <textarea name="address" rows="2" placeholder="Street Address, City, Country" {% if not is_admin %}disabled{% endif %}
+                        class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all resize-none placeholder-slate-600 disabled:opacity-50 disabled:cursor-not-allowed font-mehr">{{ institution.address|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Preferences (Placeholders) -->
+        <div class="border border-white/10 rounded-2xl p-6 opacity-60 pointer-events-none select-none grayscale">
+            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <i class="fas fa-sliders-h text-slate-400"></i> System Preferences
+                <span class="text-[10px] bg-white/10 text-slate-300 px-2 py-0.5 rounded-full">Coming Soon</span>
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Default Currency</label>
+                     <div class="w-full border-b border-white/10 py-2 text-white">INR (Rs)</div>
+                </div>
+                <div>
+                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Language</label>
+                     <div class="w-full border-b border-white/10 py-2 text-white">Urdu / English</div>
+                </div>
+                <div>
+                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Theme</label>
+                     <div class="w-full border-b border-white/10 py-2 text-white">Dark Mode</div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
