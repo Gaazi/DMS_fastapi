@@ -62,26 +62,35 @@ class InstitutionManager:
         
         recent_sessions = list(self.session.exec(
             select(ClassSession).join(Course).where(Course.inst_id == self.institution.id)
-            .order_by(desc(ClassSession.date), desc(ClassSession.id)).limit(5)
+            .order_by(desc(ClassSession.date), desc(ClassSession.id)).limit(10)
         ))
 
         # 3. 🚀 باریک اعداد و شمار (جینگو کی طرح مکمل سٹیٹس)
         # اس مہینے کے نئے داخلوں کا حساب
         start_of_month = today.replace(day=1)
-        new_students = self.session.exec(
+        new_students_count = self.session.exec(
             select(func.count(Student.id)).where(
                 Student.inst_id == self.institution.id, 
                 Student.admission_date >= start_of_month
             )
         ).one()
 
+        active_students_count = self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id, Student.is_active == True)).one()
+        active_staff_count = self.session.exec(select(func.count(Staff.id)).where(Staff.inst_id == self.institution.id, Staff.is_active == True)).one()
+        active_courses_count = self.session.exec(select(func.count(Course.id)).where(Course.inst_id == self.institution.id, Course.is_active == True)).one()
+        facilities_count = self.session.exec(select(func.count(Facility.id)).where(Facility.inst_id == self.institution.id)).one()
+
         stats = {
-            'students': self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id, Student.is_active == True)).one(),
-            'new_this_month': new_students,
-            'staff': self.session.exec(select(func.count(Staff.id)).where(Staff.inst_id == self.institution.id, Staff.is_active == True)).one(),
-            'courses': self.session.exec(select(func.count(Course.id)).where(Course.inst_id == self.institution.id, Course.is_active == True)).one(),
-            'facilities': self.session.exec(select(func.count(Facility.id)).where(Facility.inst_id == self.institution.id)).one()
+            'students': active_students_count,
+            'new_this_month': new_students_count,
+            'staff': active_staff_count,
+            'courses': active_courses_count,
+            'facilities': facilities_count
         }
+
+        # Recent Items for Sidebar/Lists
+        recent_students = self.session.exec(select(Student).where(Student.inst_id == self.institution.id).order_by(desc(Student.id)).limit(5)).all()
+        recent_staff = self.session.exec(select(Staff).where(Staff.inst_id == self.institution.id).order_by(desc(Staff.id)).limit(5)).all()
 
         # 4. الرٹس
         alerts = self.get_quick_alerts()
@@ -89,16 +98,24 @@ class InstitutionManager:
         result = {
             'institution': self.institution,
             'is_admin': is_admin,
+            'can_view_academics': True, # Explicitly for template logic
+            'is_staff_admin': is_admin,
+            'is_dms_admin': is_admin,
             'currency_label': self.get_currency_label(self.institution),
             'stats': stats,
             'finance': finance,
             'balance': finance.get('balance', 0),
             'total_expenses': finance.get('total_expenses', 0),
+            'total_donations': finance.get('total_amount', 0), # Match template
             'revenue': finance.get('revenue', {}).get('total', 0),
             'attendance': attendance,
+            'today_attendance': attendance.get('present_count', 0), # Match template
             'recent_sessions': recent_sessions,
+            'recent_students': recent_students,
+            'recent_staff': recent_staff,
             'alerts': alerts,
             'today': today,
+            'total_records': active_students_count + active_staff_count + active_courses_count + facilities_count,
             'chart_data': {
                 'labels': json.dumps(chart_data.get('labels', [])),
                 'income': json.dumps(chart_data.get('income', [])),

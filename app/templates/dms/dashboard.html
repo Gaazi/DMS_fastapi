@@ -358,6 +358,77 @@
   {# ======================= #}
   {# 4. Recent Activity Grid #}
   {# ======================= #}
+  {# ======================= #}
+  {# 5. Recent Lists (Students & Staff) #}
+  {# ======================= #}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {# Recent Admissions #}
+    <div class="glass-card rounded-3xl p-6 border border-white/5 shadow-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg text-white flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
+                    <i class="fas fa-user-plus text-xs"></i>
+                </span>
+                حالیہ داخلے (Admissions)
+            </h3>
+            <a href="{{ url('students', institution.slug) }}" class="text-[10px] text-violet-400 uppercase tracking-widest hover:underline">سب دیکھیں</a>
+        </div>
+        <div class="space-y-4">
+            {% for student in recent_students %}
+            <div class="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-all border border-transparent hover:border-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-400 font-bold text-xs">
+                        {{ student.name[:1] }}
+                    </div>
+                    <div>
+                        <h4 class="text-sm text-white">{{ student.name }}</h4>
+                        <p class="text-[10px] text-slate-500 uppercase">{{ student.admission_date|date('M d, Y') }}</p>
+                    </div>
+                </div>
+                <a href="{{ url('student_detail', institution.slug, student.id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white transition-colors">
+                    <i class="fas fa-chevron-left text-[10px]"></i>
+                </a>
+            </div>
+            {% else %}
+            <p class="text-[10px] text-center text-slate-600 py-10 italic">کوئی حالیہ داخلہ نہیں۔</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Recent Staff #}
+    <div class="glass-card rounded-3xl p-6 border border-white/5 shadow-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg text-white flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                    <i class="fas fa-user-shield text-xs"></i>
+                </span>
+                حالیہ ملازمین (Staff)
+            </h3>
+            <a href="{{ url('dms_staff', institution.slug) }}" class="text-[10px] text-indigo-400 uppercase tracking-widest hover:underline">سب دیکھیں</a>
+        </div>
+        <div class="space-y-4">
+            {% for staff in recent_staff %}
+            <div class="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-all border border-transparent hover:border-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">
+                        {{ staff.name[:1] }}
+                    </div>
+                    <div>
+                        <h4 class="text-sm text-white">{{ staff.name }}</h4>
+                        <p class="text-[10px] text-slate-500 uppercase">{{ staff.role|upper }}</p>
+                    </div>
+                </div>
+                <a href="{{ url('staff_detail', institution.slug, staff.id) if url('staff_detail', institution.slug, staff.id) else '#' }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white transition-colors">
+                    <i class="fas fa-chevron-left text-[10px]"></i>
+                </a>
+            </div>
+            {% else %}
+            <p class="text-[10px] text-center text-slate-600 py-10 italic">کوئی حالیہ ملازم نہیں۔</p>
+            {% endfor %}
+        </div>
+    </div>
+  </div>
+
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       {% if is_admin %}
       {# Income Card #}
@@ -432,13 +503,46 @@
   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
     
     {# Stat Card 1: Records #}
-    <div class="p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-shadow duration-300">
-       <div class="bg-indigo-50/60 text-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-         <i class="fas fa-database text-sm"></i>
+    <div class="p-3.5 rounded-2xl border border-white/5 bg-white/5 shadow-sm flex items-center gap-3 hover:bg-white/10 transition-all">
+       <div class="bg-indigo-500/10 text-indigo-400 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+         <i class="fas fa-database text-xs"></i>
        </div>
        <div class="min-w-0">
-         <p class="text-sm">Records</p>
-         <p class="text-sm font-mehr truncate">{{ total_records|default("0") }}</p>
+         <p class="text-[10px] text-slate-500 uppercase">Records</p>
+         <p class="text-xs text-white font-mono truncate">{{ total_records|default("0") }}</p>
+       </div>
+    </div>
+
+    {# Stat Card 2: Students #}
+    <div class="p-3.5 rounded-2xl border border-white/5 bg-white/5 shadow-sm flex items-center gap-3 hover:bg-white/10 transition-all">
+       <div class="bg-violet-500/10 text-violet-400 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-violet-500/20">
+         <i class="fas fa-user-graduate text-xs"></i>
+       </div>
+       <div class="min-w-0">
+         <p class="text-[10px] text-slate-500 uppercase">Students</p>
+         <p class="text-xs text-white font-mono truncate">{{ stats.students|default("0") }}</p>
+       </div>
+    </div>
+
+    {# Stat Card 3: Staff #}
+    <div class="p-3.5 rounded-2xl border border-white/5 bg-white/5 shadow-sm flex items-center gap-3 hover:bg-white/10 transition-all">
+       <div class="bg-blue-500/10 text-blue-400 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-blue-500/20">
+         <i class="fas fa-user-tie text-xs"></i>
+       </div>
+       <div class="min-w-0">
+         <p class="text-[10px] text-slate-500 uppercase">Staff</p>
+         <p class="text-xs text-white font-mono truncate">{{ stats.staff|default("0") }}</p>
+       </div>
+    </div>
+
+    {# Stat Card 4: Courses #}
+    <div class="p-3.5 rounded-2xl border border-white/5 bg-white/5 shadow-sm flex items-center gap-3 hover:bg-white/10 transition-all">
+       <div class="bg-amber-500/10 text-amber-400 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+         <i class="fas fa-book text-xs"></i>
+       </div>
+       <div class="min-w-0">
+         <p class="text-[10px] text-slate-500 uppercase">Courses</p>
+         <p class="text-xs text-white font-mono truncate">{{ stats.courses|default("0") }}</p>
        </div>
     </div>
 
