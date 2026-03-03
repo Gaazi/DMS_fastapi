@@ -1,9 +1,9 @@
 from typing import Any, Dict, Optional
 from sqlmodel import Session, select
 from fastapi import Request
-from ..models import Institution, User
-from ..logic.auth import UserManager
-from ..logic.institution import InstitutionManager
+from app.models import Institution, User
+from app.logic.auth import UserManager
+from app.logic.institution import InstitutionManager
 from fastapi.templating import Jinja2Templates
 from app.core.config import settings
 import datetime
@@ -149,7 +149,7 @@ class TemplateResponse:
             # We will set this in main.py initialization
             pass
 
-        from ..logic.auth import get_current_user
+        from app.logic.auth import get_current_user
         current_user = None
         if session:
             try:

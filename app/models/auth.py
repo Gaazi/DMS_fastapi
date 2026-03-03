@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 
 if TYPE_CHECKING:
-    from .people import Staff
+    from app.models.people import Staff
 
 class User(SQLModel, table=True):
     __tablename__ = "auth_user"

@@ -6,10 +6,10 @@ from datetime import date
 import traceback
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import Institution, Student, Admission, Course
+from app.db.session import get_session
+from app.models import Institution, Student, Admission, Course
 
-from ..helper.context import TemplateResponse
+from app.helper.context import TemplateResponse
 from datetime import date as dt_date
 
 router = APIRouter()
@@ -23,7 +23,7 @@ async def public_admission(request: Request, institution_slug: str, session: Ses
     if not institution:
         return HTMLResponse(content="ادارہ نہیں ملا۔", status_code=404)
     
-    from ..schemas.forms import PublicAdmissionSchema
+    from app.schemas.forms import PublicAdmissionSchema
     from pydantic import ValidationError
 
     if request.method == "POST":

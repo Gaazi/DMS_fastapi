@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -11,14 +11,14 @@ from app.helper.context import get_global_context
 from app.logic.auth import get_current_user
 
 # API Routers
-from .api import (
+from app.api import (
     auth_router, base_router, student_router, staff_router,
     finance_router, audit_router, attendance_router, export_router,
     course_router, facility_router, inventory_router, schedule_router,
     finance_extra_router, public_admission_router, exams_router,
     guardian_router, global_router
 )
-from .admin import setup_admin
+from app.admin import setup_admin
 
 from contextlib import asynccontextmanager
 from app.db.session import init_db
@@ -41,26 +41,45 @@ from app.helper.context import templates, TemplateResponse
 # Configure Templates Globals
 def smart_url_for(name: str, *args, **kwargs):
     """
-    Wrapper for app.url_path_for that handles positional arguments by mapping them 
-    to path parameters in the route's definition.
+    Wrapper for app.url_path_for that handles positional arguments and query parameters.
     """
     try:
         import re
+        from urllib.parse import urlencode
+        
+        route_path = ""
+        path_params = []
         for route in app.routes:
             if hasattr(route, "name") and route.name == name:
-                # Find all {param} in the route path
-                params = re.findall(r'\{([a-zA-Z_0-9]+)\}', route.path)
-                for i, arg in enumerate(args):
-                    if i < len(params):
-                        param_name = params[i]
-                        if param_name not in kwargs:
-                            kwargs[param_name] = str(arg)
+                route_path = route.path
+                path_params = re.findall(r'\{([a-zA-Z_0-9]+)\}', route_path)
                 break
-        return app.url_path_for(name, **kwargs)
+        
+        if not route_path:
+            return app.url_path_for(name, **kwargs)
+            
+        # 1. Map positional args to path params
+        for i, arg in enumerate(args):
+            if i < len(path_params):
+                kw = path_params[i]
+                if kw not in kwargs:
+                    kwargs[kw] = str(arg)
+        
+        # 2. Separate path kwargs from query kwargs
+        path_kwargs = {}
+        query_kwargs = {}
+        for k, v in kwargs.items():
+            if k in path_params:
+                path_kwargs[k] = v
+            else:
+                query_kwargs[k] = v
+        
+        url = app.url_path_for(name, **path_kwargs)
+        if query_kwargs:
+            url = f"{url}?{urlencode(query_kwargs)}"
+        return url
     except Exception as e:
-        # If route not found or other error, fallback to original or return error string
-        # To help debugging, we can return the error, but for production # is safer
-        print(f"Error resolving URL for {name} with args {args}: {e}")
+        print(f"Error resolving URL for {name}: {e}")
         return "#"
 
 templates.env.globals["url"] = smart_url_for
@@ -123,6 +142,12 @@ admin = setup_admin(app)
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     return await TemplateResponse.render("404.html", request, None, status_code=404)
+
+@app.exception_handler(401)
+async def unauthorized_handler(request: Request, exc: HTTPException):
+    """صارف لاگ ان نہیں ہے، لاگ ان پیج پر ری ڈائریکٹ کریں۔"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/login/", status_code=303)
 
 @app.exception_handler(500)
 async def internal_error_handler(request: Request, exc):

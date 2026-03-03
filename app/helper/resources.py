@@ -1,6 +1,6 @@
 import tablib
 from typing import List, Optional
-from ..models import (
+from app.models import (
     Attendance,
     ClassSession,
     Donor,

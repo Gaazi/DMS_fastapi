@@ -3,8 +3,8 @@ from sqlmodel import Session, select, func, delete, and_
 from decimal import Decimal
 
 # Models
-from ..models import Exam, ExamResult, Student, Course, Institution
-from .audit import AuditManager
+from app.models import Exam, ExamResult, Student, Course, Institution
+from app.logic.audit import AuditManager
 
 class ExamManager:
     """امتحانات، پوزیشنز اور رزلٹ کارڈ مینیج کرنے کی ایڈوانس سروس کلاس (FastAPI/SQLModel Version)"""

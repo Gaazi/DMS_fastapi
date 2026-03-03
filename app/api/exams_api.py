@@ -5,12 +5,12 @@ from typing import Optional, List
 import json
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution, Exam, Student, Course
-from ..logic.auth import get_current_user
-from ..logic.exams import ExamManager
-from ..logic.permissions import get_institution_with_access
-from ..helper.context import TemplateResponse
+from app.db.session import get_session
+from app.models import User, Institution, Exam, Student, Course
+from app.logic.auth import get_current_user
+from app.logic.exams import ExamManager
+from app.logic.permissions import get_institution_with_access
+from app.helper.context import TemplateResponse
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ async def list_exams(request: Request, institution_slug: str, session: Session =
 async def add_exam(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """نیا امتحان شامل کریں۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
-    from ..schemas.forms import ExamFormSchema
+    from app.schemas.forms import ExamFormSchema
     from pydantic import ValidationError
 
     form_data = await request.form()

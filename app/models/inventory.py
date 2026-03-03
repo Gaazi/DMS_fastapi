@@ -1,13 +1,13 @@
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float
 from datetime import date as dt_date
-from .base import AuditModel
+from app.models.base import AuditModel
 from decimal import Decimal
 from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
-    from .foundation import Institution
-    from .people import Student, Staff
+    from app.models.foundation import Institution
+    from app.models.people import Student, Staff
 
 class ItemCategory(AuditModel, table=True):
     __tablename__ = "dms_itemcategory"

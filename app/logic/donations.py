@@ -4,9 +4,8 @@ from datetime import datetime, date
 from fastapi import HTTPException
 
 # Internal Imports
-# Internal Imports
-from ..models import Income, Donor, Institution, User
-from .audit import AuditManager
+from app.models import Income, Donor, Institution, User
+from app.logic.audit import AuditManager
 
 class DonationManager:
     """Business logic for managing institution income and donors (SQLModel Version)"""

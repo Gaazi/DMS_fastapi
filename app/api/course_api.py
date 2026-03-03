@@ -6,14 +6,14 @@ from typing import Optional
 import re
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution, Course
-from ..logic.auth import get_current_user
-from ..logic.courses import CourseManager
-from ..logic.permissions import get_institution_with_access
+from app.db.session import get_session
+from app.models import User, Institution, Course
+from app.logic.auth import get_current_user
+from app.logic.courses import CourseManager
+from app.logic.permissions import get_institution_with_access
 
 router = APIRouter()
-from ..helper.context import TemplateResponse
+from app.helper.context import TemplateResponse
 
 # --- 1. course list ---
 @router.api_route("/{institution_slug}/course/", methods=["GET", "POST"], response_class=HTMLResponse, name="dms_course")
@@ -27,7 +27,7 @@ async def programs_list_view(request: Request, institution_slug: str, session: S
 async def courses_list_view(request: Request, institution_slug: str, session: Session, current_user: User):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
     cm = CourseManager(session, current_user, institution=institution)
-    from ..schemas.forms import CourseFormSchema
+    from app.schemas.forms import CourseFormSchema
     from pydantic import ValidationError
 
     if request.method == "POST":

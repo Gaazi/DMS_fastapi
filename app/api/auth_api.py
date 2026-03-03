@@ -6,12 +6,12 @@ from typing import Optional
 import json
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution, Staff, Student, Parent
-from ..logic.auth import UserManager, get_current_user, create_access_token
-from ..logic.permissions import get_institution_with_access
+from app.db.session import get_session
+from app.models import User, Institution, Staff, Student, Parent
+from app.logic.auth import UserManager, get_current_user, create_access_token
+from app.logic.permissions import get_institution_with_access
 from app.core.config import settings
-from ..helper.context import TemplateResponse
+from app.helper.context import TemplateResponse
 
 from sqlalchemy import update
 
@@ -21,7 +21,7 @@ router = APIRouter()
 @router.api_route("/welcome/", methods=["GET", "POST"], response_class=HTMLResponse, name="no_institution_linked")
 async def no_institution_linked(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """جب یوزر لاگ ان ہو لیکن اس کا کوئی ادارہ نہ ہو یا منظوری کا منتظر ہو۔"""
-    from ..schemas.forms import SetupInstitutionSchema
+    from app.schemas.forms import SetupInstitutionSchema
     from pydantic import ValidationError
 
     insts = UserManager.get_user_institutions(current_user, session)
@@ -73,7 +73,7 @@ async def institution_logout(request: Request, institution_slug: str):
 @router.api_route("/login/", methods=["GET", "POST"], response_class=HTMLResponse, name="dms_login")
 async def dms_login(request: Request, session: Session = Depends(get_session)):
     """لاگ ان ویو۔"""
-    from ..schemas.forms import LoginFormSchema
+    from app.schemas.forms import LoginFormSchema
     from pydantic import ValidationError
 
     if request.method == 'POST':
@@ -105,7 +105,7 @@ async def institution_login(request: Request, institution_slug: str, session: Se
 # --- 4. signup ---
 @router.api_route("/signup/", methods=["GET", "POST"], response_class=HTMLResponse, name="dms_signup")
 async def signup(request: Request, session: Session = Depends(get_session)):
-    from ..schemas.forms import SignupFormSchema
+    from app.schemas.forms import SignupFormSchema
     from pydantic import ValidationError
 
     if request.method == "POST":

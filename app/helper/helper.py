@@ -16,7 +16,7 @@ def handle_manager_result(request, success: bool, message: str, redirect_url: Op
 def resolve_currency_label(institution):
     """ادارے کی کرنسی کا نشان حاصل کرنا۔"""
     try:
-        from ..logic.donations import DonationManager # Updated to logic folder if needed
+        from app.logic.donations import DonationManager # Updated to logic folder if needed
         # Simple fallback for now if logic is missing or complex
         return getattr(institution, 'currency', 'Rs.')
     except:

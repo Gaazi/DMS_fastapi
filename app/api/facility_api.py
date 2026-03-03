@@ -6,13 +6,13 @@ from typing import Optional
 import json
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution
-from ..logic.auth import get_current_user
-from ..logic.facilities import FacilityManager
-from ..logic.permissions import get_institution_with_access
+from app.db.session import get_session
+from app.models import User, Institution
+from app.logic.auth import get_current_user
+from app.logic.facilities import FacilityManager
+from app.logic.permissions import get_institution_with_access
 
-from ..helper.context import TemplateResponse
+from app.helper.context import TemplateResponse
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ async def facility_list(request: Request, institution_slug: str, session: Sessio
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     fm = FacilityManager(session, current_user, institution=institution)
     
-    from ..schemas.forms import FacilityFormSchema
+    from app.schemas.forms import FacilityFormSchema
     from pydantic import ValidationError
     
     errors = None

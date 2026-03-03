@@ -6,8 +6,8 @@ from decimal import Decimal
 import calendar
 
 # Models
-from ..models import Institution, Staff, Staff_Attendance, StaffAdvance
-from .audit import AuditManager
+from app.models import Institution, Staff, Staff_Attendance, StaffAdvance
+from app.logic.audit import AuditManager
 
 class StaffManager:
     """Business logic for Staff members, payroll, and recruitment (FastAPI/SQLModel Version)"""
@@ -37,7 +37,7 @@ class StaffManager:
 
     def _check_access(self):
         """چیک کرنا کہ کیا یوزر کو اسٹاف مینیجمنٹ اور تنخواہوں کے ریکارڈ تک رسائی حاصل ہے۔"""
-        from .roles import Role
+        from app.logic.roles import Role
         
         if not self.user:
             raise HTTPException(status_code=401, detail="Authentication required.")
@@ -120,7 +120,7 @@ class StaffManager:
         self._check_access()
         stats = self.calculate_payroll(month, year, bonus)
         
-        from .finance import FinanceManager
+        from app.logic.finance import FinanceManager
         fm = FinanceManager(self.session, self.institution, self.user)
         
         # ریکارڈ ایکسپینس لیول فنکشن استعمال کریں

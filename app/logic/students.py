@@ -7,8 +7,8 @@ import json
 import re
 
 # Models
-from ..models import Institution, Student, Course, Attendance, Fee, Admission, User
-from .audit import AuditManager
+from app.models import Institution, Student, Course, Attendance, Fee, Admission, User
+from app.logic.audit import AuditManager
 
 class StudentManager:    
     """
@@ -54,11 +54,11 @@ class StudentManager:
         return self
 
     def finance(self): 
-        from .finance import FinanceManager
+        from app.logic.finance import FinanceManager
         return FinanceManager(self.session, self.institution, self.user)
 
     def attendance(self): 
-        from .attendance import AttendanceManager
+        from app.logic.attendance import AttendanceManager
         return AttendanceManager(self.session, self.institution, self.user)
 
     def get_student_list(self, q: Optional[str] = None, course_id: Optional[int] = None, status: str = 'active', page: int = 1):
@@ -183,7 +183,7 @@ class StudentManager:
             # Initial Payment Handling
             initial_pay = e_data.get('initial_payment', 0)
             if initial_pay > 0:
-                from .payments import Cashier
+                from app.logic.payments import Cashier
                 cashier = Cashier(self.session, self.institution, self.user)
                 cashier.collect_fee(student_id=student.id, amount=initial_pay, method=e_data.get('payment_method', 'Cash'))
 
@@ -233,7 +233,7 @@ class StudentManager:
         if not student: raise HTTPException(status_code=404, detail="Student not found.")
         self.set_student(student)._check_access()
         
-        from .institution import InstitutionManager
+        from app.logic.institution import InstitutionManager
         return {
             "student": student,
             "fees": self.finance().student_fee_history(),

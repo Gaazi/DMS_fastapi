@@ -3,8 +3,8 @@ from sqlmodel import Session, select
 from typing import Optional, Tuple
 
 # Internal Imports
-from ..models import Institution, User, Staff
-from .roles import Role
+from app.models import Institution, User, Staff
+from app.logic.roles import Role
 
 class InstitutionAccess:
     """

@@ -1,13 +1,13 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import Field, Relationship
 from datetime import date, datetime
-from .base import AuditModel
-from .links import AnnouncementTargetParentLink
+from app.models.base import AuditModel
+from app.models.links import AnnouncementTargetParentLink
 from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
-    from .foundation import Institution
-    from .people import Parent
+    from app.models.foundation import Institution
+    from app.models.people import Parent
 
 class Announcement(AuditModel, table=True):
     __tablename__ = "dms_announcement"

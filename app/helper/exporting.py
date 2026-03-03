@@ -10,7 +10,7 @@ from typing import Iterable, List, Sequence, Tuple, Optional
 from sqlmodel import Session, select
 
 # Internal Imports
-from ..models import (
+from app.models import (
     Attendance,
     ClassSession,
     Donor,
@@ -31,7 +31,7 @@ from ..models import (
     Exam,
     ExamResult,
 )
-from .resources import (
+from app.helper.resources import (
     InstitutionResource, CourseResource, FacilityResource,
     StudentResource, StaffResource, ParentResource, EnrollmentResource,
     ClassSessionResource, AttendanceResource, StaffAttendanceResource,

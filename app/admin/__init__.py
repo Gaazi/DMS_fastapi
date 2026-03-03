@@ -1,10 +1,10 @@
 from sqladmin import Admin
 from app.db.session import engine
-from .core import InstitutionAdmin, CourseAdmin, FacilityAdmin, TimetableAdmin, ClassSessionAdmin
-from .people import UserAdmin, StaffAdmin, ParentAdmin, StudentAdmin, AdmissionAdmin, StaffAttendanceAdmin, AttendanceAdmin, ActivityLogAdmin
-from .finance import FeeAdmin, FeePaymentAdmin, WalletTransactionAdmin, DonorAdmin, IncomeAdmin, ExpenseAdmin, StaffAdvanceAdmin
-from .inventory import ItemCategoryAdmin, InventoryItemAdmin, AssetIssueAdmin
-from .system import AnnouncementAdmin, SystemSnapshotAdmin
+from app.admin.core import InstitutionAdmin, CourseAdmin, FacilityAdmin, TimetableAdmin, ClassSessionAdmin
+from app.admin.people import UserAdmin, StaffAdmin, ParentAdmin, StudentAdmin, AdmissionAdmin, StaffAttendanceAdmin, AttendanceAdmin, ActivityLogAdmin
+from app.admin.finance import FeeAdmin, FeePaymentAdmin, WalletTransactionAdmin, DonorAdmin, IncomeAdmin, ExpenseAdmin, StaffAdvanceAdmin
+from app.admin.inventory import ItemCategoryAdmin, InventoryItemAdmin, AssetIssueAdmin
+from app.admin.system import AnnouncementAdmin, SystemSnapshotAdmin
 
 def setup_admin(app):
     admin = Admin(app, engine)

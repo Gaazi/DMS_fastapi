@@ -6,11 +6,11 @@ import random
 from fastapi import HTTPException
 
 # Models
-from ..models import (
+from app.models import (
     Fee, Fee_Payment, WalletTransaction, Income, Expense, 
     Student, Staff, Institution
 )
-from .audit import AuditManager
+from app.logic.audit import AuditManager
 
 # ============================================================
 # 1. CASHIER CLASS (Transactions - In/Out) (FastAPI Version)
@@ -83,8 +83,8 @@ class Cashier:
         }
 
     def pay_salary(self, staff_id: int, amount: float, month_date: Optional[date] = None, notes: str = ""):
-        """اسٹاف کو تنخواہ دینا"""
-        from .staff import StaffManager
+        """اسٹاف کو تنخواہ دینا food"""
+        from app.logic.staff import StaffManager
         sm = StaffManager(self.user, self.session)
         staff = self.session.get(Staff, staff_id)
         if not staff or staff.inst_id != self.institution.id:
@@ -93,7 +93,7 @@ class Cashier:
         amount_dec = Decimal(str(amount))
         sm.target = staff 
         
-        from .finance import FinanceManager
+        from app.logic.finance import FinanceManager
         fm = FinanceManager(self.session, self.institution, self.user)
         
         desc = f"Salary: {staff.name}" + (f" ({month_date.strftime('%B %Y')})" if month_date else "")

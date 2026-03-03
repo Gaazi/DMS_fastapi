@@ -6,11 +6,11 @@ from decimal import Decimal
 import json
 
 # Models
-from ..models import (
+from app.models import (
     Institution, Student, Admission, Fee, Fee_Payment, 
     Income, Expense, WalletTransaction, User, Donor
 )
-from .audit import AuditManager
+from app.logic.audit import AuditManager
 
 class FinanceManager:
     """ادارے کا مکمل مالیاتی نظام: فیسیں، آمدن، اخراجات اور اینالیٹکس (FastAPI Version)۔"""
@@ -277,7 +277,7 @@ class FinanceManager:
         fee = self.session.get(Fee, fee_id)
         if not fee: raise HTTPException(status_code=404, detail="Fee not found.")
         
-        from .payments import generate_transaction_id
+        from app.logic.payments import generate_transaction_id
         receipt_no = generate_transaction_id(self.institution, "REC", fee.student_id)
 
         payment = Fee_Payment(
@@ -359,7 +359,7 @@ class FinanceManager:
                 # Here we just iterate and call auto_generate_fees
                 
                 # Check for student admissions and create fees
-                from ..models import Admission, Fee
+                from app.models import Admission, Fee
                 stmt = select(func.count(Fee.id)).where(Fee.inst_id == inst.id, Fee.month == now.replace(day=1), Fee.fee_type == 'monthly')
                 if session.exec(stmt).one() == 0:
                     admissions = session.exec(select(Admission).where(Admission.status == 'active')).all()

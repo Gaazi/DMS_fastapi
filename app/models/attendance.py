@@ -1,12 +1,12 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date as dt_date, time, datetime
-from .base import AuditModel
+from app.models.base import AuditModel
 from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
-    from .foundation import Institution, Course
-    from .people import Staff, Student
+    from app.models.foundation import Institution, Course
+    from app.models.people import Staff, Student
 
 class ClassSession(AuditModel, table=True):
     __tablename__ = "dms_classsession"

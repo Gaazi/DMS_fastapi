@@ -2,7 +2,7 @@ from typing import List, Optional, Any, Dict
 from sqlmodel import Session, select, func, desc, and_, or_
 from fastapi import HTTPException
 # Models
-from ..models import Student, Attendance, Fee, Institution, Parent, ClassSession
+from app.models import Student, Attendance, Fee, Institution, Parent, ClassSession
 
 class GuardianManager:
     """Business logic and security for the Guardian/Parent dashboard (FastAPI/SQLModel Version)"""

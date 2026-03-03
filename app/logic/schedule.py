@@ -3,7 +3,7 @@ from sqlmodel import Session, select, and_, or_
 from datetime import time
 
 # Models
-from ..models import TimetableItem, Course, Staff, Facility, Institution
+from app.models import TimetableItem, Course, Staff, Facility, Institution
 
 class ScheduleManager:
     """ٹائم ٹیبل اور ہفتہ وار شیڈول مینیج کرنے کی لاجک (FastAPI/SQLModel Version)۔"""

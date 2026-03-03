@@ -5,13 +5,13 @@ from sqlmodel import Session, select
 from typing import Optional
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution
-from ..logic.auth import get_current_user
-from ..logic.inventory import InventoryManager
-from ..logic.permissions import get_institution_with_access
+from app.db.session import get_session
+from app.models import User, Institution
+from app.logic.auth import get_current_user
+from app.logic.inventory import InventoryManager
+from app.logic.permissions import get_institution_with_access
 
-from ..helper.context import TemplateResponse
+from app.helper.context import TemplateResponse
 from datetime import date as dt_date
 
 router = APIRouter()
@@ -22,7 +22,7 @@ async def inventory_dashboard(request: Request, institution_slug: str, session: 
     """انوینٹری اور لائبریری کا مرکزی صفحہ۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     im = InventoryManager(session, current_user, institution=institution)
-    from ..schemas.forms import InventoryItemSchema
+    from app.schemas.forms import InventoryItemSchema
     from pydantic import ValidationError
     
     errors = None
@@ -48,7 +48,7 @@ async def issue_item_route(request: Request, institution_slug: str, session: Ses
     """سامان یا کتاب جاری کرنے کا عمل۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     im = InventoryManager(session, current_user, institution=institution)
-    from ..schemas.forms import InventoryIssueSchema
+    from app.schemas.forms import InventoryIssueSchema
     from pydantic import ValidationError
     
     raw_form = await request.form()

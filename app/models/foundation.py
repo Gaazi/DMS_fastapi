@@ -1,12 +1,12 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date
-from .base import AuditModel
-from .links import CourseStaffLink
+from app.models.base import AuditModel
+from app.models.links import CourseStaffLink
 from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
-    from .people import Staff
+    from app.models.people import Staff
 
 class Institution(AuditModel, table=True):
     __tablename__ = "dms_institution"

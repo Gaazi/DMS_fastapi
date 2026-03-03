@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 import json
 
 # تمام ماڈلز کو ایک ساتھ امپورٹ کرنا تاکہ میپنگ مکمل ہو
-from ..models import (
+from app.models import (
     Student, Staff, Course, Fee, Income, Expense, Institution, 
     Facility, Admission, Donor, Parent, StaffAdvance, Attendance,
     Exam, Announcement, InventoryItem, ActivityLog

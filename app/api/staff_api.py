@@ -6,13 +6,13 @@ from typing import Optional
 from datetime import date
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution, Staff, Student
-from ..logic.auth import get_current_user
-from ..logic.staff import StaffManager
-from ..logic.attendance import AttendanceManager
-from ..logic.permissions import get_institution_with_access
-from ..helper.context import TemplateResponse
+from app.db.session import get_session
+from app.models import User, Institution, Staff, Student
+from app.logic.auth import get_current_user
+from app.logic.staff import StaffManager
+from app.logic.attendance import AttendanceManager
+from app.logic.permissions import get_institution_with_access
+from app.helper.context import TemplateResponse
 
 router = APIRouter()
 
@@ -57,7 +57,7 @@ async def staff_list(request: Request, institution_slug: str, session: Session =
 async def staff_create_edit(request: Request, institution_slug: str, staff_id: Optional[int] = None, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     sm = StaffManager(current_user, session, institution=institution)
-    from ..schemas.forms import StaffFormSchema
+    from app.schemas.forms import StaffFormSchema
     from pydantic import ValidationError
 
     if request.method == "POST":
@@ -144,7 +144,7 @@ async def staff_payroll(request: Request, institution_slug: str, session: Sessio
 async def staff_advances_manage(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
     sm = StaffManager(current_user, session, institution=institution)
-    from ..schemas.forms import StaffAdvanceSchema
+    from app.schemas.forms import StaffAdvanceSchema
     from pydantic import ValidationError
 
     if request.method == "POST":
@@ -177,7 +177,7 @@ async def promote_to_staff(request: Request, institution_slug: str, student_id: 
     if not student or student.inst_id != institution.id:
         raise HTTPException(status_code=404)
         
-    from ..logic.roles import Role
+    from app.logic.roles import Role
     from datetime import date
     
     # Check if existing staff (by mobile or name)

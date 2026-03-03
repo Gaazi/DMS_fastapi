@@ -23,7 +23,7 @@ Sections:
    - Finance (Incomes/Expenses/Fees)
    - Backup & Exams
 """
-from .resources import (
+from app.helper.resources import (
     InstitutionResource, CourseResource, FacilityResource,
     StudentResource, StaffResource, ParentResource, EnrollmentResource,
     ClassSessionResource, AttendanceResource, StaffAttendanceResource,
@@ -33,7 +33,7 @@ from .resources import (
 )
 
 
-from ..models import (
+from app.models import (
     Attendance, ClassSession, Donor, Enrollment, Expense, Facility,
     Income, Institution, Parent, Course, Staff,
     Staff_Attendance, Student, Announcement, Fee, Fee_Payment, WalletTransaction,
@@ -43,7 +43,7 @@ from ..models import (
 
 # اگر exporting فائل موجود ہے تو امپورٹ، ورنہ اگنور
 try:
-    from ..exporting import (
+    from app.helper.exporting import (
         export_institution_to_csv_zip, export_institution_to_json, export_institutions_bundle, export_institution_to_excel
     )
 except ImportError:
@@ -124,7 +124,7 @@ class RestrictedToInstitutionMixin(admin.ModelAdmin):
     ]
 
     def _user_institution(self, user):
-        from ..logic.auth import UserManager
+        from app.logic.auth import UserManager
         if user.is_superuser: return None
         return UserManager.pick_primary_institution(user)
 
@@ -257,11 +257,11 @@ class BaseAuditAdmin(ImportExportModelAdmin, SafeDeleteAdmin, SimpleHistoryAdmin
 
 class AutoUserCreationMixin:
     def _ensure_user(self, obj, prefix):
-        from ..logic.auth import UserManager
+        from app.logic.auth import UserManager
         return UserManager.ensure_user(obj, prefix)
 
     def _notify_credentials(self, request, obj, password):
-        from ..logic.auth import UserManager
+        from app.logic.auth import UserManager
         return UserManager.notify_credentials(request, obj, password)
 
 # اردو ناموں کی اپڈیٹ
@@ -356,7 +356,7 @@ class StudentAdmin(AutoUserCreationMixin, BaseAuditAdmin):
         institution = self._user_institution(request.user)
         
         if obj is None:
-            from .forms import StudentCreationForm
+            from app.helper.admin.forms import StudentCreationForm
             
             class WrappedForm(StudentCreationForm):
                 def __init__(self, *args, **kwargs):
@@ -864,7 +864,7 @@ class SystemSnapshotAdmin(admin.ModelAdmin):
 
         snapshot = queryset.first()
         try:
-            from .exporting import import_institution_from_json
+            from app.helper.exporting import import_institution_from_json
             import zipfile
             
             with snapshot.file.open('rb') as f:
@@ -882,7 +882,7 @@ class SystemSnapshotAdmin(admin.ModelAdmin):
                         self.message_user(request, f"ادارہ '{snapshot.institution.name}' کامیابی سے ری اسٹور ہو گیا!")
                     else:
                         # سسٹم ری اسٹور لاجک
-                        from ..exporting import import_institution_from_json
+                        from app.helper.exporting import import_institution_from_json
                         institutions_restored = 0
                         json_files = [f for f in z.namelist() if f.endswith(".json")]
                         

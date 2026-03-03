@@ -1,11 +1,11 @@
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
-from .base import AuditModel
+from app.models.base import AuditModel
 from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
-    from .auth import User
+    from app.models.auth import User
 
 class ActivityLog(SQLModel, table=True):
     __tablename__ = "dms_activitylog"

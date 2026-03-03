@@ -5,9 +5,8 @@ from datetime import date as dt_date, datetime, timedelta
 import calendar
 
 # Models
-# Models
-from ..models import Institution, Student, Staff, Attendance, Staff_Attendance, ClassSession, Admission
-from .audit import AuditManager
+from app.models import Institution, Student, Staff, Attendance, Staff_Attendance, ClassSession, Admission
+from app.logic.audit import AuditManager
 
 class AttendanceManager:
     """

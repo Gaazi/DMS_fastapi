@@ -6,7 +6,7 @@ from typing import Optional, List, Any
 import json
 
 # Import Models
-from ..models import Institution, ClassSession, Income, Expense, Student, Staff, Course, Facility, Enrollment, Admission
+from app.models import Institution, ClassSession, Income, Expense, Student, Staff, Course, Facility, Enrollment, Admission
 
 class InstitutionManager:
     """Core logic layer for institution-level operations (Hyper-Complete Version)"""
@@ -35,9 +35,9 @@ class InstitutionManager:
     def get_dashboard_data(self):
         """ڈیش بورڈ کے لیے تمام ڈیٹا نکالنا (بشمول باریک سٹیٹسٹکس)۔"""
         self._check_access()
-        from .finance import FinanceManager
-        from .attendance import AttendanceManager
-        from .roles import Role
+        from app.logic.finance import FinanceManager
+        from app.logic.attendance import AttendanceManager
+        from app.logic.roles import Role
         
         today = dt_date.today()
         
@@ -126,7 +126,7 @@ class InstitutionManager:
 
     def get_quick_alerts(self):
         """خودکار الرٹس۔"""
-        from ..models import Fee
+        from app.models import Fee
         overdue_subquery = select(func.count(Fee.id)).where(Fee.student_id == Student.id, Fee.status == 'overdue').scalar_subquery()
         defaulters = self.session.exec(select(Student).where(Student.inst_id == self.institution.id, overdue_subquery >= 3).limit(5)).all()
         

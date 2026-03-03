@@ -6,17 +6,17 @@ from typing import Optional
 import json
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import Institution, Donor, Income, Expense, User
-from ..logic.auth import get_current_user
-from ..logic.finance import FinanceManager
-from ..logic.donations import DonationManager
-from ..logic.permissions import get_institution_with_access
-from ..helper.context import TemplateResponse
+from app.db.session import get_session
+from app.models import Institution, Donor, Income, Expense, User
+from app.logic.auth import get_current_user
+from app.logic.finance import FinanceManager
+from app.logic.donations import DonationManager
+from app.logic.permissions import get_institution_with_access
+from app.helper.context import TemplateResponse
 
 router = APIRouter()
 
-from ..logic.payments import Cashier
+from app.logic.payments import Cashier
 from decimal import Decimal
 
 # --- 1. balance (Finance Dashboard) ---
@@ -62,8 +62,8 @@ async def pay_installment(request: Request, institution_slug: str, fee_id: int, 
             use_wallet=use_wallet
         )
         
-        from ..helper.helper import number_to_words
-        from ..logic.institution import InstitutionManager
+        from app.helper.helper import number_to_words
+        from app.logic.institution import InstitutionManager
         context = {
             "result": result["result"],
             "student": result["student"],
@@ -118,7 +118,7 @@ async def batch_generate_fees(request: Request, institution_slug: str, session: 
 @router.api_route("/{institution_slug}/in/create/", methods=["GET", "POST"], name="income_create")
 async def record_income(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    from ..schemas.forms import IncomeFormSchema
+    from app.schemas.forms import IncomeFormSchema
     from pydantic import ValidationError
 
     if request.method == "POST":
@@ -145,7 +145,7 @@ async def record_income(request: Request, institution_slug: str, session: Sessio
             
         except ValidationError as e:
             errors = {err['loc'][0]: err['msg'] for err in e.errors()}
-            from ..models import Donor
+            from app.models import Donor
             donors = session.exec(select(Donor).where(Donor.inst_id == institution.id)).all()
             context = {
                 "institution": institution, 
@@ -158,7 +158,7 @@ async def record_income(request: Request, institution_slug: str, session: Sessio
                 return await TemplateResponse.render("dms/partials/income_form_partial.html", request, session, context)
             return await TemplateResponse.render("dms/income_form.html", request, session, context)
     
-    from ..models import Donor
+    from app.models import Donor
     donors = session.exec(select(Donor).where(Donor.inst_id == institution.id)).all()
     context = {"institution": institution, "donors": donors}
     return await TemplateResponse.render("dms/income_form.html", request, session, context)
@@ -167,7 +167,7 @@ async def record_income(request: Request, institution_slug: str, session: Sessio
 @router.api_route("/{institution_slug}/out/create/", methods=["GET", "POST"], name="expense_out_create")
 async def record_expense(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    from ..schemas.forms import ExpenseFormSchema
+    from app.schemas.forms import ExpenseFormSchema
     from pydantic import ValidationError
 
     if request.method == "POST":
@@ -210,7 +210,7 @@ async def donor_list(request: Request, institution_slug: str, session: Session =
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
     dm = DonationManager(session, current_user, institution=institution)
     
-    from ..schemas.forms import DonorFormSchema
+    from app.schemas.forms import DonorFormSchema
     from pydantic import ValidationError
 
     if request.method == "POST":
@@ -384,9 +384,9 @@ async def public_donation(request: Request, institution_slug: str, session: Sess
     institution = session.exec(select(Institution).where(Institution.slug == institution_slug)).first()
     if not institution: raise HTTPException(status_code=404)
     
-    from ..schemas.forms import PublicDonationSchema
+    from app.schemas.forms import PublicDonationSchema
     from pydantic import ValidationError
-    from ..logic.finance_donation import DonationManager
+    from app.logic.finance_donation import DonationManager
 
     if request.method == "POST":
         form_data = await request.form()

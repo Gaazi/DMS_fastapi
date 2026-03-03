@@ -1,13 +1,13 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date as dt_date, datetime
-from .base import AuditModel
+from app.models.base import AuditModel
 from decimal import Decimal
 from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime
 
 if TYPE_CHECKING:
-    from .foundation import Institution, Course
-    from .people import Student, Admission
+    from app.models.foundation import Institution, Course
+    from app.models.people import Student, Admission
 
 class Fee(AuditModel, table=True):
     __tablename__ = "dms_fee"

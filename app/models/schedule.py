@@ -1,12 +1,12 @@
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import time
-from .base import AuditModel
+from app.models.base import AuditModel
 from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
-    from .foundation import Institution, Course, Facility
-    from .people import Staff
+    from app.models.foundation import Institution, Course, Facility
+    from app.models.people import Staff
 
 class TimetableItem(AuditModel, table=True):
     __tablename__ = "dms_timetableitem"

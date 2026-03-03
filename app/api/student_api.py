@@ -7,13 +7,13 @@ import re
 from datetime import datetime, date
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution, Student
-from ..logic.auth import get_current_user
-from ..logic.students import StudentManager
-from ..logic.attendance import AttendanceManager
-from ..logic.permissions import get_institution_with_access
-from ..helper.context import TemplateResponse, PaginatedData
+from app.db.session import get_session
+from app.models import User, Institution, Student
+from app.logic.auth import get_current_user
+from app.logic.students import StudentManager
+from app.logic.attendance import AttendanceManager
+from app.logic.permissions import get_institution_with_access
+from app.helper.context import TemplateResponse, PaginatedData
 
 router = APIRouter()
 
@@ -110,7 +110,7 @@ async def student_dashboard(request: Request, institution_slug: str, student_id:
 async def admission(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
     
-    from ..schemas.forms import StudentAdmissionSchema
+    from app.schemas.forms import StudentAdmissionSchema
     from pydantic import ValidationError
 
     if request.method == "POST":
@@ -152,7 +152,6 @@ async def admission(request: Request, institution_slug: str, session: Session = 
             }
             return await TemplateResponse.render("dms/admission.html", request, session, context)
 
-    from ..models import Course
     course_id = request.query_params.get("course_id")
     selected_course = session.get(Course, int(course_id)) if course_id else None
     
@@ -185,7 +184,7 @@ async def student_attendance(request: Request, institution_slug: str, session: S
 
     members, active_date, active_course_id = am.get_prepared_list(type='student', target_date=target_date, course_id=course_id)
     
-    from ..models import Course
+    from app.models import Course
     courses = session.exec(select(Course).where(Course.inst_id == institution.id)).all()
     
     context = {

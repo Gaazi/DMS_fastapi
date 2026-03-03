@@ -4,7 +4,7 @@ import datetime
 from jose import JWTError, jwt
 from fastapi import Request, Depends, HTTPException
 from app.core.config import settings
-from .utils import get_random_string
+from app.logic.utils import get_random_string
 try:
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["pbkdf2_sha256", "django_pbkdf2_sha256"], deprecated="auto")
@@ -15,8 +15,8 @@ except ImportError:
     pwd_context = DummyContext()
 
 # Internal Imports
-from ..models import User, Institution, Staff, Student, Parent
-from ..db.session import get_session
+from app.models import User, Institution, Staff, Student, Parent
+from app.db.session import get_session
 
 def create_access_token(data: dict):
     to_encode = data.copy()

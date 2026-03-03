@@ -4,9 +4,8 @@ from typing import Optional, List
 from fastapi import HTTPException
 
 # Internal Imports
-# Internal Imports
-from ..models import InventoryItem, AssetIssue, ItemCategory, Student, Staff, Institution, User
-from .audit import AuditManager
+from app.models import InventoryItem, AssetIssue, ItemCategory, Student, Staff, Institution, User
+from app.logic.audit import AuditManager
 
 class InventoryManager:
     """انوینٹری، لائبریری اور اثاثہ جات مینیج کرنے کی لاجک (SQLModel Version)۔"""

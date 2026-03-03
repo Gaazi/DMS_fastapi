@@ -1,4 +1,4 @@
-from .roles import Role
+from app.logic.roles import Role
 from typing import Any
 
 class RoleGroupManager:

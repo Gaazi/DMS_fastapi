@@ -7,12 +7,12 @@ from datetime import datetime
 import json
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import Institution, Income, Expense, User
-from ..logic.auth import get_current_user, UserManager
-from ..logic.institution import InstitutionManager
-from ..logic.permissions import get_institution_with_access
-from ..helper.context import TemplateResponse
+from app.db.session import get_session
+from app.models import Institution, Income, Expense, User
+from app.logic.auth import get_current_user, UserManager
+from app.logic.institution import InstitutionManager
+from app.logic.permissions import get_institution_with_access
+from app.helper.context import TemplateResponse
 
 router = APIRouter()
 
@@ -26,7 +26,7 @@ async def home(request: Request, background_tasks: BackgroundTasks, session: Ses
     # گلوبل آٹو میشن (15 تاریخ والا لاجک)
     now = datetime.now()
     if now.day >= 15:
-        from ..logic.finance import FinanceManager
+        from app.logic.finance import FinanceManager
         background_tasks.add_task(FinanceManager.run_global_monthly_generation, session)
 
     return await TemplateResponse.render("dms/dms.html", request, session, {
@@ -84,7 +84,7 @@ async def manage_accounts(request: Request, institution_slug: str, session: Sess
 @router.api_route("/{institution_slug}/settings/", methods=["GET", "POST"], name="institution_settings")
 async def settings(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    from ..schemas.forms import InstitutionSettingsSchema
+    from app.schemas.forms import InstitutionSettingsSchema
     from pydantic import ValidationError
     
     if request.method == "POST":

@@ -3,11 +3,8 @@ from typing import Optional, List
 from fastapi import HTTPException
 
 # Internal Imports
-from ..models import Facility, Institution, User
-
-# Internal Imports
-from ..models import Facility, Institution, User
-from .audit import AuditManager
+from app.models import Facility, Institution, User
+from app.logic.audit import AuditManager
 
 class FacilityManager:
     """Business logic for managing institution facilities and assets (SQLModel Version)"""

@@ -4,12 +4,12 @@ from sqlmodel import Session
 from typing import Optional
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution
-from ..logic.auth import get_current_user
-from ..logic.guardian import GuardianManager
-from ..logic.permissions import get_institution_with_access
-from ..helper.context import TemplateResponse
+from app.db.session import get_session
+from app.models import User, Institution
+from app.logic.auth import get_current_user
+from app.logic.guardian import GuardianManager
+from app.logic.permissions import get_institution_with_access
+from app.helper.context import TemplateResponse
 
 router = APIRouter()
 

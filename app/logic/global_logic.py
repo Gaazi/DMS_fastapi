@@ -2,12 +2,12 @@ from typing import List, Optional, Any, Dict
 from decimal import Decimal
 from sqlmodel import Session, select, func
 from fastapi import HTTPException
-from ..models import Institution, Income, Expense, Student, Staff, Course
-from ..logic.auth import UserManager
+from app.models import Institution, Income, Expense, Student, Staff, Course
+from app.logic.auth import UserManager
 
 # Constants
 try:
-    from ..constants import TYPE_LABELS, VALID_TYPES
+    from app.constants import TYPE_LABELS, VALID_TYPES
 except ImportError:
     TYPE_LABELS = {
         'school': {'title': 'School', 'icon': 'school'},
@@ -33,7 +33,7 @@ class GlobalManager:
 
     def get_global_overview(self):
         """تمام اقسام کے اداروں کا مجموعی مالیاتی اور انتظامی خلاصہ تیار کرنا۔"""
-        from .auth import UserManager
+        from app.logic.auth import UserManager
         user_institutions = UserManager.get_user_institutions(self.user, self.session)
         institution_ids = [inst.id for inst in user_institutions]
         

@@ -4,9 +4,8 @@ from fastapi import HTTPException
 from datetime import date as dt_date, datetime
 
 # Models
-# Models
-from ..models import Institution, Course, Admission, ClassSession, Student
-from .audit import AuditManager
+from app.models import Institution, Course, Admission, ClassSession, Student
+from app.logic.audit import AuditManager
 
 class CourseManager:
     """Business logic for courses, admissions, and class sessions (FastAPI/SQLModel Version)"""

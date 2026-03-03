@@ -1,10 +1,10 @@
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
-from .base import AuditModel
+from app.models.base import AuditModel
 
 if TYPE_CHECKING:
-    from .foundation import Institution
+    from app.models.foundation import Institution
 
 class SystemSnapshot(SQLModel, table=True):
     __tablename__ = "dms_backup" # Keeping original table name for data safety

@@ -5,15 +5,15 @@ from typing import Optional
 from datetime import datetime
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution, Income, Expense
-from ..logic.auth import get_current_user
-from ..logic.permissions import get_institution_with_access
+from app.db.session import get_session
+from app.models import User, Institution, Income, Expense
+from app.logic.auth import get_current_user
+from app.logic.permissions import get_institution_with_access
 
 router = APIRouter()
 
-from ..helper.context import TemplateResponse
-from ..logic.finance import FinanceManager
+from app.helper.context import TemplateResponse
+from app.logic.finance import FinanceManager
 
 # --- 1. income_edit ---
 @router.api_route("/{institution_slug}/income/edit/{income_id}", methods=["GET", "POST"], name="income_edit")
@@ -21,7 +21,7 @@ async def income_edit(request: Request, institution_slug: str, income_id: int, s
     """انکم ریکارڈ میں ترمیم۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
     fm = FinanceManager(session, institution, current_user)
-    from ..schemas.forms import IncomeFormSchema
+    from app.schemas.forms import IncomeFormSchema
     from pydantic import ValidationError
     
     income = session.exec(select(Income).where(Income.id == income_id, Income.inst_id == institution.id)).first()
@@ -55,7 +55,7 @@ async def expense_edit(request: Request, institution_slug: str, expense_id: int,
     """اخراجات ریکارڈ میں ترمیم۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
     fm = FinanceManager(session, institution, current_user)
-    from ..schemas.forms import ExpenseFormSchema
+    from app.schemas.forms import ExpenseFormSchema
     from pydantic import ValidationError
     
     expense = session.exec(select(Expense).where(Expense.id == expense_id, Expense.inst_id == institution.id)).first()

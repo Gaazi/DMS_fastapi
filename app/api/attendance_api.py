@@ -5,14 +5,14 @@ from sqlmodel import Session
 from typing import Optional
 
 # Internal Imports
-from ..db.session import get_session
-from ..models import User, Institution
-from ..logic.auth import get_current_user
-from ..logic.attendance import AttendanceManager
-from ..logic.permissions import get_institution_with_access
+from app.db.session import get_session
+from app.models import User, Institution
+from app.logic.auth import get_current_user
+from app.logic.attendance import AttendanceManager
+from app.logic.permissions import get_institution_with_access
 
 router = APIRouter()
-from ..helper.context import TemplateResponse
+from app.helper.context import TemplateResponse
 from datetime import date as dt_date
 
 @router.get("/{institution_slug}/attendance-report/", response_class=HTMLResponse, name="attendance_report")

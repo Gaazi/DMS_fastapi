@@ -1,14 +1,14 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, Float
 from datetime import date as dt_date, time, datetime
-from .base import AuditModel
+from app.models.base import AuditModel
 from decimal import Decimal
-from .links import StudentParentLink, CourseStaffLink
+from app.models.links import StudentParentLink, CourseStaffLink
 from sqlalchemy import Column, Integer, ForeignKey, Float
 
 if TYPE_CHECKING:
-    from .foundation import Institution, Course
-    from .auth import User
+    from app.models.foundation import Institution, Course
+    from app.models.auth import User
 
 class Person(AuditModel):
     user_id: Optional[int] = Field(default=None, foreign_key="auth_user.id")
