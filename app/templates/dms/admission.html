@@ -32,7 +32,7 @@
                 </div>
                 <ul class="list-disc list-inside space-y-1 opacity-90">
                     {% for field, msg in errors.items() %}
-                        <li>{{ field|replace('_', ' ')|title }}: {{ msg }}</li>
+                        <li>{{ field|translate }}: {{ msg }}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -47,7 +47,7 @@
         <!-- NAME FIELD (SIMPLE VERSION) -->
         <div class="space-y-1.5">
             <div class="flex items-center justify-between px-1">
-                <label class="text-[11px] text-emerald-400 {% if errors.name %}text-rose-500{% endif %}">
+                <label class="text-xs text-emerald-400 {% if errors.name %}text-rose-500{% endif %}">
                     {% if institution.type == 'masjid' %}ممبر کا نام (Member Name){% else %}طالب علم کا نام (Student Name){% endif %}
                 </label>
                 {% if editing_student %}
@@ -64,13 +64,13 @@
         <!-- 2. GUARDIAN & CONTACT DETAILS -->
         <div class="grid grid-cols-1 {% if institution.type != 'masjid' %}sm:grid-cols-2{% endif %} gap-4">
             <div class="space-y-1">
-                <label class="text-[11px] text-emerald-400 px-1">والد کا نام (Father's Name)</label>
+                <label class="text-xs text-emerald-400 px-1">والد کا نام (Father's Name)</label>
                 <input type="text" name="father_name" value="{{ form_data.father_name if form_data else (editing_student.father_name if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50">
             </div>
             
             {% if institution.type != 'masjid' %}
             <div class="space-y-1">
-                <label class="text-[11px] text-emerald-400 px-1">سرپرست کا نام (Guardian Name)</label>
+                <label class="text-xs text-emerald-400 px-1">سرپرست کا نام (Guardian Name)</label>
                 <div class="flex gap-2">
                     <input type="text" name="guardian_name" value="{{ form_data.guardian_name if form_data else (editing_student.guardian_name if editing_student else '') }}" class="flex-1 bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="والد کے علاوہ اگر کوئی ہو...">
                     <select name="guardian_relation" class="w-[110px] bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-2 h-11 text-xs outline-none focus:border-emerald-500/50 [&>option]:text-black">
@@ -88,11 +88,11 @@
         <!-- 3. CONTACT DETAILS -->
         <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
             <div class="space-y-1">
-                <label class="text-[11px] text-emerald-400 px-1 {% if errors.mobile %}text-rose-500{% endif %}">فون نمبر (Mobile)</label>
+                <label class="text-xs text-emerald-400 px-1 {% if errors.mobile %}text-rose-500{% endif %}">فون نمبر (Mobile)</label>
                 <input type="text" name="mobile" value="{{ form_data.mobile if form_data else (editing_student.mobile if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 text-left {% if errors.mobile %}border-rose-500/50{% endif %}">
             </div>
             <div class="space-y-1">
-                <label class="text-[11px] text-emerald-400 px-1">دوسرا نمبر (Secondary Mobile)</label>
+                <label class="text-xs text-emerald-400 px-1">دوسرا نمبر (Secondary Mobile)</label>
                 <input type="text" name="mobile2" value="{{ form_data.mobile2 if form_data else (editing_student.mobile2 if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 text-left">
             </div>
         </div>

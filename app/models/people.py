@@ -1,10 +1,10 @@
 from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship, Column, Float
+from sqlmodel import SQLModel, Field, Relationship, Column, Float, Integer, ForeignKey, Date
 from datetime import date as dt_date, time, datetime
 from app.models.base import AuditModel
 from decimal import Decimal
 from app.models.links import StudentParentLink, CourseStaffLink
-from sqlalchemy import Column, Integer, ForeignKey, Float
+
 
 if TYPE_CHECKING:
     from app.models.foundation import Institution, Course
@@ -148,7 +148,7 @@ class Student(Person, table=True):
     guardian_relation: str = Field(default="", max_length=100)
     notes: str = Field(default="")
     wallet_balance: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
-    admission_date: dt_date = Field(sa_column=Column("enrollment_date", Float)) # Map to existing DB column
+    admission_date: dt_date = Field(sa_column=Column("enrollment_date", Date)) # Map to existing DB column
 
     parents: List[Parent] = Relationship(back_populates="students", link_model=StudentParentLink)
     admissions: List["Admission"] = Relationship(back_populates="student")
@@ -234,7 +234,7 @@ class Admission(AuditModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="dms_student.id")
     course_id: int = Field(foreign_key="dms_course.id")
-    admission_date: dt_date = Field(sa_column=Column("enrollment_date", Float)) # Map to existing DB column
+    admission_date: dt_date = Field(sa_column=Column("enrollment_date", Date)) # Map to existing DB column
     roll_no: Optional[str] = Field(default=None, max_length=50)
     admission_fee_discount: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
     agreed_admission_fee: Optional[Decimal] = Field(default=None, sa_column=Column(Float))

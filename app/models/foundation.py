@@ -1,9 +1,9 @@
 from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, Integer, ForeignKey
 from datetime import date
 from app.models.base import AuditModel
 from app.models.links import CourseStaffLink
-from sqlalchemy import Column, Integer, ForeignKey
+
 
 if TYPE_CHECKING:
     from app.models.people import Staff

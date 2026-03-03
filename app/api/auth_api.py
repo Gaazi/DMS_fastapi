@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select
+from sqlmodel import Session, select, update
 from typing import Optional
 import json
 
@@ -13,7 +13,7 @@ from app.logic.permissions import get_institution_with_access
 from app.core.config import settings
 from app.helper.context import TemplateResponse
 
-from sqlalchemy import update
+
 
 router = APIRouter()
 

@@ -142,6 +142,15 @@ class StudentManager:
                     action = "update"
             
             if not student:
+                # Generate reg_id if missing
+                if not data.get('reg_id'):
+                    last_id = self.session.exec(select(func.max(Student.id))).one() or 0
+                    data['reg_id'] = f"STD-{self.institution.id}-{last_id + 1}"
+                
+                # Set admission date if missing
+                if not data.get('admission_date'):
+                    data['admission_date'] = dt_date.today()
+
                 student = Student(**data)
                 student.inst_id = self.institution.id
                 self.session.add(student)

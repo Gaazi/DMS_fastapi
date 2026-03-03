@@ -1,9 +1,9 @@
 from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, Column, Integer, ForeignKey
 from datetime import date, datetime
 from app.models.base import AuditModel
 from app.models.links import AnnouncementTargetParentLink
-from sqlalchemy import Column, Integer, ForeignKey
+
 
 if TYPE_CHECKING:
     from app.models.foundation import Institution

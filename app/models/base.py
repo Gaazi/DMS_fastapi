@@ -18,3 +18,4 @@ class AuditModel(SQLModel):
     
     # deleted_at for SafeDelete simulation
     deleted_at: Optional[datetime] = Field(default=None, nullable=True)
+    deleted_by_cascade: bool = Field(default=False, nullable=False)

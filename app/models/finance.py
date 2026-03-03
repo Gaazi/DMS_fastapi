@@ -1,9 +1,9 @@
 from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, Integer, ForeignKey, Float, DateTime
 from datetime import date as dt_date, datetime
 from app.models.base import AuditModel
 from decimal import Decimal
-from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime
+
 
 if TYPE_CHECKING:
     from app.models.foundation import Institution, Course

@@ -64,6 +64,31 @@ def truncatechars_filter(value, arg):
         return (s[:length] + "...") if len(s) > length else s
     except: return value
 
+def translate_filter(text):
+    translations = {
+        "name": "نام",
+        "full_name": "نام",
+        "father_name": "والد کا نام",
+        "mobile": "فون نمبر",
+        "course_id": "کورس",
+        "agreed_course_fee": "طے شدہ ماہانہ فیس",
+        "agreed_admission_fee": "طے شدہ داخلہ فیس",
+        "initial_payment": "پہلی ادائیگی",
+        "payment_method": "ادائیگی کا طریقہ",
+        "address": "پتہ",
+        "username": "صارف کا نام",
+        "password": "پاس ورڈ",
+        "email": "ای میل",
+        "gender": "جنس",
+        "date_of_birth": "تاریخ پیدائش",
+        "amount": "رقم",
+        "category": "کیٹیگری",
+        "date": "تاریخ",
+        "source": "ذریعہ",
+        "donor_id": "عطیہ دہندہ",
+    }
+    return translations.get(str(text).lower(), text)
+
 templates.env.filters["add"] = add_filter
 templates.env.filters["add_class"] = add_class
 templates.env.filters["date"] = jinja2_date_filter
@@ -75,6 +100,7 @@ templates.env.filters["time"] = lambda v, arg: v.strftime(arg) if hasattr(v, "st
 templates.env.filters["short_id"] = lambda v: str(v).split("-")[-1] if v else ""
 templates.env.filters["upper"] = lambda v: str(v).upper() if v else ""
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
+templates.env.filters["translate"] = translate_filter
 templates.env.globals["csrf_token"] = lambda: ""
 
 async def get_global_context(request, session: Session, current_user: Optional[User] = None) -> Dict[str, Any]:

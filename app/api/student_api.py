@@ -124,7 +124,6 @@ async def admission(request: Request, institution_slug: str, session: Session = 
             
             # Prepare data for StudentManager
             student_data = validated_data.dict()
-            student_data['full_name'] = student_data.pop('name') # Logic expects full_name
             
             enroll_data = {
                 "course_id": validated_data.course_id,

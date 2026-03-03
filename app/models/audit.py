@@ -1,8 +1,8 @@
 from typing import Optional, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, Integer, ForeignKey
 from datetime import datetime
 from app.models.base import AuditModel
-from sqlalchemy import Column, Integer, ForeignKey
+
 
 if TYPE_CHECKING:
     from app.models.auth import User

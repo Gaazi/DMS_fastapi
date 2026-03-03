@@ -7,7 +7,7 @@ import json
 
 # Internal Imports
 from app.db.session import get_session
-from app.models import Institution, Donor, Income, Expense, User
+from app.models import Institution, Donor, Income, Expense, User, Fee, Fee_Payment
 from app.logic.auth import get_current_user
 from app.logic.finance import FinanceManager
 from app.logic.donations import DonationManager
@@ -145,7 +145,6 @@ async def record_income(request: Request, institution_slug: str, session: Sessio
             
         except ValidationError as e:
             errors = {err['loc'][0]: err['msg'] for err in e.errors()}
-            from app.models import Donor
             donors = session.exec(select(Donor).where(Donor.inst_id == institution.id)).all()
             context = {
                 "institution": institution, 
@@ -158,7 +157,6 @@ async def record_income(request: Request, institution_slug: str, session: Sessio
                 return await TemplateResponse.render("dms/partials/income_form_partial.html", request, session, context)
             return await TemplateResponse.render("dms/income_form.html", request, session, context)
     
-    from app.models import Donor
     donors = session.exec(select(Donor).where(Donor.inst_id == institution.id)).all()
     context = {"institution": institution, "donors": donors}
     return await TemplateResponse.render("dms/income_form.html", request, session, context)

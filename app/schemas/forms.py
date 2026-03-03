@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel, Field, EmailStr, validator
 from typing import Optional, List
 from decimal import Decimal
@@ -74,6 +75,26 @@ class StudentAdmissionSchema(BaseModel):
     payment_method: str = "Cash"
     custom_fee_type: str = "regular"
     notes: Optional[str] = ""
+    
+    @validator('course_id', pre=True)
+    def empty_string_to_none(cls, v):
+        if v == "" or v is None:
+            return None
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            raise ValueError('درست انتخاب کریں (Invalid Selection)')
+
+    @validator('agreed_course_fee', 'agreed_admission_fee', 'initial_payment', pre=True)
+    def empty_string_to_zero(cls, v):
+        if v == "" or v is None:
+            return 0
+        try:
+            return Decimal(str(v))
+        except (ValueError, TypeError):
+            raise ValueError('درست رقم درج کریں (Invalid Amount)')
+
+
 
 class PublicAdmissionSchema(BaseModel):
     name: str = Field(min_length=2, description="پورا نام درج کریں")
@@ -81,6 +102,15 @@ class PublicAdmissionSchema(BaseModel):
     mobile: str = Field(min_length=10, description="درست فون نمبر دیں")
     address: str = Field(min_length=5, description="پتہ درج کریں")
     course_id: Optional[int] = None
+
+    @validator('course_id', pre=True)
+    def empty_string_to_none(cls, v):
+        if v == "" or v is None:
+            return None
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            raise ValueError('درست انتخاب کریں (Invalid Selection)')
 
 class StaffFormSchema(BaseModel):
     name: str = Field(min_length=2, description="نام درج کریں")

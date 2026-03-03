@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple, Any, Dict, Type
 from sqlmodel import Session, select, desc
 from fastapi import HTTPException
 from datetime import datetime
-from sqlalchemy.orm import selectinload
+
 import json
 
 # تمام ماڈلز کو ایک ساتھ امپورٹ کرنا تاکہ میپنگ مکمل ہو
@@ -73,7 +73,7 @@ class AuditManager:
 
     def get_logs(self, limit: int = 100) -> List[dict]:
         """سسٹم کی ہسٹری رپورٹس۔"""
-        statement = select(ActivityLog).options(selectinload(ActivityLog.user))
+        statement = select(ActivityLog)
         
         if self.institution:
             statement = statement.where(ActivityLog.inst_id == self.institution.id)
