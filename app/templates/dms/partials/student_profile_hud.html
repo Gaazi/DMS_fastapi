@@ -8,44 +8,61 @@
     <!-- Ultra-Thin Glass Gloss Overlay -->
     <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none border-t border-white/10 rounded-t-[2.5rem]"></div>
     
-    <!-- System Status Header -->
-    <div class="relative z-10 px-6 py-3 bg-white/[0.02] border-b border-white/10 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_10px_#34d399]{% else %}bg-rose-500{% endif %}"></div>
-            {% if student.is_active %}
-            <span class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Data_Nexus: Online</span>
-            {% else %}
-            <span class="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em]">Data_Nexus: Offline</span>
-            {% endif %}
-        </div>
-        <div class="flex items-center gap-3 no-print">
-            <button onclick="window.print()" class="text-[9px] text-slate-400 hover:text-white uppercase font-black tracking-widest"><i class="fas fa-print mr-1.5 opacity-70"></i>Report</button>
-            
+    <!-- System Status & Actions Header -->
+    <div id="hud-header" class="relative z-10 bg-white/[0.02] border-b border-white/10 no-print px-3 sm:px-4 py-2.5">
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- 0. Status -->
+            <div class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/[0.03]">
+                <div class="w-1.5 h-1.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_8px_#34d399]{% else %}bg-rose-500{% endif %}"></div>
+                {% if student.is_active %}
+                <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Active</span>
+                {% else %}
+                <span class="text-[9px] font-black text-rose-400 uppercase tracking-widest">Inactive</span>
+                {% endif %}
+            </div>
+            <!-- 4. Account -->
             {% if is_academic_admin %}
             {% if not student.user %}
             <form method="POST" action="{{ url('create_portal_account', institution.slug, 'student', student.id) }}" onsubmit="return confirm('کیا آپ اس طالب علم کا آن لائن پورٹل اکاؤنٹ بنانا چاہتے ہیں؟');" class="inline m-0 p-0">
                 {{ csrf_token() }}
-                <button type="submit" class="text-[9px] text-cyan-400 font-black uppercase tracking-widest hover:text-cyan-300 transition-colors mr-3">
-                    <i class="fas fa-user-plus mr-1.5 opacity-70"></i>Create Account
+                <button type="submit" 
+                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-cyan-500/20 bg-cyan-500/5 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                    <i class="fas fa-user-plus opacity-70"></i>Account
                 </button>
             </form>
             {% else %}
-            <span class="text-[9px] text-emerald-400 font-black uppercase tracking-widest mr-3 cursor-help" title="یوزر نیم: {{ student.user.username }}">
-                <i class="fas fa-check-circle mr-1.5 opacity-70"></i>Has Account
+            <span class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 cursor-help text-[9px] font-black uppercase tracking-widest whitespace-nowrap" 
+                  title="یوزر نیم: {{ student.user.username }}">
+                <i class="fas fa-check-circle opacity-70"></i>Account
             </span>
             {% endif %}
+            {% endif %}
             
-            {% if can_edit_staff %}
+            <!-- 2. Role -->
+            {% if is_academic_admin and can_edit_staff %}
             <form method="POST" action="{{ url('promote_to_staff', institution.slug, student.id) }}" onsubmit="return confirm('کیا آپ اس ممبر کا ڈیٹا کاپی کر کے انہیں اسٹاف (عملے) میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
                 {{ csrf_token() }}
-                <button type="submit" class="text-[9px] text-fuchsia-400 font-black uppercase tracking-widest hover:text-fuchsia-300 transition-colors mr-3 cursor-pointer">
-                    <i class="fas fa-award mr-1.5 opacity-70"></i>Assign Role
+                <button type="submit" 
+                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-fuchsia-500/20 bg-fuchsia-500/5 text-fuchsia-400 hover:bg-fuchsia-500/20 hover:text-fuchsia-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap cursor-pointer">
+                    <i class="fas fa-award opacity-70"></i>Role
                 </button>
             </form>
             {% endif %}
 
-            <a href="{% if institution.type == 'masjid' %}{{ url('musalleen_list', institution.slug) }}{% else %}{{ url('students', institution.slug) }}{% endif %}?edit={{ student.id }}" class="text-[9px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300 transition-colors"><i class="fas fa-edit mr-1.5 opacity-70"></i>Modify</a>
+            <!-- 3. Report -->
+            <button onclick="window.print()" 
+                    class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                <i class="fas fa-print opacity-70"></i>Report
+            </button>
+            
+            <!-- 1. Edit -->
+            <a href="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}?edit={{ student.id }}" 
+               class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                <i class="fas fa-edit opacity-70"></i>Edit
+            </a>
 
+            <!-- 5. Suspend/Activate -->
+            {% if is_academic_admin %}
             <form method="POST" class="inline m-0 p-0">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="update_status">
@@ -53,17 +70,20 @@
                 {% if not student.is_active %}
                 <input type="hidden" name="is_active" value="on">
                 {% endif %}
-                <button type="submit" class="text-[9px] {% if student.is_active %}text-amber-400 hover:text-amber-300{% else %}text-emerald-400 hover:text-emerald-300{% endif %} font-black uppercase tracking-widest transition-colors">
-                    <i class="fas {% if student.is_active %}fa-ban{% else %}fa-check-circle{% endif %} mr-1.5 opacity-70"></i>{% if student.is_active %}Suspend{% else %}Activate{% endif %}
+                <button type="submit" 
+                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border {% if student.is_active %}border-amber-500/20 bg-amber-500/5 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300{% else %}border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300{% endif %} transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                    <i class="fas {% if student.is_active %}fa-ban{% else %}fa-check-circle{% endif %} opacity-70"></i>{% if student.is_active %}Suspend{% else %}Activate{% endif %}
                 </button>
             </form>
             
-            <form method="POST" action="{% if institution.type == 'masjid' %}{{ url('musalleen_list', institution.slug) }}{% else %}{{ url('students', institution.slug) }}{% endif %}" onsubmit="return confirm('کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟');" class="inline m-0 p-0">
+            <!-- 6. Delete -->
+            <form method="POST" action="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}" onsubmit="return confirm('کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟');" class="inline m-0 p-0">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="student_id" value="{{ student.id }}">
-                <button type="submit" class="text-[9px] text-rose-400 font-black uppercase tracking-widest hover:text-rose-300 transition-colors">
-                    <i class="fas fa-trash-alt mr-1.5 opacity-70"></i>Delete
+                <button type="submit" 
+                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-rose-500/20 bg-rose-500/5 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                    <i class="fas fa-trash-alt opacity-70"></i>Delete
                 </button>
             </form>
             {% endif %}
@@ -86,7 +106,7 @@
                 <div class="inline-flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/10 px-3 py-1 rounded-lg">
                     <i class="fas fa-phone text-[8px] text-emerald-500/50"></i>
                     <a href="tel:{{ student.mobile }}" class="text-[11px] font-mono font-bold text-emerald-400">
-                        {{ student.mobile|default("--NO_CELL--") }}
+                        {{ student.mobile or "--NO_CELL--" }}
                     </a>
                 </div>
             </div>
@@ -95,7 +115,7 @@
             <div class="relative shrink-0">
                 <div class="w-20 h-20 rounded-[1.5rem] bg-black border border-white/10 overflow-hidden shadow-2xl flex items-center justify-center">
                     {% if student.photo %}
-                        <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="w-full h-full object-cover grayscale-[0.2] contrast-125">
+                        <img src="{{ student.photo }}" alt="{{ student.name }}" class="w-full h-full object-cover grayscale-[0.2] contrast-125">
                     {% else %}
                         <span class="text-3xl font-thin text-white/10">{{ student.name|first|upper }}</span>
                     {% endif %}
@@ -109,7 +129,7 @@
             <!-- GENDER -->
             <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg hover:border-emerald-500/30 hover:bg-white/20 transition-all group shadow-sm">
                 <span class="text-[9px] font-bold text-slate-400">Gender:</span>
-                <span class="text-xs font-black text-white">{{ student.get_gender_display }}</span>
+                <span class="text-xs font-black text-white">{{ student.gender }}</span>
             </div>
             <!-- SECONDARY PHONE -->
             {% if student.mobile2 %}
@@ -145,7 +165,7 @@
             <!-- JOINED DATE -->
             <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg shadow-sm">
                 <span class="text-[8px] font-black text-slate-500">JOIN:</span>
-                <span class="text-xs font-mono font-bold text-white">{{ student.enrollment_date|date("d/m/y") }}</span>
+                <span class="text-xs font-mono font-bold text-white">{{ student.admission_date|date("d/m/y") }}</span>
             </div>
         </div>
 
@@ -156,7 +176,7 @@
             </div>
             <div class="min-w-0">
                 <span class="text-[8px] font-black text-slate-500 uppercase mb-1 block">Vector_Location:</span>
-                <p class="text-xs text-white font-urdu leading-snug">{{ student.address|default("Vectors_Undefined") }}</p>
+                <p class="text-xs text-white font-urdu leading-snug">{{ student.address or "Vectors_Undefined" }}</p>
             </div>
         </div>
     </div>
