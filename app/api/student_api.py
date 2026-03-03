@@ -8,7 +8,7 @@ from datetime import datetime, date
 
 # Internal Imports
 from app.db.session import get_session
-from app.models import User, Institution, Student
+from app.models import User, Institution, Student, Course
 from app.logic.auth import get_current_user
 from app.logic.students import StudentManager
 from app.logic.attendance import AttendanceManager
@@ -184,7 +184,6 @@ async def student_attendance(request: Request, institution_slug: str, session: S
 
     members, active_date, active_course_id = am.get_prepared_list(type='student', target_date=target_date, course_id=course_id)
     
-    from app.models import Course
     courses = session.exec(select(Course).where(Course.inst_id == institution.id)).all()
     
     context = {

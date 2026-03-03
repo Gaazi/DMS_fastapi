@@ -133,6 +133,7 @@ class Parent(Person, table=True):
     relationship: str = Field(default="guardian", max_length=20)
     
     students: List["Student"] = Relationship(back_populates="parents", link_model=StudentParentLink)
+    user: Optional["User"] = Relationship(back_populates="parent")
 
 class Student(Person, table=True):
     __tablename__ = "dms_student"
@@ -151,6 +152,7 @@ class Student(Person, table=True):
 
     parents: List[Parent] = Relationship(back_populates="students", link_model=StudentParentLink)
     admissions: List["Admission"] = Relationship(back_populates="student")
+    user: Optional["User"] = Relationship(back_populates="student")
 
     # Extra properties for template compatibility (Calculated in routes)
     @property

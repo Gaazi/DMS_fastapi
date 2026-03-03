@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 
 if TYPE_CHECKING:
-    from app.models.people import Staff
+    from app.models.people import Staff, Student, Parent
 
 class User(SQLModel, table=True):
     __tablename__ = "auth_user"
@@ -22,3 +22,5 @@ class User(SQLModel, table=True):
 
     # Relationships
     staff: Optional["Staff"] = Relationship(back_populates="user")
+    student: Optional["Student"] = Relationship(back_populates="user")
+    parent: Optional["Parent"] = Relationship(back_populates="user")

@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.logic.utils import get_random_string
 try:
     from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["pbkdf2_sha256", "django_pbkdf2_sha256"], deprecated="auto")
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256", "django_pbkdf2_sha256", "md5_crypt", "sha256_crypt"], deprecated="auto")
 except ImportError:
     class DummyContext:
         def hash(self, p): return p
