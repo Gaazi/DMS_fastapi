@@ -15,7 +15,7 @@ from .audit import ActivityLog
 __all__ = [
     'User',
     'Institution', 'Course', 'Facility',
-    'Staff', 'Parent', 'Student', 'Admission', 'StaffAdvance',
+    'Staff', 'Parent', 'Student', 'Admission', 'Enrollment', 'StaffAdvance',
     'Fee', 'Fee_Payment', 'WalletTransaction', 'Donor', 'Income', 'Expense',
     'ClassSession', 'Staff_Attendance', 'Attendance',
     'Exam', 'ExamResult',
@@ -25,3 +25,6 @@ __all__ = [
     'SystemSnapshot',
     'ActivityLog'
 ]
+
+Enrollment = Admission
+

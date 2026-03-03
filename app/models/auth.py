@@ -1,6 +1,9 @@
-from typing import Optional
-from sqlmodel import SQLModel, Field
+from typing import Optional, TYPE_CHECKING
+from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from .people import Staff
 
 class User(SQLModel, table=True):
     __tablename__ = "auth_user"
@@ -16,3 +19,6 @@ class User(SQLModel, table=True):
     is_staff: bool = Field(default=False)
     is_active: bool = Field(default=True)
     date_joined: datetime = Field(default_factory=datetime.utcnow)
+
+    # Relationships
+    staff: Optional["Staff"] = Relationship(back_populates="user")

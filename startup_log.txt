@@ -1,0 +1,554 @@
+INFO:     Will watch for changes in these directories: ['D:\\Working Project\\DMS with Fast API\\DMS']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [6100] using WatchFiles
+INFO:     Started server process [6128]
+INFO:     Waiting for application startup.
+2026-03-03 06:01:55,288 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:01:55,288 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("auth_user")
+2026-03-03 06:01:55,288 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_course_instructors")
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_student_parents")
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_announcement_target_parents")
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_institution")
+2026-03-03 06:01:55,289 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_course")
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_facility")
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_staff")
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_parent")
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_student")
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_enrollment")
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_staffadvance")
+2026-03-03 06:01:55,290 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_fee")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_fee_payment")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_wallettransaction")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_donor")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_income")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_expense")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_classsession")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_staff_attendance")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_attendance")
+2026-03-03 06:01:55,291 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_exam")
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_examresult")
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_announcement")
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_itemcategory")
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_inventoryitem")
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_assetissue")
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,292 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_timetableitem")
+2026-03-03 06:01:55,293 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,293 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_backup")
+2026-03-03 06:01:55,293 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,293 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_activitylog")
+2026-03-03 06:01:55,293 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:01:55,293 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+Error resolving URL for auth_google with args (): No route exists for name "auth_google" and params "process".
+INFO:     127.0.0.1:65507 - "GET /login/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65507 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:02:22,113 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:02:22,117 INFO sqlalchemy.engine.Engine SELECT count(dms_institution.id) AS count_1 
+FROM dms_institution
+2026-03-03 06:02:22,117 INFO sqlalchemy.engine.Engine [generated in 0.00025s] ()
+2026-03-03 06:02:22,119 INFO sqlalchemy.engine.Engine SELECT sum(dms_income.amount) AS sum_1 
+FROM dms_income
+2026-03-03 06:02:22,119 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ()
+2026-03-03 06:02:22,124 INFO sqlalchemy.engine.Engine SELECT sum(dms_expense.amount) AS sum_1 
+FROM dms_expense
+2026-03-03 06:02:22,124 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ()
+2026-03-03 06:02:22,209 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:54707 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54707 - "GET /static/js/pwa_app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56717 - "GET /manifest.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54707 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:02:31,604 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:02:31,605 INFO sqlalchemy.engine.Engine SELECT count(dms_institution.id) AS count_1 
+FROM dms_institution
+2026-03-03 06:02:31,605 INFO sqlalchemy.engine.Engine [cached since 9.488s ago] ()
+2026-03-03 06:02:31,606 INFO sqlalchemy.engine.Engine SELECT sum(dms_income.amount) AS sum_1 
+FROM dms_income
+2026-03-03 06:02:31,606 INFO sqlalchemy.engine.Engine [cached since 9.487s ago] ()
+2026-03-03 06:02:31,606 INFO sqlalchemy.engine.Engine SELECT sum(dms_expense.amount) AS sum_1 
+FROM dms_expense
+2026-03-03 06:02:31,606 INFO sqlalchemy.engine.Engine [cached since 9.482s ago] ()
+2026-03-03 06:02:31,610 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:53529 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53529 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:02:35,776 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:02:35,776 INFO sqlalchemy.engine.Engine SELECT count(dms_institution.id) AS count_1 
+FROM dms_institution
+2026-03-03 06:02:35,776 INFO sqlalchemy.engine.Engine [cached since 13.66s ago] ()
+2026-03-03 06:02:35,777 INFO sqlalchemy.engine.Engine SELECT sum(dms_income.amount) AS sum_1 
+FROM dms_income
+2026-03-03 06:02:35,777 INFO sqlalchemy.engine.Engine [cached since 13.66s ago] ()
+2026-03-03 06:02:35,778 INFO sqlalchemy.engine.Engine SELECT sum(dms_expense.amount) AS sum_1 
+FROM dms_expense
+2026-03-03 06:02:35,778 INFO sqlalchemy.engine.Engine [cached since 13.65s ago] ()
+2026-03-03 06:02:35,781 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:53529 - "GET / HTTP/1.1" 200 OK
+Error resolving URL for auth_google with args (): No route exists for name "auth_google" and params "process".
+INFO:     127.0.0.1:53529 - "GET /login/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53529 - "GET /service-worker.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53529 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:02:40,919 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:02:40,921 INFO sqlalchemy.engine.Engine SELECT auth_user.id, auth_user.password, auth_user.last_login, auth_user.is_superuser, auth_user.username, auth_user.first_name, auth_user.last_name, auth_user.email, auth_user.is_staff, auth_user.is_active, auth_user.date_joined 
+FROM auth_user 
+WHERE auth_user.username = ?
+2026-03-03 06:02:40,921 INFO sqlalchemy.engine.Engine [generated in 0.00026s] ('m-suffah',)
+2026-03-03 06:02:40,922 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:53529 - "POST /login/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\app\api\auth_api.py", line 84, in dms_login
+    user = UserManager.authenticate(validated_data.username, validated_data.password, session)
+  File "D:\Working Project\DMS with Fast API\DMS\app\logic\auth.py", line 125, in authenticate
+    if user and pwd_context.verify(password, user.password):
+                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2343, in verify
+    record = self._get_or_identify_record(hash, scheme, category)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2031, in _get_or_identify_record
+    return self._identify_record(hash, category)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 1132, in identify_record
+    raise exc.UnknownHashError("hash could not be identified")
+passlib.exc.UnknownHashError: hash could not be identified
+INFO:     127.0.0.1:62569 - "GET /service-worker.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62569 - "GET /service-worker.js HTTP/1.1" 200 OK
+Error resolving URL for auth_google with args (): No route exists for name "auth_google" and params "process".
+INFO:     127.0.0.1:49252 - "GET /signup/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49252 - "GET /service-worker.js HTTP/1.1" 200 OK
+Error resolving URL for auth_google with args (): No route exists for name "auth_google" and params "process".
+INFO:     127.0.0.1:49252 - "GET /login/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49252 - "GET /service-worker.js HTTP/1.1" 200 OK
+Error resolving URL for auth_google with args (): No route exists for name "auth_google" and params "process".
+INFO:     127.0.0.1:59835 - "GET /login/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59835 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:04:04,832 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:04:04,832 INFO sqlalchemy.engine.Engine SELECT auth_user.id, auth_user.password, auth_user.last_login, auth_user.is_superuser, auth_user.username, auth_user.first_name, auth_user.last_name, auth_user.email, auth_user.is_staff, auth_user.is_active, auth_user.date_joined 
+FROM auth_user 
+WHERE auth_user.username = ?
+2026-03-03 06:04:04,832 INFO sqlalchemy.engine.Engine [cached since 83.91s ago] ('m-suffah',)
+2026-03-03 06:04:04,833 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:59835 - "POST /login/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\app\api\auth_api.py", line 84, in dms_login
+    user = UserManager.authenticate(validated_data.username, validated_data.password, session)
+  File "D:\Working Project\DMS with Fast API\DMS\app\logic\auth.py", line 125, in authenticate
+    if user and pwd_context.verify(password, user.password):
+                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2343, in verify
+    record = self._get_or_identify_record(hash, scheme, category)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2031, in _get_or_identify_record
+    return self._identify_record(hash, category)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 1132, in identify_record
+    raise exc.UnknownHashError("hash could not be identified")
+passlib.exc.UnknownHashError: hash could not be identified
+INFO:     127.0.0.1:54747 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:04:08,717 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:04:08,718 INFO sqlalchemy.engine.Engine SELECT auth_user.id, auth_user.password, auth_user.last_login, auth_user.is_superuser, auth_user.username, auth_user.first_name, auth_user.last_name, auth_user.email, auth_user.is_staff, auth_user.is_active, auth_user.date_joined 
+FROM auth_user 
+WHERE auth_user.username = ?
+2026-03-03 06:04:08,718 INFO sqlalchemy.engine.Engine [cached since 87.8s ago] ('m-suffah',)
+2026-03-03 06:04:08,718 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:54747 - "POST /login/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\app\api\auth_api.py", line 84, in dms_login
+    user = UserManager.authenticate(validated_data.username, validated_data.password, session)
+  File "D:\Working Project\DMS with Fast API\DMS\app\logic\auth.py", line 125, in authenticate
+    if user and pwd_context.verify(password, user.password):
+                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2343, in verify
+    record = self._get_or_identify_record(hash, scheme, category)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2031, in _get_or_identify_record
+    return self._identify_record(hash, category)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 1132, in identify_record
+    raise exc.UnknownHashError("hash could not be identified")
+passlib.exc.UnknownHashError: hash could not be identified
+INFO:     127.0.0.1:50259 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:04:14,516 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:04:14,517 INFO sqlalchemy.engine.Engine SELECT auth_user.id, auth_user.password, auth_user.last_login, auth_user.is_superuser, auth_user.username, auth_user.first_name, auth_user.last_name, auth_user.email, auth_user.is_staff, auth_user.is_active, auth_user.date_joined 
+FROM auth_user 
+WHERE auth_user.username = ?
+2026-03-03 06:04:14,517 INFO sqlalchemy.engine.Engine [cached since 93.6s ago] ('m-suffah',)
+2026-03-03 06:04:14,517 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50259 - "POST /login/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\app\api\auth_api.py", line 84, in dms_login
+    user = UserManager.authenticate(validated_data.username, validated_data.password, session)
+  File "D:\Working Project\DMS with Fast API\DMS\app\logic\auth.py", line 125, in authenticate
+    if user and pwd_context.verify(password, user.password):
+                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2343, in verify
+    record = self._get_or_identify_record(hash, scheme, category)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2031, in _get_or_identify_record
+    return self._identify_record(hash, category)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 1132, in identify_record
+    raise exc.UnknownHashError("hash could not be identified")
+passlib.exc.UnknownHashError: hash could not be identified
+INFO:     127.0.0.1:58987 - "GET /service-worker.js HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'app\logic\auth.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [6128]
+INFO:     Started server process [6848]
+INFO:     Waiting for application startup.
+2026-03-03 06:06:54,746 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:06:54,746 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("auth_user")
+2026-03-03 06:06:54,746 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_course_instructors")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_student_parents")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_announcement_target_parents")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_institution")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_course")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_facility")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_staff")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_parent")
+2026-03-03 06:06:54,747 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_student")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_enrollment")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_staffadvance")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_fee")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_fee_payment")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_wallettransaction")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_donor")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_income")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_expense")
+2026-03-03 06:06:54,748 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_classsession")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_staff_attendance")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_attendance")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_exam")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_examresult")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_announcement")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_itemcategory")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_inventoryitem")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_assetissue")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_timetableitem")
+2026-03-03 06:06:54,749 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,750 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_backup")
+2026-03-03 06:06:54,750 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,750 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("dms_activitylog")
+2026-03-03 06:06:54,750 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-03 06:06:54,750 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+Error resolving URL for auth_google with args (): No route exists for name "auth_google" and params "process".
+INFO:     127.0.0.1:58117 - "GET /login/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58117 - "GET /service-worker.js HTTP/1.1" 200 OK
+2026-03-03 06:07:11,920 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-03 06:07:11,922 INFO sqlalchemy.engine.Engine SELECT auth_user.id, auth_user.password, auth_user.last_login, auth_user.is_superuser, auth_user.username, auth_user.first_name, auth_user.last_name, auth_user.email, auth_user.is_staff, auth_user.is_active, auth_user.date_joined 
+FROM auth_user 
+WHERE auth_user.username = ?
+2026-03-03 06:07:11,923 INFO sqlalchemy.engine.Engine [generated in 0.00027s] ('m-suffah',)
+2026-03-03 06:07:11,931 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:51825 - "POST /login/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\fastapi\routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\app\api\auth_api.py", line 84, in dms_login
+    user = UserManager.authenticate(validated_data.username, validated_data.password, session)
+  File "D:\Working Project\DMS with Fast API\DMS\app\logic\auth.py", line 125, in authenticate
+    if user and pwd_context.verify(password, user.password):
+                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2343, in verify
+    record = self._get_or_identify_record(hash, scheme, category)
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 2031, in _get_or_identify_record
+    return self._identify_record(hash, category)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\Working Project\DMS with Fast API\DMS\.venv\Lib\site-packages\passlib\context.py", line 1132, in identify_record
+    raise exc.UnknownHashError("hash could not be identified")
+passlib.exc.UnknownHashError: hash could not be identified
+INFO:     127.0.0.1:56639 - "GET /service-worker.js HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'app\models\__init__.py'. Reloading...

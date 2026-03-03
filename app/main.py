@@ -39,8 +39,63 @@ if os.path.exists("static"):
 from app.helper.context import templates, TemplateResponse
 
 # Configure Templates Globals
-templates.env.globals["url"] = app.url_path_for
+def smart_url_for(name: str, *args, **kwargs):
+    """
+    Wrapper for app.url_path_for that handles positional arguments by mapping them 
+    to path parameters in the route's definition.
+    """
+    try:
+        import re
+        for route in app.routes:
+            if hasattr(route, "name") and route.name == name:
+                # Find all {param} in the route path
+                params = re.findall(r'\{([a-zA-Z_0-9]+)\}', route.path)
+                for i, arg in enumerate(args):
+                    if i < len(params):
+                        param_name = params[i]
+                        if param_name not in kwargs:
+                            kwargs[param_name] = str(arg)
+                break
+        return app.url_path_for(name, **kwargs)
+    except Exception as e:
+        # If route not found or other error, fallback to original or return error string
+        # To help debugging, we can return the error, but for production # is safer
+        print(f"Error resolving URL for {name} with args {args}: {e}")
+        return "#"
+
+templates.env.globals["url"] = smart_url_for
 templates.env.globals["static"] = lambda path: app.url_path_for("static", path=path)
+
+# Custom Filters for Template Compatibility
+def add_filter(value, arg):
+    try:
+        return int(value) + int(arg)
+    except (ValueError, TypeError):
+        return value
+
+def stringformat_filter(value, arg):
+    try:
+        if arg == "s": return str(value)
+        return ("%" + arg) % value
+    except:
+        return value
+
+def truncatechars_filter(value, arg):
+    try:
+        length = int(arg)
+        if len(str(value)) > length:
+            return str(value)[:length] + "..."
+        return value
+    except:
+        return value
+
+templates.env.filters["add"] = add_filter
+templates.env.filters["int"] = lambda v: int(v) if v is not None else 0
+templates.env.filters["stringformat"] = stringformat_filter
+templates.env.filters["truncatechars"] = truncatechars_filter
+templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
+templates.env.filters["time"] = lambda v, arg: v.strftime(arg) if hasattr(v, "strftime") else v
+templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 
 # Register Routers
 app.include_router(auth_router, tags=["Authentication"])
@@ -67,4 +122,24 @@ admin = setup_admin(app)
 # Global Exception Handler
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
-    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    return await TemplateResponse.render("404.html", request, None, status_code=404)
+
+@app.exception_handler(500)
+async def internal_error_handler(request: Request, exc):
+    import traceback
+    print("\n" + "="*50)
+    print("CRITICAL SERVER ERROR DETECTED:")
+    print("="*50)
+    traceback.print_exc()
+    print("="*50 + "\n")
+    
+    try:
+        # Try to render the pretty 500 page
+        return await TemplateResponse.render("500.html", request, None, status_code=500, context={"error": str(exc)})
+    except Exception as render_exc:
+        # Fallback if 500.html ALSO has a syntax error
+        print(f"ERROR: Fallback rendering failed: {render_exc}")
+        return HTMLResponse(
+            content=f"<html><body><h1>500 Internal Server Error</h1><p>Original Error: {exc}</p><p>Template Error: {render_exc}</p></body></html>",
+            status_code=500
+        )

@@ -12,6 +12,9 @@ from ..models import Institution, Income, Expense, User
 from ..logic.auth import get_current_user, UserManager
 from ..logic.institution import InstitutionManager
 from ..logic.permissions import get_institution_with_access
+from ..helper.context import TemplateResponse
+
+router = APIRouter()
 
 # --- 1. home (جینگو کا اصل نام) ---
 @router.get("/", response_class=HTMLResponse, name="dms")
@@ -134,3 +137,8 @@ async def all_notifications(request: Request, institution_slug: str, session: Se
 async def smart_shortcut(action: str, current_user: User = Depends(get_current_user)):
     return RedirectResponse(url="/", status_code=302)
 
+# --- 13. system_backup_manager ---
+@router.get("/system/backup/", response_class=HTMLResponse, name="system_backup_manager")
+async def system_backup_manager(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    if not current_user.is_superuser: raise HTTPException(status_code=403)
+    return await TemplateResponse.render("dms/backup_manager.html", request, session)

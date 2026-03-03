@@ -3,6 +3,7 @@ from sqlmodel import SQLModel, Field, Relationship, Column, Float
 from datetime import date as dt_date
 from .base import AuditModel
 from decimal import Decimal
+from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
     from .foundation import Institution
@@ -12,7 +13,7 @@ class ItemCategory(AuditModel, table=True):
     __tablename__ = "dms_itemcategory"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     name: str = Field(max_length=100)
     description: str = Field(default="")
 
@@ -20,7 +21,7 @@ class InventoryItem(AuditModel, table=True):
     __tablename__ = "dms_inventoryitem"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     category_id: Optional[int] = Field(default=None, foreign_key="dms_itemcategory.id")
     name: str = Field(max_length=255)
     item_type: str = Field(default="book", max_length=20)

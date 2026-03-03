@@ -15,6 +15,8 @@ from ..helper.context import TemplateResponse
 
 from sqlalchemy import update
 
+router = APIRouter()
+
 # --- 1. no_institution_linked ---
 @router.api_route("/welcome/", methods=["GET", "POST"], response_class=HTMLResponse, name="no_institution_linked")
 async def no_institution_linked(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
@@ -89,12 +91,12 @@ async def dms_login(request: Request, session: Session = Depends(get_session)):
                 response.set_cookie(key="session_token", value=token, httponly=True, max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
                 return response
             else:
-                return await TemplateResponse.render('login.html', request, session, {"error": "غلط صارف نام یا پاس ورڈ۔", "form_data": data})
+                return await TemplateResponse.render('login.html', request, session, {"error": "غلط صارف نام یا پاس ورڈ۔", "form_data": data, "errors": {}})
         except ValidationError as e:
             errors = {err['loc'][0]: err['msg'] for err in e.errors()}
-            return await TemplateResponse.render('login.html', request, session, {"errors": errors, "form_data": data})
+            return await TemplateResponse.render('login.html', request, session, {"errors": errors, "form_data": data, "error": None})
 
-    return await TemplateResponse.render('login.html', request, session, {"form": None})
+    return await TemplateResponse.render('login.html', request, session, {"form": None, "errors": {}, "error": None, "form_data": None})
 
 @router.api_route("/{institution_slug}/login/", methods=["GET", "POST"], name="institution_login")
 async def institution_login(request: Request, institution_slug: str, session: Session = Depends(get_session)):
@@ -156,4 +158,9 @@ async def create_portal_account(request: Request, institution_slug: str, person_
             raise HTTPException(status_code=500, detail=str(e))
         
     return RedirectResponse(url=request.headers.get("referer", f"/{institution_slug}/dashboard"), status_code=303)
+
+# --- 7. auth_google placeholder ---
+@router.get("/auth/google/", name="auth_google")
+async def auth_google(request: Request, process: str = "login"):
+    return RedirectResponse(url="/login/", status_code=303)
 

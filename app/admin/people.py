@@ -11,20 +11,20 @@ class UserAdmin(ModelView, model=User):
     icon = "fa-solid fa-users-gear"
 
 class StaffAdmin(ModelView, model=Staff):
-    column_list = [Staff.id, Staff.full_name, Staff.reg_id, Staff.phone, Staff.roles]
-    column_searchable_list = [Staff.full_name, Staff.reg_id, Staff.phone]
+    column_list = [Staff.id, Staff.name, Staff.reg_id, Staff.mobile, Staff.role]
+    column_searchable_list = [Staff.name, Staff.reg_id, Staff.mobile]
     category = "People"
     icon = "fa-solid fa-user-tie"
 
 class ParentAdmin(ModelView, model=Parent):
-    column_list = [Parent.id, Parent.full_name, Parent.phone, Parent.reg_id]
-    column_searchable_list = [Parent.full_name, Parent.phone, Parent.reg_id]
+    column_list = [Parent.id, Parent.name, Parent.mobile, Parent.reg_id]
+    column_searchable_list = [Parent.name, Parent.mobile, Parent.reg_id]
     category = "People"
     icon = "fa-solid fa-user-group"
 
 class StudentAdmin(ModelView, model=Student):
-    column_list = [Student.id, Student.full_name, Student.reg_id, Student.phone, Student.admission_date]
-    column_searchable_list = [Student.full_name, Student.reg_id, Student.phone]
+    column_list = [Student.id, Student.name, Student.reg_id, Student.mobile, Student.admission_date]
+    column_searchable_list = [Student.name, Student.reg_id, Student.mobile]
     category = "People"
     icon = "fa-solid fa-user-graduate"
 

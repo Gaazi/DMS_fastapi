@@ -48,7 +48,7 @@
                         onclick="window.location=this.dataset.url;">
                         <!-- 0. Serial -->
                         <td class="px-2 py-2 md:px-4 md:py-3 text-xs text-slate-600 font-mono">
-                            {{ page_obj.start_index|add(loop.index0) }}
+                            {{ loop.index }}
                         </td>
 
                         <!-- 1. Amount -->

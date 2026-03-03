@@ -72,26 +72,25 @@
         <span>سرورق</span>
     </a>
 
-    <!-- {# Category Links for Home/Global view (Commented out because institution_type_list is deprecated) #}
     {# 
     {# 2. مسجد #}
-    <a href="{{ url('masjid_list') }}"
+    <a href="{{ url('global_type_list', institution_type='masjid') }}"
         class="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/90 text-xs backdrop-blur-md transition-all duration-300 hover:bg-emerald-500/20 hover:border-emerald-500/30">
         <i class="fas fa-mosque text-[10px] text-emerald-400"></i>
         <span>مسجد</span>
     </a>
     {# 3. مدرسہ #}
-    <a href="{{ url('madrasa_list') }}"
+    <a href="{{ url('global_type_list', institution_type='madrasa') }}"
         class="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/90 text-xs backdrop-blur-md transition-all duration-300 hover:bg-blue-500/20 hover:border-blue-500/30">
         <i class="fas fa-school text-[10px] text-blue-400"></i>
         <span>مدرسہ</span>
     </a>
     {# 4. مکتب #}
-    <a href="{{ url('maktab_list') }}"
+    <a href="{{ url('global_type_list', institution_type='maktab') }}"
         class="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/90 text-xs backdrop-blur-md transition-all duration-300 hover:bg-amber-500/20 hover:border-amber-500/30">
         <i class="fas fa-book-reader text-[10px] text-amber-400"></i>
         <span>مکتب</span>
     </a>
-     #} -->
+    #}
 
     {% endif %}

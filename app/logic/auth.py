@@ -7,7 +7,7 @@ from app.core.config import settings
 from .utils import get_random_string
 try:
     from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256", "django_pbkdf2_sha256"], deprecated="auto")
 except ImportError:
     class DummyContext:
         def hash(self, p): return p
@@ -144,7 +144,7 @@ class UserManager:
             )
         ).distinct()
         
-        return session.exec(statement).all()
+        return list(session.exec(statement))
 
     @staticmethod
     def get_post_login_redirect(user: User) -> str:

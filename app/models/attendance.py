@@ -2,6 +2,7 @@ from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date as dt_date, time, datetime
 from .base import AuditModel
+from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
     from .foundation import Institution, Course
@@ -25,7 +26,7 @@ class Staff_Attendance(AuditModel, table=True):
     __tablename__ = "dms_staff_attendance"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     staff_member_id: int = Field(foreign_key="dms_staff.id")
     date: dt_date = Field(default_factory=dt_date.today, index=True)
     status: str = Field(default="present", max_length=20)
@@ -37,7 +38,7 @@ class Attendance(AuditModel, table=True):
     __tablename__ = "dms_attendance"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     session_id: int = Field(foreign_key="dms_classsession.id")
     student_id: int = Field(foreign_key="dms_student.id")
     status: str = Field(default="present", max_length=20)

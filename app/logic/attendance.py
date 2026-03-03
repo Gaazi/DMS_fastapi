@@ -142,7 +142,7 @@ class AttendanceManager:
         
         # آج کے سیشنز میں حاضر طلبہ
         stmt = select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
-            ClassSession.inst_id == self.institution.id,
+            Attendance.inst_id == self.institution.id,
             ClassSession.date == today,
             Attendance.status == 'present'
         )

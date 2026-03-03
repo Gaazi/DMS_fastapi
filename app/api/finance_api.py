@@ -28,14 +28,13 @@ async def balance(request: Request, institution_slug: str, session: Session = De
     start_date = request.query_params.get('start_date')
     end_date = request.query_params.get('end_date')
     
-    summary = fm.institution_summary(start_date, end_date)
-    context = {
+    context = fm.balance_dashboard_context(request)
+    context.update({
         "request": request, 
         "institution": institution,
-        "summary": summary,
         "start_date": start_date,
         "end_date": end_date
-    }
+    })
     
     if request.headers.get('HX-Request') and request.headers.get('HX-Target') == 'balance-summary-stats':
         return await TemplateResponse.render("dms/partials/balance_summary_partial.html", request, session, context)

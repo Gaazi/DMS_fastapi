@@ -19,7 +19,7 @@
                 {% for donation in donations %}
                 <tr class="hover:bg-gray-50 transition">
                     <td class="py-4 px-6 text-gray-400">
-                        {{ donations.start_index|add(loop.index0) }}
+                        {{ loop.index }}
                     </td>
                     <td class="py-4 px-6">
                         {% if donation.donor %}

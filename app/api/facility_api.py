@@ -14,6 +14,8 @@ from ..logic.permissions import get_institution_with_access
 
 from ..helper.context import TemplateResponse
 
+router = APIRouter()
+
 # --- 1. facility_list (Main View) ---
 @router.api_route("/{institution_slug}/facilities", methods=["GET", "POST"], name="facility_list")
 async def facility_list(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):

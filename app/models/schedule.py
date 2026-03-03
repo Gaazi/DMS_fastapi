@@ -2,6 +2,7 @@ from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import time
 from .base import AuditModel
+from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
     from .foundation import Institution, Course, Facility
@@ -11,7 +12,7 @@ class TimetableItem(AuditModel, table=True):
     __tablename__ = "dms_timetableitem"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     course_id: int = Field(foreign_key="dms_course.id")
     teacher_id: Optional[int] = Field(default=None, foreign_key="dms_staff.id")
     facility_id: Optional[int] = Field(default=None, foreign_key="dms_facility.id")

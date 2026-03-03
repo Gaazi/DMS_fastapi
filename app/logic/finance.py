@@ -189,23 +189,86 @@ class FinanceManager:
         }
 
     def income_dashboard_context(self, request: Any):
-        latest = self.session.exec(select(Income).where(Income.inst_id == self.institution.id).order_by(desc(Income.date), desc(Income.id)).limit(10)).all()
+        stmt = select(Income).where(Income.inst_id == self.institution.id).order_by(desc(Income.date), desc(Income.id))
+        latest = self.session.exec(stmt.limit(10)).all()
+        total_count = self.session.exec(select(func.count(Income.id)).where(Income.inst_id == self.institution.id)).one()
         summary = self.institution_summary()
+        
+        # Mocking Django-style page_obj for template compatibility
+        page_obj = {
+            'has_other_pages': False,
+            'number': 1,
+            'paginator': {'num_pages': 1, 'count': total_count}
+        }
+        
         return {
+            "incomes": latest, # Template expects 'incomes'
             "latest_income": latest,
             "total_donations": summary['total_amount'],
+            "total_amount": summary['total_amount'], # Used in logic
             "latest_donation_amount": latest[0].amount if latest else 0,
-            "balance": summary['balance']
+            "balance": summary['balance'],
+            "page_obj": page_obj,
+            "top_donors": [], # Fallback for now
+            "monthly_totals": [] # Fallback for now
         }
 
     def expenses_dashboard_context(self, request: Any):
-        latest = self.session.exec(select(Expense).where(Expense.inst_id == self.institution.id).order_by(desc(Expense.date), desc(Expense.id)).limit(10)).all()
+        stmt = select(Expense).where(Expense.inst_id == self.institution.id).order_by(desc(Expense.date), desc(Expense.id))
+        latest = self.session.exec(stmt.limit(10)).all()
+        total_count = self.session.exec(select(func.count(Expense.id)).where(Expense.inst_id == self.institution.id)).one()
         summary = self.institution_summary()
+        
+        page_obj = {
+            'has_other_pages': False,
+            'number': 1,
+            'paginator': {'num_pages': 1, 'count': total_count}
+        }
+        
         return {
+            "expenses": latest,
             "latest_expenses": latest,
             "total_expenses": summary['total_expenses'],
             "latest_expense_amount": latest[0].amount if latest else 0,
-            "balance": summary['balance']
+            "balance": summary['balance'],
+            "page_obj": page_obj,
+            "expenses_count": total_count
+        }
+
+    def balance_dashboard_context(self, request: Any):
+        summary = self.institution_summary()
+        incomes = self.session.exec(select(Income).where(Income.inst_id == self.institution.id).order_by(desc(Income.date), desc(Income.id)).limit(20)).all()
+        expenses = self.session.exec(select(Expense).where(Expense.inst_id == self.institution.id).order_by(desc(Expense.date), desc(Expense.id)).limit(20)).all()
+        
+        txs = []
+        for i in incomes:
+            txs.append({
+                'id': i.id, 'amount': i.amount, 'transaction_type': 'income', 
+                'date': i.date, 'source': i.source, 'description': i.description or "",
+                'running_balance': summary['balance']
+            })
+        for e in expenses:
+            txs.append({
+                'id': e.id, 'amount': e.amount, 'transaction_type': 'expense', 
+                'date': e.date, 'source': e.category, 'description': e.description or "",
+                'running_balance': summary['balance']
+            })
+        
+        txs.sort(key=lambda x: (x['date'], x['id']), reverse=True)
+        
+        page_obj = {
+            'has_other_pages': False,
+            'number': 1,
+            'paginator': {'num_pages': 1, 'count': len(txs)}
+        }
+        
+        return {
+            "recent_transactions": txs[:15],
+            "total_amount": summary['total_amount'],
+            "total_expenses": summary['total_expenses'],
+            "balance": summary['balance'],
+            "page_obj": page_obj,
+            "summary": summary
         }
 
     def pay_fee(self, fee_id: int, amount: Decimal, method: str = "Cash"):

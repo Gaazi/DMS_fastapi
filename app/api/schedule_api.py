@@ -13,6 +13,8 @@ from ..logic.permissions import get_institution_with_access
 
 from ..helper.context import TemplateResponse
 
+router = APIRouter()
+
 # --- 1. timetable_view ---
 @router.get("/{institution_slug}/timetable/", response_class=HTMLResponse, name="timetable_view")
 async def timetable_view(request: Request, institution_slug: str, course_id: Optional[int] = None, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):

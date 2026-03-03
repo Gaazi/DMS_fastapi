@@ -14,6 +14,8 @@ from ..logic.permissions import get_institution_with_access
 from ..helper.context import TemplateResponse
 from datetime import date as dt_date
 
+router = APIRouter()
+
 # --- 1. inventory_dashboard ---
 @router.api_route("/{institution_slug}/inventory/", methods=["GET", "POST"], name="inventory_dashboard")
 async def inventory_dashboard(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):

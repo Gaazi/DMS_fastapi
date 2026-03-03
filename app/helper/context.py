@@ -26,20 +26,54 @@ def jinja2_date_filter(date_obj, format_str="%d %b %Y"):
             return date_obj
     return date_obj.strftime(format_str)
 
+# Custom Filters for Django compatibility
+def add_filter(value, arg):
+    try: return int(value) + int(arg)
+    except: return value
+
+def stringformat_filter(value, arg):
+    try:
+        if arg == "s": return str(value)
+        return ("%" + arg) % value
+    except: return value
+
+def truncatechars_filter(value, arg):
+    try:
+        length = int(arg)
+        s = str(value)
+        return (s[:length] + "...") if len(s) > length else s
+    except: return value
+
+templates.env.filters["add"] = add_filter
 templates.env.filters["add_class"] = add_class
 templates.env.filters["date"] = jinja2_date_filter
+templates.env.filters["int"] = lambda v: int(v) if v is not None else 0
+templates.env.filters["stringformat"] = stringformat_filter
+templates.env.filters["truncatechars"] = truncatechars_filter
+templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
+templates.env.filters["time"] = lambda v, arg: v.strftime(arg) if hasattr(v, "strftime") else v
+templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 templates.env.globals["csrf_token"] = lambda: ""
 
 async def get_global_context(request, session: Session, current_user: Optional[User] = None) -> Dict[str, Any]:
-    # ... (existing content logic)
+    # Mocking resolver_match for Django template compatibility
+    from types import SimpleNamespace
+    route = request.scope.get("route")
+    route_name = getattr(route, "name", "") if route else ""
+    # We use a wrapper since request itself might not allow attribute assignment depending on version, 
+    # but FastAPI Request objects are usually mutable in this way or we can just pass it in context.
+    try:
+        request.resolver_match = SimpleNamespace(url_name=route_name)
+    except:
+        pass
     institution = None
     # Use path_params or other ways to get slug if standard
     institution_slug = request.path_params.get("institution_slug")
     
-    if institution_slug:
+    if institution_slug and session:
         institution = session.exec(select(Institution).where(Institution.slug == institution_slug)).first()
     
-    if not institution and current_user:
+    if not institution and current_user and session:
         institution = session.exec(select(Institution).where(Institution.user_id == current_user.id)).first()
 
     currency_label = InstitutionManager.get_currency_label(institution)
@@ -65,12 +99,18 @@ async def get_global_context(request, session: Session, current_user: Optional[U
         "csrf_token": lambda: "", # Dummy for now
         "dms_header": {
             "notifications_json": "[]",
+            "notifications_url": "#",
             "unread_count": 0,
             "user": user_payload,
-            "all_institutions": UserManager.get_user_institutions(current_user, session) if current_user else []
+            "all_institutions": UserManager.get_user_institutions(current_user, session) if current_user and session else []
         },
+        "user": current_user,
+        "errors": {},
         "currency_label": currency_label,
         "current_institution": institution,
+        "institution": institution,
+        "balance": 0, # Default
+        "total_expenses": 0, # Default
         "messages": [],
     }
     
@@ -78,7 +118,7 @@ async def get_global_context(request, session: Session, current_user: Optional[U
 
 class TemplateResponse:
     @staticmethod
-    async def render(template_name: str, request: Request, session: Session, context: dict = None):
+    async def render(template_name: str, request: Request, session: Session, context: dict = None, status_code: int = 200):
         if context is None: context = {}
         
         # We need this to avoid circular imports if we used app.url_path_for in globals
@@ -89,10 +129,11 @@ class TemplateResponse:
 
         from ..logic.auth import get_current_user
         current_user = None
-        try:
-            current_user = await get_current_user(request, session)
-        except:
-            pass
+        if session:
+            try:
+                current_user = await get_current_user(request, session)
+            except:
+                pass
             
         global_ctx = await get_global_context(request, session, current_user)
         global_ctx.update(context)
@@ -100,4 +141,10 @@ class TemplateResponse:
         if "request" not in global_ctx:
             global_ctx["request"] = request
             
-        return templates.TemplateResponse(template_name, global_ctx)
+        try:
+            return templates.TemplateResponse(template_name, global_ctx, status_code=status_code)
+        except Exception as e:
+            import traceback
+            print(f"\nJINJA2 TEMPLATE ERROR in {template_name}:")
+            traceback.print_exc()
+            raise e

@@ -1,6 +1,6 @@
 from typing import List, Optional, Any, Dict
 from decimal import Decimal
-from sqlmodel import Session, select, func, in_
+from sqlmodel import Session, select, func
 from fastapi import HTTPException
 from ..models import Institution, Income, Expense, Student, Staff, Course
 from ..logic.auth import UserManager

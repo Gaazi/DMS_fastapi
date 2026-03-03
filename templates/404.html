@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}404 - نہیں ملا{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <i class="fas fa-exclamation-triangle text-warning mb-4" style="font-size: 5rem;"></i>
+            <h1 class="display-4 font-heading mb-4">404 - صفحہ نہیں ملا</h1>
+            <p class="lead mb-5">
+                آپ جس صفحے کی تلاش کر رہے ہیں وہ یہاں موجود نہیں ہے یا اسے منتقل کر دیا گیا ہے۔
+            </p>
+            <a href="/" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+                <i class="fas fa-home me-2"></i> ہوم پیج پر جائیں
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

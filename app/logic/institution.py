@@ -6,7 +6,7 @@ from typing import Optional, List, Any
 import json
 
 # Import Models
-from ..models import Institution, ClassSession, Income, Expense, Student, Staff, Course, Facility, Enrollment
+from ..models import Institution, ClassSession, Income, Expense, Student, Staff, Course, Facility, Enrollment, Admission
 
 class InstitutionManager:
     """Core logic layer for institution-level operations (Hyper-Complete Version)"""
@@ -18,8 +18,8 @@ class InstitutionManager:
         
         if not self.institution:
             if hasattr(user, 'staff') and user.staff:
-                self.institution = user.staff.institution
-            else:
+                self.institution = self.session.get(Institution, user.staff.inst_id)
+            elif user:
                 statement = select(Institution).where(Institution.user_id == user.id)
                 self.institution = session.exec(statement).first()
 
@@ -60,10 +60,10 @@ class InstitutionManager:
         am = AttendanceManager(self.session, self.institution, self.user)
         attendance = am.get_todays_live_summary()
         
-        recent_sessions = self.session.exec(
+        recent_sessions = list(self.session.exec(
             select(ClassSession).join(Course).where(Course.inst_id == self.institution.id)
             .order_by(desc(ClassSession.date), desc(ClassSession.id)).limit(5)
-        ).all()
+        ))
 
         # 3. 🚀 باریک اعداد و شمار (جینگو کی طرح مکمل سٹیٹس)
         # اس مہینے کے نئے داخلوں کا حساب
@@ -86,12 +86,15 @@ class InstitutionManager:
         # 4. الرٹس
         alerts = self.get_quick_alerts()
 
-        return {
+        result = {
             'institution': self.institution,
             'is_admin': is_admin,
             'currency_label': self.get_currency_label(self.institution),
             'stats': stats,
             'finance': finance,
+            'balance': finance.get('balance', 0),
+            'total_expenses': finance.get('total_expenses', 0),
+            'revenue': finance.get('revenue', {}).get('total', 0),
             'attendance': attendance,
             'recent_sessions': recent_sessions,
             'alerts': alerts,
@@ -102,6 +105,7 @@ class InstitutionManager:
                 'expense': json.dumps(chart_data.get('expense', [])),
             },
         }
+        return result
 
     def get_quick_alerts(self):
         """خودکار الرٹس۔"""
@@ -113,7 +117,7 @@ class InstitutionManager:
         all_courses = self.session.exec(select(Course).where(Course.inst_id == self.institution.id, Course.is_active == True, Course.capacity > 0)).all()
         full_classes = []
         for c in all_courses:
-            enrolled = self.session.exec(select(func.count(Admission.id)).where(Admission.course_id == c.id, Admission.status == 'active')).one()
+            enrolled = self.session.exec(select(func.count(Enrollment.id)).where(Enrollment.course_id == c.id, Enrollment.status == 'active')).one()
             if enrolled >= (c.capacity * 0.9): full_classes.append(c)
             if len(full_classes) >= 5: break
 

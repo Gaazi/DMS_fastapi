@@ -12,6 +12,8 @@ from ..models import Institution, Student, Admission, Course
 from ..helper.context import TemplateResponse
 from datetime import date as dt_date
 
+router = APIRouter()
+
 @router.api_route("/{institution_slug}/join/", methods=["GET", "POST"], response_class=HTMLResponse, name="public_admission")
 async def public_admission(request: Request, institution_slug: str, session: Session = Depends(get_session)):
     """

@@ -4,12 +4,13 @@ from datetime import date as dt_date, time, datetime
 from .base import AuditModel
 from decimal import Decimal
 from .links import StudentParentLink, CourseStaffLink
+from sqlalchemy import Column, Integer, ForeignKey, Float
 
 if TYPE_CHECKING:
     from .foundation import Institution, Course
+    from .auth import User
 
 class Person(AuditModel):
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
     user_id: Optional[int] = Field(default=None, foreign_key="auth_user.id")
     reg_id: Optional[str] = Field(default=None, max_length=20, index=True)
     name: str = Field(max_length=200)
@@ -26,6 +27,7 @@ class Staff(Person, table=True):
     __tablename__ = "dms_staff"
     
     id: Optional[int] = Field(default=None, primary_key=True)
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     role: str = Field(default="teacher", max_length=50)
     photo: Optional[str] = Field(default=None, max_length=100)
     base_salary: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
@@ -36,11 +38,13 @@ class Staff(Person, table=True):
     notes: str = Field(default="")
     
     courses_taught: List["Course"] = Relationship(back_populates="instructors", link_model=CourseStaffLink)
+    user: Optional["User"] = Relationship(back_populates="staff")
 
 class Parent(Person, table=True):
     __tablename__ = "dms_parent"
     
     id: Optional[int] = Field(default=None, primary_key=True)
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     relationship: str = Field(default="guardian", max_length=20)
     
     students: List["Student"] = Relationship(back_populates="parents", link_model=StudentParentLink)
@@ -49,6 +53,7 @@ class Student(Person, table=True):
     __tablename__ = "dms_student"
     
     id: Optional[int] = Field(default=None, primary_key=True)
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     slug: Optional[str] = Field(default=None, max_length=255)
     photo: Optional[str] = Field(default=None, max_length=100)
     date_of_birth: Optional[dt_date] = Field(default=None)
@@ -57,7 +62,7 @@ class Student(Person, table=True):
     guardian_relation: str = Field(default="", max_length=100)
     notes: str = Field(default="")
     wallet_balance: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
-    admission_date: dt_date = Field(default_factory=dt_date.today)
+    admission_date: dt_date = Field(sa_column=Column("enrollment_date", Float)) # Map to existing DB column
 
     parents: List[Parent] = Relationship(back_populates="students", link_model=StudentParentLink)
     admissions: List["Admission"] = Relationship(back_populates="student")
@@ -101,7 +106,7 @@ class Admission(AuditModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="dms_student.id")
     course_id: int = Field(foreign_key="dms_course.id")
-    admission_date: dt_date = Field(default_factory=dt_date.today)
+    admission_date: dt_date = Field(sa_column=Column("enrollment_date", Float)) # Map to existing DB column
     roll_no: Optional[str] = Field(default=None, max_length=50)
     admission_fee_discount: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
     agreed_admission_fee: Optional[Decimal] = Field(default=None, sa_column=Column(Float))
@@ -117,7 +122,7 @@ class StaffAdvance(SQLModel, table=True):
     __tablename__ = "dms_staffadvance"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     staff_id: int = Field(foreign_key="dms_staff.id")
     amount: Decimal = Field(sa_column=Column(Float))
     date: dt_date = Field(default_factory=dt_date.today)

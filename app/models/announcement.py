@@ -3,6 +3,7 @@ from sqlmodel import Field, Relationship
 from datetime import date, datetime
 from .base import AuditModel
 from .links import AnnouncementTargetParentLink
+from sqlalchemy import Column, Integer, ForeignKey
 
 if TYPE_CHECKING:
     from .foundation import Institution
@@ -12,7 +13,7 @@ class Announcement(AuditModel, table=True):
     __tablename__ = "dms_announcement"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     title: str = Field(max_length=255)
     content: str = Field()
     target_audience: str = Field(default="all", max_length=20)

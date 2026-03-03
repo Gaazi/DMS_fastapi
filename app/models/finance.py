@@ -1,8 +1,9 @@
 from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship, Column, Float, DateTime
+from sqlmodel import SQLModel, Field, Relationship
 from datetime import date as dt_date, datetime
 from .base import AuditModel
 from decimal import Decimal
+from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime
 
 if TYPE_CHECKING:
     from .foundation import Institution, Course
@@ -12,7 +13,7 @@ class Fee(AuditModel, table=True):
     __tablename__ = "dms_fee"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     student_id: int = Field(foreign_key="dms_student.id")
     course_id: Optional[int] = Field(default=None, foreign_key="dms_course.id")
     admission_id: Optional[int] = Field(default=None, foreign_key="dms_enrollment.id")
@@ -37,7 +38,7 @@ class Fee_Payment(AuditModel, table=True):
     __tablename__ = "dms_fee_payment"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     student_id: int = Field(foreign_key="dms_student.id")
     fee_id: Optional[int] = Field(default=None, foreign_key="dms_fee.id")
     
@@ -67,7 +68,7 @@ class Donor(AuditModel, table=True):
     __tablename__ = "dms_donor"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     name: str = Field(max_length=200)
     phone: str = Field(default="", max_length=20)
     email: str = Field(default="", max_length=254)
@@ -79,7 +80,7 @@ class Income(AuditModel, table=True):
     __tablename__ = "dms_income"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     payment_record_id: Optional[int] = Field(default=None, foreign_key="dms_fee_payment.id")
     donor_id: Optional[int] = Field(default=None, foreign_key="dms_donor.id")
     source: str = Field(default="Donation", max_length=50)
@@ -95,7 +96,7 @@ class Expense(AuditModel, table=True):
     __tablename__ = "dms_expense"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(foreign_key="dms_institution.id", alias="institution_id")
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     amount: Decimal = Field(sa_column=Column(Float))
     category: str = Field(max_length=50)
     description: str = Field(default="")

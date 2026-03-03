@@ -31,7 +31,7 @@
                     <i class="fas fa-print"></i> Transaction Report
                 </a>
                 <div class="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-[9px] text-slate-400 uppercase tracking-widest leading-none">
-                    Total Records: {{ expenses.paginator.count }}
+                    Total Records: {{ page_obj.paginator.count }}
                 </div>
                 <button hx-get="{{ url('expense', institution.slug) }}" 
                         hx-target="#expense-table-container" 
