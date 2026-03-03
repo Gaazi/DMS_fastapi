@@ -43,18 +43,19 @@ jobs:
         REMOTE_PORT: ${{ secrets.SSH_PORT }}
         SOURCE: "."
         # برانچ کے مطابق ہدف (Target) کا تعین
-        TARGET: ${{ github.ref == 'refs/heads/main' && '/home/esabaqco/dms.esabaq.com' || '/home/esabaqco/test.esabaq.com' }}
+        TARGET: ${{ github.ref == 'refs/heads/main' && '/home/esabaqco/dms.esabaq.com' || '/home/esabaqco/demo.esabaq.com' }}
         ARGS: "-rlgoDzvc --delete"
         EXCLUDE: "/venv/, /.git/, /__pycache__/, /*.pyc, .env, db.sqlite3, *.log, /media/, /staticfiles/, .htaccess, passenger_wsgi.py"
         SCRIPT_AFTER: |
+        
           # 1. برانچ کے مطابق فولڈر اور ورچوئل انوائرمنٹ کا راستہ سیٹ کرنا
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            TARGET_DIR="/home/esabaqco/dms.esabaq.com"
-            VENV_PATH="/home/esabaqco/virtualenv/dms.esabaq.com/3.11/bin/activate"
-          else
-            TARGET_DIR="/home/esabaqco/test.esabaq.com"
-            VENV_PATH="/home/esabaqco/virtualenv/test.esabaq.com/3.11/bin/activate"
-          fi
+          # if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          #   TARGET_DIR="/home/esabaqco/dms.esabaq.com"
+          #   VENV_PATH="/home/esabaqco/virtualenv/dms.esabaq.com/3.11/bin/activate"
+          # else
+          #   TARGET_DIR="/home/esabaqco/demo.esabaq.com"
+          #   VENV_PATH="/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/activate"
+          # fi
           
           echo "Deployment starting at: $TARGET_DIR"
           cd $TARGET_DIR
