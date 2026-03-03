@@ -7,7 +7,7 @@ import json
 import re
 
 # Models
-from app.models import Institution, Student, Course, Attendance, Fee, Admission, User
+from app.models import Institution, Student, Course, Attendance, ClassSession, Fee, Admission, User
 from app.logic.audit import AuditManager
 
 class StudentManager:    
@@ -55,7 +55,7 @@ class StudentManager:
 
     def finance(self): 
         from app.logic.finance import FinanceManager
-        return FinanceManager(self.session, self.institution, self.user)
+        return FinanceManager(self.session, self.institution, self.user, student=self.student)
 
     def attendance(self): 
         from app.logic.attendance import AttendanceManager
@@ -241,14 +241,39 @@ class StudentManager:
         student = self.session.get(Student, student_id)
         if not student: raise HTTPException(status_code=404, detail="Student not found.")
         self.set_student(student)._check_access()
+        from app.models.finance import WalletTransaction, Fee
+        
+        fees = self.finance().student_fee_history()
+        fee_totals = self.finance().get_student_fee_totals()
+        att_summary = self.attendance().get_member_summary(student)
+        
+        # Find the first fee that isn't fully paid
+        first_pending_fee = next((f for f in fees if f.status != 'Paid'), None)
+        
+        wallet_history = self.session.exec(
+            select(WalletTransaction).where(WalletTransaction.student_id == student.id).order_by(desc(WalletTransaction.date)).limit(20)
+        ).all()
+        
+        admissions = self.session.exec(
+            select(Admission).where(Admission.student_id == student.id)
+        ).all()
         
         from app.logic.institution import InstitutionManager
         return {
             "student": student,
-            "fees": self.finance().student_fee_history(),
-            "attendance": self.attendance().get_member_summary(student),
+            "fees": fees,
+            "fee_totals": fee_totals,
+            "fee_balance": fee_totals['balance'],
+            "first_pending_fee": first_pending_fee,
+            "wallet_history": wallet_history,
             "wallet_balance": getattr(student, 'wallet_balance', 0),
+            "admissions": admissions,
+            "enrollments": admissions, # Alias for template partials
+            "attendance": self.attendance().session.exec(
+                select(Attendance).where(Attendance.student_id == student.id).join(ClassSession).order_by(desc(ClassSession.date)).limit(10)
+            ).all(),
+            "attendance_percentage": att_summary['percentage'],
+            "total_daily_records": att_summary['total'],
             "currency_label": InstitutionManager.get_currency_label(self.institution),
-            "admissions": self.session.exec(select(Admission).where(Admission.student_id == student.id)).all()
         }
 

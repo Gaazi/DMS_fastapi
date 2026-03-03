@@ -58,7 +58,7 @@
                 </div>
                 {% endif %}
             </div>
-            <input type="text" name="name" value="{{ form_data.name if form_data else (editing_student.full_name if editing_student else '') }}" required class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all {% if errors.name %}border-rose-500/50{% endif %}" placeholder="نام درج کریں...">
+            <input type="text" name="name" value="{{ form_data.name if form_data else (editing_student.full_name if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all {% if errors.name %}border-rose-500/50{% endif %}" placeholder="نام درج کریں...">
         </div>
 
         <!-- 2. GUARDIAN & CONTACT DETAILS -->
@@ -110,7 +110,7 @@
             {% if institution.type != 'masjid' %}
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">تاریخ پیدائش (Date of Birth)</label>
-                <input type="date" name="date_of_birth" value="{{ form_data.date_of_birth if form_data else (editing_student.date_of_birth if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [color-scheme:dark]">
+                <input type="text" name="date_of_birth" value="{{ form_data.date_of_birth if form_data else (editing_student.date_of_birth if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="YYYY-MM-DD">
             </div>
             {% endif %}
         </div>
@@ -128,7 +128,7 @@
             </div>
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">فیس کا آغاز (Fee Start Month)</label>
-                <input type="month" name="fee_start_month" value="{{ form_data.fee_start_month if form_data else '' }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [color-scheme:dark]">
+                <input type="text" name="fee_start_month" value="{{ form_data.fee_start_month if form_data else '' }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="YYYY-MM">
             </div>
             {% endif %}
         </div>

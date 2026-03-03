@@ -14,7 +14,7 @@
     <form method="post" class="space-y-6">
         {{ csrf_token() }}
         {% if editing_course %}
-        <input type="hidden" name="course_id" value="{{ editing_course.id }}">
+        <input type="hidden" name="id" value="{{ editing_course.id }}">
         {% endif %}
 
         {% if errors %}
@@ -38,23 +38,43 @@
                 <!-- Category -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">زمرہ</label>
-                    <select name="category" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
-                        {% set cat = form_data.category if form_data else (editing_course.category if editing_course else 'Academic') %}
-                        <option value="Academic" {% if cat == 'Academic' %}selected{% endif %}>تعلیمی (Academic)</option>
-                        <option value="General" {% if cat == 'General' %}selected{% endif %}>عام (General)</option>
-                        <option value="Special" {% if cat == 'Special' %}selected{% endif %}>خصوصی (Special)</option>
-                    </select>
+                    <div class="relative">
+                        <select name="category" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 appearance-none transition-all text-sm">
+                            {% set cat = form_data.category if form_data else (editing_course.category if editing_course else 'academic') %}
+                            <option value="academic" {% if cat == 'academic' %}selected{% endif %}>تعلیمی (Academic)</option>
+                            <option value="dars" {% if cat == 'dars' %}selected{% endif %}>درسِ نظامی / عالم کورس</option>
+                            <option value="hifz" {% if cat == 'hifz' %}selected{% endif %}>حفظِ قرآن</option>
+                            <option value="nazra" {% if cat == 'nazra' %}selected{% endif %}>ناظرہ قرآن</option>
+                            <option value="special" {% if cat == 'special' %}selected{% endif %}>خصوصی (Special)</option>
+                            <option value="general" {% if cat == 'general' %}selected{% endif %}>تکنیکی/عام (General)</option>
+                            <option value="mosque" {% if cat == 'mosque' %}selected{% endif %}>مسجد/نماز (Mosque)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-tags text-sm"></i>
+                        </div>
+                        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Fee Type -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">فیس کی قسم</label>
-                    <select name="fee_type" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
-                        {% set ft = form_data.fee_type if form_data else (editing_course.fee_type if editing_course else 'monthly') %}
-                        <option value="monthly" {% if ft == 'monthly' %}selected{% endif %}>ماہانہ (Monthly)</option>
-                        <option value="yearly" {% if ft == 'yearly' %}selected{% endif %}>سالانہ (Yearly)</option>
-                        <option value="one_time" {% if ft == 'one_time' %}selected{% endif %}>ایک بار (One Time)</option>
-                    </select>
+                    <div class="relative">
+                        <select name="fee_type" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 appearance-none transition-all text-sm">
+                            {% set ft = form_data.fee_type if form_data else (editing_course.fee_type if editing_course else 'monthly') %}
+                            <option value="monthly" {% if ft == 'monthly' %}selected{% endif %}>ماہانہ (Monthly)</option>
+                            <option value="yearly" {% if ft == 'yearly' %}selected{% endif %}>سالانہ (Yearly)</option>
+                            <option value="one_time" {% if ft == 'one_time' %}selected{% endif %}>ایک بار (One Time)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-credit-card text-sm"></i>
+                        </div>
+                        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -68,13 +88,41 @@
                 <!-- Admission Fee -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider {% if errors.admission_fee %}text-rose-500{% endif %}">{% if institution.type == 'masjid' %}ممبرشپ فیس{% else %}داخلہ فیس{% endif %}</label>
-                    <input type="number" step="0.01" name="admission_fee" value="{{ form_data.admission_fee if form_data else (editing_course.admission_fee if editing_course else '0.00') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.admission_fee %}border-rose-500/50{% endif %}">
+                    <input type="number" step="0.01" name="admission_fee" value="{{ form_data.admission_fee if form_data else (editing_course.admission_fee if editing_course else '0') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.admission_fee %}border-rose-500/50{% endif %}">
                 </div>
                 <!-- Course Fee -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider {% if errors.course_fee %}text-rose-500{% endif %}">{% if institution.type == 'masjid' %}ماہانہ تعاون{% else %}کورس فیس{% endif %}</label>
-                    <input type="number" step="0.01" name="course_fee" value="{{ form_data.course_fee if form_data else (editing_course.course_fee if editing_course else '0.00') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.course_fee %}border-rose-500/50{% endif %}">
+                    <input type="number" step="0.01" name="course_fee" value="{{ form_data.course_fee if form_data else (editing_course.course_fee if editing_course else '0') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.course_fee %}border-rose-500/50{% endif %}">
                 </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Start Date -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تاریخ آغاز</label>
+                    <div class="relative">
+                        <input type="text" name="start_date" value="{{ form_data.start_date if form_data else (editing_course.start_date|date('d-m-Y') if editing_course and editing_course.start_date else '') }}" placeholder="DD-MM-YYYY" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-calendar-alt text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Capacity -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">نشستیں (Capacity)</label>
+                    <div class="relative">
+                        <input type="number" name="capacity" value="{{ form_data.capacity if form_data else (editing_course.capacity if editing_course else '') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-users text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+                <input type="checkbox" name="is_active" id="id_is_active" value="true" {% if (form_data.is_active is sameas true) or (editing_course and editing_course.is_active is sameas true) or (not editing_course and not form_data) %}checked{% endif %} class="w-4 h-4 rounded border-white/10 bg-[#0a0a0f] text-indigo-600 focus:ring-indigo-500">
+                <label for="id_is_active" class="text-xs font-bold text-slate-400 uppercase">فعال ہے (Is Active)</label>
             </div>
         </div>
 

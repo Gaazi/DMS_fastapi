@@ -173,3 +173,30 @@ class AttendanceManager:
             'day_span': (end_date - start_date).days + 1,
             'no_records': False
         }
+    def get_member_summary(self, member, days=30) -> dict:
+        """کسی ایک طالب علم یا ملازم کی حاضری کا مختصر خلاصہ۔"""
+        end_date = dt_date.today()
+        start_date = end_date - timedelta(days=days-1)
+        
+        if isinstance(member, Student):
+            stmt = select(Attendance).where(
+                Attendance.student_id == member.id,
+                Attendance.inst_id == self.institution.id
+            ).join(ClassSession).where(ClassSession.date >= start_date)
+            records = self.session.exec(stmt).all()
+        else:
+            stmt = select(Staff_Attendance).where(
+                Staff_Attendance.staff_member_id == member.id,
+                Staff_Attendance.date >= start_date
+            )
+            records = self.session.exec(stmt).all()
+            
+        summary = {'present': 0, 'absent': 0, 'late': 0, 'excused': 0, 'total': len(records)}
+        for r in records:
+            if r.status in summary:
+                summary[r.status] += 1
+        
+        summary['percentage'] = round((summary['present'] / summary['total'] * 100), 1) if summary['total'] > 0 else 0
+        return summary
+
+# Final end of file

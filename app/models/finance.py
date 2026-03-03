@@ -16,7 +16,7 @@ class Fee(AuditModel, table=True):
     inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
     student_id: int = Field(foreign_key="dms_student.id")
     course_id: Optional[int] = Field(default=None, foreign_key="dms_course.id")
-    admission_id: Optional[int] = Field(default=None, foreign_key="dms_enrollment.id")
+    admission_id: Optional[int] = Field(sa_column=Column("enrollment_id", Integer, ForeignKey("dms_enrollment.id")), default=None)
     
     fee_type: str = Field(default="monthly", max_length=20)
     title: str = Field(default="", max_length=200)
@@ -30,6 +30,21 @@ class Fee(AuditModel, table=True):
     due_date: Optional[dt_date] = Field(default=None)
     status: str = Field(default="Pending", max_length=20)
     recorded_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @property
+    def balance(self) -> Decimal:
+        """باقی رہ جانے والی رقم کا حساب۔"""
+        return Decimal(str(self.amount_due)) + Decimal(str(self.late_fee or 0)) - Decimal(str(self.amount_paid or 0)) - Decimal(str(self.discount or 0))
+
+    def get_status_display(self) -> str:
+        """ٹیمپلیٹ کے لیے اسٹیٹس کی اردو/انگریزی شکل۔"""
+        status_map = {
+            "Pending": "واجب الادا",
+            "Partial": "ادھوری ادائیگی",
+            "Paid": "ادائیگی مکمل",
+            "Cancelled": "منسوخ"
+        }
+        return status_map.get(self.status, self.status)
 
     # Relationships
     payments: List["Fee_Payment"] = Relationship(back_populates="fee")

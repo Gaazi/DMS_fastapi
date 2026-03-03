@@ -47,13 +47,21 @@ class AuditManager:
                      object_repr: str, changes: Optional[dict] = None):
         """جینگو کی خودکار ہسٹری کی طرح ایونٹس کو ریکارڈ کرنا۔"""
         try:
+            # Helper for JSON serialization
+            def json_serial(obj):
+                from decimal import Decimal
+                from datetime import date, datetime
+                if isinstance(obj, (datetime, date)): return obj.isoformat()
+                if isinstance(obj, Decimal): return str(obj)
+                raise TypeError ("Type %s not serializable" % type(obj))
+
             # ماڈل کا نام صاف کریں
             clean_model_name = model_name.split('.')[-1].capitalize()
             
             # اگر repr موجود نہ ہو تو ایک ڈیفالٹ بنائیں
             safe_repr = object_repr or f"{clean_model_name} #{object_id or 'New'}"
             if len(safe_repr) > 250: safe_repr = safe_repr[:247] + "..."
-    
+
             log = ActivityLog(
                 inst_id=inst_id,
                 user_id=user_id,
@@ -61,14 +69,14 @@ class AuditManager:
                 model_name=clean_model_name,
                 object_id=object_id or 0,
                 object_repr=safe_repr,
-                changes=json.dumps(changes) if changes else None
+                changes=json.dumps(changes, default=json_serial) if changes else None
             )
             session.add(log)
-            session.flush() # Ensure it's part of the transaction
+            # We don't flush/commit here to keep it in the main transaction
         except Exception as e:
             # آڈٹ لاگنگ کی وجہ سے مین آپریشن نہیں رکنا چاہیے
-            print(f"Audit log failed: {e}")
-            session.rollback()
+            # Important: NEVER rollback the session here, as it kills the main operation's transaction
+            print(f"Audit log failed (non-fatal): {e}")
 
 
     def get_logs(self, limit: int = 100) -> List[dict]:

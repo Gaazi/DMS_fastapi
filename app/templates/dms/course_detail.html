@@ -11,11 +11,8 @@
       
       <!-- Header Row: Title & Actions -->
       <div class="flex items-start justify-between gap-3 mb-4">
-        <div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold border border-blue-500/20 uppercase tracking-wide">
-              {{ course.get_category_display }}
-            </span>
+            <h1 class="text-xl sm:text-2xl font-bold text-white leading-tight">{{ course.title }}</h1>
             {% if course.is_active %}
             <span class="flex h-1.5 w-1.5 relative">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -23,19 +20,21 @@
             </span>
             {% endif %}
           </div>
-          <h1 class="text-xl sm:text-2xl font-bold text-white leading-tight">{{ course.title }}</h1>
-        </div>
+          <div class="mt-2">
+            <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-xs border border-blue-500/20">
+              {{ course.get_category_display() }}
+            </span>
+          </div>
         
         {% if is_academic_admin %}
-        <!-- Tactical Actions (Compact) -->
-        <div class="flex items-center gap-1.5 shrink-0">
-            <a href="{{ url('dms_course', institution.slug) }}?edit={{ course.id }}" 
-               class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all" 
-               title="ترمیم کریں">
-                <i class="fas fa-pen text-[10px]"></i>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ url('dms_course', institution.slug) }}?edit={{ course.id }}#course_form" 
+               class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 hover:border-blue-500/40 transition-all text-sm font-medium">
+                <i class="fas fa-edit text-xs"></i>
+                <span>ترمیم</span>
             </a>
             
-            <form method="post" action="{{ url('dms_course', institution.slug) }}" onsubmit="return confirm('کیا آپ واقعی اس کورس کو حذف کرنا چاہتے ہیں؟ اس سے تمام داخلے اور سیشنز بھی حذف ہو جائیں گے۔');">
+            <form method="post" action="{{ url('dms_course', institution.slug) }}" onsubmit="return confirm('کیا آپ واقعی حذف کرنا چاہتے ہیں؟');" class="inline">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="course_id" value="{{ course.id }}">
@@ -49,7 +48,7 @@
         {% endif %}
       </div>
 
-      <!-- Description (Truncated/Compact) -->
+      <!-- Description -->
       {% if course.description %}
       <p class="text-slate-400 leading-relaxed text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none">{{ course.description }}</p>
       {% endif %}
@@ -70,34 +69,30 @@
             </div>
         </div>
 
-        <!-- Schedule -->
-        {% if course.schedule_notes %}
+        <!-- Fees -->
         <div class="flex flex-col gap-1">
-             <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">شیڈول</span>
-             <div class="flex items-center gap-2 text-slate-300">
-                <i class="fas fa-clock text-slate-500"></i>
-                <span class="truncate">{{ course.schedule_notes }}</span>
+             <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">ماہانہ فیس</span>
+             <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                <i class="fas fa-money-bill-wave text-slate-500"></i>
+                <span>{{ course.course_fee }}</span>
             </div>
         </div>
-        {% endif %}
 
         <!-- Capacity -->
-        {% if course.capacity %}
         <div class="flex flex-col gap-1">
              <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">گنجائش</span>
              <div class="flex items-center gap-2 text-slate-300">
                 <i class="fas fa-users text-slate-500"></i>
-                <span>{{ course.capacity }} نشستیں</span>
+                <span>{{ course.capacity or '--' }} نشستیں</span>
             </div>
         </div>
-        {% endif %}
       </div>
 
       <!-- Compact Instructors Row -->
       <div class="mt-4 pt-3 border-t border-white/5 flex items-center gap-3 overflow-x-auto pb-1 no-scrollbar">
           <span class="text-xs shrink-0">{% if institution.type == 'masjid' %}خدام:{% else %}اساتذہ:{% endif %}</span>
           <div class="flex flex-wrap items-center gap-2">
-            {% for instructor in course.instructors.all %}
+            {% for instructor in course.instructors %}
             <a href="{{ url('dms_staff_detail', institution.slug, instructor.id) }}" class="flex items-center gap-1.5 p-1 pt-0.5 rounded-md border border-slate-700 hover:border-slate-400 transition-all cursor-pointer">
                 <span class="text-xs transition-colors">{{ instructor.full_name }}</span>
             </a>
@@ -142,21 +137,21 @@
                   <div class="text-[11px] text-slate-500 font-mono mt-0.5">{{ enrollment.student.mobile }}</div>
                   {% endif %}
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.enrollment_date|date("d M Y") }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.admission_date|date("d M Y") }}</td>
                 <td class="px-4 py-3 whitespace-nowrap">
                    {% if is_academic_admin %}
                    <form method="post" class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                     {{ csrf_token() }}
                     <input type="hidden" name="action" value="enrollment_update">
                     <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
-                    <select name="status" class="w-full sm:w-auto text-xs border border-white/10 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none bg-white/5 text-slate-300" onchange="this.form.submit()">
+                    <select name="status" class="w-full sm:w-auto text-xs border border-white/10 rounded-lg px-2 py-1.5 outline-none bg-white/5 text-slate-300" onchange="this.form.submit()">
                       {% for value,label in enrollment_status_choices %}
                       <option value="{{ value }}" {% if enrollment.status == value %}selected{% endif %} class="bg-slate-800 text-slate-300">{{ label }}</option>
                       {% endfor %}
                     </select>
                   </form>
                   {% else %}
-                  <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px]">{{ enrollment.get_status_display }}</span>
+                  <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px]">{{ enrollment.get_status_display() }}</span>
                   {% endif %}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
@@ -165,7 +160,7 @@
                     {{ csrf_token() }}
                     <input type="hidden" name="action" value="enrollment_delete">
                     <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
-                    <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="خارج کریں">
+                    <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100" title="خارج کریں">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                   </form>
@@ -174,12 +169,7 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="4" class="px-6 py-12 text-center">
-                    <div class="flex flex-col items-center justify-center text-slate-600">
-                        <i class="fas fa-user-graduate text-3xl mb-3 opacity-20"></i>
-                        <p class="text-sm">اس کورس میں ابھی کوئی طالب علم نہیں ہے</p>
-                    </div>
-                </td>
+                <td colspan="4" class="px-6 py-12 text-center text-slate-600">اس کورس میں ابھی کوئی طالب علم نہیں ہے</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -191,7 +181,6 @@
       <div class="bg-slate-900/50 rounded-2xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
         <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <h2 class="text-lg font-bold text-white">روزانہ سیشن</h2>
-          <!-- <a href="#" class="text-xs font-semibold text-blue-400 hover:text-blue-300">تمام دیکھیں</a> -->
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-white/5">
@@ -208,7 +197,7 @@
               <tr class="hover:bg-white/[0.04] transition-colors group">
                 <td class="px-4 py-3 whitespace-nowrap">
                   <div class="font-bold text-slate-200 font-mono">{{ session.date|date("d M, Y") }}</div>
-                  <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{{ session.get_session_type_display }}</div>
+                  <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{{ session.get_session_type_display() }}</div>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">
                   {% if session.start_time %}
@@ -221,11 +210,11 @@
                   <span class="text-slate-600">—</span>
                   {% endif %}
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="text-slate-300">{{ session.topic|default("—")|truncatechars(30) }}</span>
+                <td class="px-4 py-3 text-slate-300">
+                    {{ session.topic|default("—")|truncatechars(30) }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
-                  <div class="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <div class="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                       <a href="{{ url('dms_session_attendance', institution.slug, session.id) }}"
                         class="p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all" title="حاضری لگائیں">
                         <i class="fas fa-clipboard-check"></i>
@@ -245,12 +234,7 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="4" class="px-6 py-12 text-center">
-                    <div class="flex flex-col items-center justify-center text-slate-600">
-                        <i class="fas fa-calendar-times text-3xl mb-3 opacity-20"></i>
-                        <p class="text-sm">کوئی سیشن شیڈول نہیں ہے</p>
-                    </div>
-                </td>
+                <td colspan="4" class="px-6 py-12 text-center text-slate-600">کوئی سیشن شیڈول نہیں ہے</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -265,77 +249,142 @@
       
       <!-- Add Student Form -->
       <div class="bg-slate-900/50 rounded-2xl shadow-lg border border-white/10 p-5 sm:p-6 relative overflow-hidden group backdrop-blur-sm">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:scale-110"></div>
-        
-        <h2 class="text-lg font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm shadow-sm border border-emerald-500/30">
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm border border-emerald-500/30">
                 <i class="fas fa-user-plus"></i>
             </span>
             طالب علم شامل کریں
         </h2>
         
-        <form method="post" class="space-y-4 relative z-10">
+        <form method="post" class="space-y-4">
           {{ csrf_token() }}
           <input type="hidden" name="action" value="enroll">
           
           <div class="space-y-1">
              <label class="block text-xs font-semibold text-slate-400">طالب علم منتخب کریں</label>
-             {{ enrollment_form.student }}
-             {% if enrollment_form.student.errors %}
-                <p class="text-xs text-rose-500 mt-1">{{ enrollment_form.student.errors.0 }}</p>
-             {% endif %}
+             <div class="relative">
+                 <select name="student_id" required class="w-full text-xs border border-white/10 rounded-lg px-9 py-2.5 bg-white/5 text-slate-300 appearance-none focus:border-emerald-500/50 outline-none">
+                    <option value="">طالب علم منتخب کریں...</option>
+                    {% for s in all_students %}
+                    <option value="{{ s.id }}" class="bg-slate-900">{{ s.name }} ({{ s.reg_id }})</option>
+                    {% endfor %}
+                 </select>
+                 <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                    <i class="fas fa-user-graduate text-[11px]"></i>
+                 </div>
+                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600">
+                    <i class="fas fa-chevron-down text-[10px]"></i>
+                 </div>
+             </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+                <label class="block text-xs font-semibold text-slate-400">تاریخ داخلہ</label>
+                <div class="relative">
+                    <input type="text" name="enrollment_date" value="{{ today|date('d-m-Y') }}" placeholder="DD-MM-YYYY" class="w-full text-xs border border-white/10 rounded-lg px-9 py-2.5 bg-white/5 text-slate-300 focus:border-emerald-500/50 outline-none">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-calendar-alt text-[11px]"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label class="block text-xs font-semibold text-slate-400">آغازِ فیس</label>
+                <div class="relative">
+                    <input type="text" name="fee_start_month" value="{{ today|date('d-m-Y') }}" placeholder="DD-MM-YYYY" class="w-full text-xs border border-white/10 rounded-lg px-9 py-2.5 bg-white/5 text-slate-300 focus:border-emerald-500/50 outline-none">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-calendar-check text-[11px]"></i>
+                    </div>
+                </div>
+            </div>
           </div>
           
           <div class="space-y-1">
-                <label class="block text-xs font-semibold text-slate-400">تاریخ داخلہ</label>
-                {{ enrollment_form.enrollment_date }}
-           </div>
+              <label class="block text-xs font-semibold text-slate-400">طے شدہ ماہانہ فیس</label>
+              <div class="relative">
+                  <input type="number" name="agreed_course_fee" value="{{ course.course_fee }}" class="w-full h-11 bg-slate-950/30 border border-white/10 rounded-xl px-9 text-emerald-400 font-bold focus:border-emerald-500/50 outline-none">
+                  <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                      <i class="fas fa-tags text-[11px]"></i>
+                  </div>
+              </div>
+          </div>
 
-          <button type="submit"
-            class="w-full h-11 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 font-medium active:scale-95 border border-white/10">
-            <i class="fas fa-check"></i> کورس میں داخل کریں
+          <button type="submit" class="w-full h-11 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 font-medium active:scale-95 border border-white/10">
+            <i class="fas fa-check"></i> داخلہ کریں
           </button>
         </form>
       </div>
 
       <!-- Schedule Session Form -->
       <div class="bg-slate-900/50 rounded-2xl shadow-lg border border-white/10 p-5 sm:p-6 relative overflow-hidden group backdrop-blur-sm">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:scale-110"></div>
-        
-        <h2 class="text-lg font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-             <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm shadow-sm border border-blue-500/30">
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+             <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm border border-blue-500/30">
                 <i class="fas fa-calendar-plus"></i>
             </span>
             نیا سیشن
         </h2>
         
-        <form method="post" class="space-y-4 relative z-10">
+        <form method="post" class="space-y-4">
           {{ csrf_token() }}
           <input type="hidden" name="action" value="session">
           
+          <!-- Date Field -->
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-slate-400">تاریخ</label>
-            {{ session_form.date }}
+            <div class="relative">
+                <input type="text" name="date" value="{{ today|date('d-m-Y') }}" placeholder="DD-MM-YYYY" required class="w-full text-xs border border-white/10 rounded-lg px-9 py-2.5 bg-white/5 text-slate-300 focus:border-blue-500/50 outline-none">
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-blue-500/50">
+                    <i class="fas fa-calendar-alt text-[11px]"></i>
+                </div>
+            </div>
           </div>
           
           <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
                 <label class="block text-xs font-semibold text-slate-400">شروع وقت</label>
-                {{ session_form.start_time }}
+                <div class="relative">
+                    <input type="time" name="start_time" class="w-full text-xs border border-white/10 rounded-lg px-9 py-2 bg-white/5 text-slate-300 focus:border-blue-500/50 outline-none">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-blue-500/50">
+                        <i class="fas fa-clock text-[11px]"></i>
+                    </div>
+                </div>
               </div>
               <div class="space-y-1">
                 <label class="block text-xs font-semibold text-slate-400">اختتام وقت</label>
-                {{ session_form.end_time }}
+                <div class="relative">
+                    <input type="time" name="end_time" class="w-full text-xs border border-white/10 rounded-lg px-9 py-2 bg-white/5 text-slate-300 focus:border-blue-500/50 outline-none">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-blue-500/50">
+                        <i class="fas fa-hourglass-end text-[11px]"></i>
+                    </div>
+                </div>
               </div>
           </div>
           
            <div class="space-y-1">
             <label class="block text-xs font-semibold text-slate-400">موضوع / عنوان</label>
-            {{ session_form.topic }}
+            <div class="relative">
+                <input type="text" name="topic" placeholder="مثلاً: سبق نمبر 1" class="w-full text-xs border border-white/10 rounded-xl px-9 py-2 bg-white/5 text-slate-300 focus:border-blue-500/50 outline-none">
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-blue-500/50">
+                    <i class="fas fa-book-open text-[11px]"></i>
+                </div>
+            </div>
           </div>
            <div class="space-y-1">
             <label class="block text-xs font-semibold text-slate-400">قسم</label>
-            {{ session_form.session_type }}
+            <div class="relative">
+                <select name="session_type" class="w-full text-xs border border-white/10 rounded-lg px-9 py-2.5 bg-white/5 text-slate-300 appearance-none focus:border-blue-500/50 outline-none">
+                    <option value="Lecture">لیکچر (Lecture)</option>
+                    <option value="Practice">پریکٹس (Practice)</option>
+                    <option value="Exam">امتحان (Exam)</option>
+                    <option value="class" selected>کلاس (Class)</option>
+                </select>
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-blue-500/50">
+                    <i class="fas fa-layer-group text-[11px]"></i>
+                </div>
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600">
+                    <i class="fas fa-chevron-down text-[10px]"></i>
+                </div>
+            </div>
           </div>
 
           <button type="submit" class="w-full h-11 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 font-medium active:scale-95 border border-white/10">
@@ -349,24 +398,8 @@
 </div>
 
 <style>
-    /* Custom Scrollbar for tables */
-    .overflow-x-auto::-webkit-scrollbar {
-        height: 6px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 4px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 4px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-    
-    /* Input Styling Override - Dark Mode */
-    input[type="text"], input[type="date"], input[type="time"], select, textarea {
+    /* Input Styling Override */
+    input[type="text"], input[type="date"], input[type="time"], input[type="month"], input[type="number"], select, textarea {
         width: 100%;
         padding: 0.625rem 0.875rem;
         background-color: rgba(255, 255, 255, 0.03);
@@ -382,10 +415,6 @@
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         outline: none;
     }
-    /* Select Options */
-    option {
-        background-color: #0f172a;
-        color: #e2e8f0;
-    }
+    option { background-color: #0f172a; color: #e2e8f0; }
 </style>
 {% endblock %}

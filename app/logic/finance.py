@@ -15,11 +15,34 @@ from app.logic.audit import AuditManager
 class FinanceManager:
     """ادارے کا مکمل مالیاتی نظام: فیسیں، آمدن، اخراجات اور اینالیٹکس (FastAPI Version)۔"""
     
-    def __init__(self, session: Session, institution: Institution, user: User, student: Optional[Student] = None):
+    def __init__(self, session: Session, institution: Institution, user: Optional[User] = None, student: Optional[Student] = None):
         self.user = user
         self.session = session
         self.institution = institution
         self.student = student
+
+    def student_fee_history(self, student_id: Optional[int] = None) -> List[Fee]:
+        """طالب علم کی فیسوں کی مکمل تاریخ بشمول ادائیگیوں کے۔"""
+        sid = student_id or (self.student.id if self.student else None)
+        if not sid: return []
+        
+        statement = select(Fee).where(Fee.student_id == sid).order_by(desc(Fee.month), desc(Fee.id))
+        return self.session.exec(statement).all()
+
+    def get_student_fee_totals(self, student_id: Optional[int] = None) -> dict:
+        """طالب علم کی مجموعی فیس، ادا شدہ رقم اور بقایا جات کا حساب۔"""
+        sid = student_id or (self.student.id if self.student else None)
+        if not sid: return {'total_due': 0, 'total_paid': 0, 'balance': 0}
+
+        fees = self.student_fee_history(sid)
+        total_due = sum((f.amount_due + (f.late_fee or 0) - (f.discount or 0)) for f in fees)
+        total_paid = sum(f.amount_paid for f in fees)
+        
+        return {
+            'total_due': total_due,
+            'total_paid': total_paid,
+            'balance': total_due - total_paid
+        }
 
     def currency(self):
         return str(getattr(self.institution, 'currency_label', 'Rs'))

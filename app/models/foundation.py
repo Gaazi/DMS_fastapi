@@ -6,7 +6,7 @@ from app.models.links import CourseStaffLink
 
 
 if TYPE_CHECKING:
-    from app.models.people import Staff
+    from app.models.people import Staff, Admission
 
 class Institution(AuditModel, table=True):
     __tablename__ = "dms_institution"
@@ -47,9 +47,39 @@ class Course(AuditModel, table=True):
     capacity: Optional[int] = Field(default=None)
     is_active: bool = Field(default=True)
 
+    def get_category_display(self) -> str:
+        cat_map = {
+            "academic": "تعلیمی (Academic)",
+            "general": "تکنیکی/عام (General)",
+            "special": "خصوصی (Special)",
+            "masjid": "مسجد/نماز",
+            "dars": "درسِ نظامی / عالم کورس",
+            "hifz": "حفظِ قرآن",
+            "nazra": "ناظرہ قرآن",
+            "other": "دیگر"
+        }
+        return cat_map.get(self.category.lower(), self.category.capitalize())
+
+    def get_fee_type_display(self) -> str:
+        type_map = {
+            "monthly": "ماہانہ",
+            "yearly": "سالانہ",
+            "one_time": "ایک بار",
+            "onetime": "ایک بار",
+            "none": "مفت",
+            "free": "مفت"
+        }
+        return type_map.get(self.fee_type.lower(), self.fee_type.capitalize())
+
     # Relationships
     institution: Institution = Relationship(back_populates="courses")
     instructors: List["Staff"] = Relationship(back_populates="courses_taught", link_model=CourseStaffLink)
+    admissions: List["Admission"] = Relationship(back_populates="course")
+
+    @property
+    def student_count(self) -> int:
+        """کل فعال طلبہ کی تعداد۔"""
+        return len([a for a in self.admissions if a.status == 'active'])
 
 class Facility(AuditModel, table=True):
     __tablename__ = "dms_facility"

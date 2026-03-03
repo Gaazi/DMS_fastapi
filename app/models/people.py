@@ -245,6 +245,20 @@ class Admission(AuditModel, table=True):
     status: str = Field(default="active", max_length=20)
 
     student: Student = Relationship(back_populates="admissions")
+    course: "Course" = Relationship(back_populates="admissions")
+
+    @staticmethod
+    def get_status_choices():
+        return [
+            ("active", "فعال (Active)"),
+            ("completed", "مکمل (Completed)"),
+            ("dropped", "چھوڑ دیا (Dropped)"),
+            ("suspended", "معطل (Suspended)")
+        ]
+
+    def get_status_display(self) -> str:
+        status_map = dict(self.get_status_choices())
+        return status_map.get(self.status, self.status.capitalize())
 
 class StaffAdvance(SQLModel, table=True):
     __tablename__ = "dms_staffadvance"

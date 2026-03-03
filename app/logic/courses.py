@@ -1,7 +1,8 @@
 from typing import List, Optional, Any, Dict
 from sqlmodel import Session, select, func, desc, and_, or_
 from fastapi import HTTPException
-from datetime import date as dt_date, datetime
+from datetime import date as dt_date, datetime, time as dt_time
+from decimal import Decimal
 
 # Models
 from app.models import Institution, Course, Admission, ClassSession, Student
@@ -32,6 +33,22 @@ class CourseManager:
             elif user:
                 statement = select(Institution).where(Institution.user_id == user.id)
                 self.institution = session.exec(statement).first()
+
+    def _parse_date(self, d_str: Any, default: Any = None) -> Optional[dt_date]:
+        if not d_str: return default
+        if isinstance(d_str, dt_date): return d_str
+        for fmt in ('%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d', '%H:%M'): # Added some common formats
+            try: return datetime.strptime(d_str, fmt).date()
+            except: continue
+        return default
+
+    def _parse_time(self, t_str: Any) -> Optional[dt_time]:
+        if not t_str: return None
+        if isinstance(t_str, dt_time): return t_str
+        for fmt in ('%H:%M', '%H:%M:%S', '%I:%M %p'):
+            try: return datetime.strptime(t_str, fmt).time()
+            except: continue
+        return None
 
     def _check_access(self):
         """سیکیورٹی چیک: پروگرام اور داخلوں کی مینجمنٹ کے حقوق کی تصدیق۔"""
@@ -91,13 +108,13 @@ class CourseManager:
         admission = Admission(
             student_id=student_id,
             course_id=self.course.id,
-            admission_date=dt_date.today(),
+            admission_date=self._parse_date(data.get('enrollment_date'), dt_date.today()),
             roll_no=data.get('roll_no'),
             admission_fee_discount=Decimal(str(data.get('admission_fee_discount', 0))),
             agreed_admission_fee=Decimal(str(data.get('agreed_admission_fee'))) if data.get('agreed_admission_fee') else None,
             course_fee_discount=Decimal(str(data.get('course_fee_discount', 0))),
             agreed_course_fee=Decimal(str(data.get('agreed_course_fee'))) if data.get('agreed_course_fee') else None,
-            fee_start_month=datetime.strptime(data['fee_start_month'], '%Y-%m').date() if data.get('fee_start_month') else None,
+            fee_start_month=self._parse_date(data.get('fee_start_month')),
             fee_type_override=data.get('fee_type_override'),
             status='active'
         )
@@ -116,13 +133,12 @@ class CourseManager:
         
         class_session = ClassSession(
             course_id=self.course.id,
-            inst_id=self.institution.id,
-            date=data.get('date', dt_date.today()),
-            start_time=data.get('start_time'),
-            end_time=data.get('end_time'),
-            room_id=data.get('room_id'),
+            date=self._parse_date(data.get('date'), dt_date.today()),
+            start_time=self._parse_time(data.get('start_time')),
+            end_time=self._parse_time(data.get('end_time')),
             topic=data.get('topic', 'Daily'),
-            description=data.get('description', '')
+            session_type=data.get('session_type', 'class'),
+            notes=data.get('notes', '')
         )
         
         self.session.add(class_session)

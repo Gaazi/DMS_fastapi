@@ -11,7 +11,7 @@ class ActivityLog(SQLModel, table=True):
     __tablename__ = "dms_activitylog"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
+    inst_id: int = Field(foreign_key="dms_institution.id")
     user_id: Optional[int] = Field(default=None, foreign_key="auth_user.id")
     
     action: str = Field(max_length=20) # create, update, delete, restore, hard_delete

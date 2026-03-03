@@ -23,6 +23,15 @@ class ClassSession(AuditModel, table=True):
     attendance_records: List["Attendance"] = Relationship(back_populates="session")
     course: Optional["Course"] = Relationship()
 
+    def get_session_type_display(self) -> str:
+        type_map = {
+            "Lecture": "لیکچر (Lecture)",
+            "Practice": "پریکٹس (Practice)",
+            "Exam": "امتحان (Exam)",
+            "class": "کلاس (Class)"
+        }
+        return type_map.get(self.session_type, self.session_type)
+
 class Staff_Attendance(AuditModel, table=True):
     __tablename__ = "dms_staff_attendance"
     

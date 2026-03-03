@@ -58,13 +58,25 @@ class StudentAdmissionSchema(BaseModel):
     father_name: Optional[str] = ""
     guardian_name: Optional[str] = ""
     guardian_relation: Optional[str] = "father"
-    mobile: str = Field(min_length=10, description="درست فون نمبر درج کریں")
+    mobile: Optional[str] = ""
     mobile2: Optional[str] = ""
     gender: str = "male"
     date_of_birth: Optional[date] = None
+
+    @validator('date_of_birth', pre=True)
+    def parse_dob(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
     email: Optional[str] = ""
     blood_group: Optional[str] = ""
     fee_start_month: Optional[str] = ""
+    
+    @validator('fee_start_month', pre=True)
+    def empty_month_to_none(cls, v):
+        if v == "" or v is None:
+            return ""
+        return v
     address: Optional[str] = ""
     
     # Course fields
@@ -126,12 +138,22 @@ class StaffFormSchema(BaseModel):
     is_active: bool = True
 
 class CourseFormSchema(BaseModel):
+    id: Optional[int] = None
     title: str = Field(min_length=2, description="کورس کا عنوان درج کریں")
-    category: str = "Academic"
+    category: str = "academic"
     fee_type: str = "monthly"
-    admission_fee: Decimal = 0
-    course_fee: Decimal = 0
+    admission_fee: float = 0
+    course_fee: float = 0
     description: Optional[str] = ""
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    capacity: Optional[int] = None
+    is_active: bool = True
+    
+    @validator("is_active", pre=True)
+    def handle_checkbox(cls, v):
+        if v in (True, "true", "on", "1"): return True
+        return False
 
 class DonorFormSchema(BaseModel):
     name: str = Field(min_length=2, description="نام درج کریں")
