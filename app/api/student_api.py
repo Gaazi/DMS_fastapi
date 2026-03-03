@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from typing import Optional
 import re
+from datetime import datetime, date
 
 # Internal Imports
 from ..db.session import get_session
@@ -12,7 +13,7 @@ from ..logic.auth import get_current_user
 from ..logic.students import StudentManager
 from ..logic.attendance import AttendanceManager
 from ..logic.permissions import get_institution_with_access
-from ..helper.context import TemplateResponse
+from ..helper.context import TemplateResponse, PaginatedData
 
 router = APIRouter()
 
@@ -58,7 +59,7 @@ async def students_list_view(request: Request, institution_slug: str, session: S
     context = {
         "request": request,
         "institution": institution,
-        "students": data["students"],
+        "students": PaginatedData(data["students"], page, data["total"]),
         "total_count": data["total"],
         "stats": data["stats"],
         "query": q,

@@ -21,6 +21,7 @@ class ClassSession(AuditModel, table=True):
     notes: str = Field(default="")
 
     attendance_records: List["Attendance"] = Relationship(back_populates="session")
+    course: Optional["Course"] = Relationship()
 
 class Staff_Attendance(AuditModel, table=True):
     __tablename__ = "dms_staff_attendance"
@@ -34,6 +35,10 @@ class Staff_Attendance(AuditModel, table=True):
     is_late: bool = Field(default=False)
     recorded_at: datetime = Field(default_factory=datetime.utcnow)
 
+    @property
+    def get_status_display(self) -> str:
+        return self.status.capitalize()
+
 class Attendance(AuditModel, table=True):
     __tablename__ = "dms_attendance"
     
@@ -44,5 +49,9 @@ class Attendance(AuditModel, table=True):
     status: str = Field(default="present", max_length=20)
     remarks: str = Field(default="")
     recorded_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @property
+    def get_status_display(self) -> str:
+        return self.status.capitalize()
 
     session: ClassSession = Relationship(back_populates="attendance_records")

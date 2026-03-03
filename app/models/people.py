@@ -21,6 +21,10 @@ class Person(AuditModel):
     email: Optional[str] = Field(default=None, max_length=254)
     address: Optional[str] = Field(default=None)
     is_active: bool = Field(default=True)
+    
+    @property
+    def full_name(self) -> str:
+        return self.name
 
 
 class Staff(Person, table=True):

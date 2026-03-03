@@ -11,6 +11,26 @@ import datetime
 # Global shared templates instance
 templates = Jinja2Templates(directory=["templates", "app/templates"])
 
+from types import SimpleNamespace
+
+class PaginatedData:
+    def __init__(self, items, page, total, page_size=20):
+        self.object_list = items
+        self.number = page
+        num_pages = (total + page_size - 1) // page_size if total > 0 else 1
+        self.paginator = SimpleNamespace(count=total, num_pages=num_pages)
+        self.has_next = page < num_pages
+        self.has_previous = page > 1
+        self.next_page_number = page + 1
+        self.previous_page_number = page - 1
+        self.start_index = (page - 1) * page_size + 1 if total > 0 else 0
+        self.end_index = min(page * page_size, total)
+        self.has_other_pages = num_pages > 1
+
+    def __iter__(self): return iter(self.object_list)
+    def __len__(self): return len(self.object_list)
+    def __getitem__(self, i): return self.object_list[i]
+
 def add_class(value, class_name):
     """Simple filter to simulate widget_tweaks add_class"""
     return value # Fallback
@@ -52,6 +72,8 @@ templates.env.filters["stringformat"] = stringformat_filter
 templates.env.filters["truncatechars"] = truncatechars_filter
 templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
 templates.env.filters["time"] = lambda v, arg: v.strftime(arg) if hasattr(v, "strftime") else v
+templates.env.filters["short_id"] = lambda v: str(v).split("-")[-1] if v else ""
+templates.env.filters["upper"] = lambda v: str(v).upper() if v else ""
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 templates.env.globals["csrf_token"] = lambda: ""
 

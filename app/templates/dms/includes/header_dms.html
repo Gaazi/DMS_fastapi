@@ -1,16 +1,16 @@
 
 <div class="relative bg-slate-900 text-white shadow-xl pb-1 mb-0.5" 
-     x-data="dmsHeader({
-         unread: '{{ dms_header.unread_count|default(0) }}',
-         notificationsUrl: '{{ dms_header.notifications_url|default(" #")|tojson|safe }}',
-         notificationsJson: '{{ dms_header.notifications_json|tojson|safe }}',
+     x-data='dmsHeader({
+         unread: {{ dms_header.unread_count|default(0)|tojson|safe }},
+         notificationsUrl: {{ dms_header.notifications_url|default("#")|tojson|safe }},
+         notificationsJson: {{ dms_header.notifications_json|tojson|safe }},
          user: {
-             name: '{{ dms_header.user.name|default("منتظم")|tojson|safe }}',
-             email: '{{ dms_header.user.email|default("")|tojson|safe }}',
-             role: '{{ dms_header.user.role|default("")|tojson|safe }}',
-             initials: '{{ dms_header.user.initials|default("DMS")|tojson|safe }}'
+             name: {{ dms_header.user.name|default("منتظم")|tojson|safe }},
+             email: {{ dms_header.user.email|default("")|tojson|safe }},
+             role: {{ dms_header.user.role|default("")|tojson|safe }},
+             initials: {{ dms_header.user.initials|default("DMS")|tojson|safe }}
          }
-     })" 
+     })' 
      x-init="init()">
 
     <!-- Horizon Glow -->
@@ -74,7 +74,7 @@
                 <!-- Mobile Button -->
                 <button
                     class="lg:hidden w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white/80 active:scale-95 transition-all"
-                    @click="toggle('mobile')">
+                    @click.stop="toggle('mobile')">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
  
@@ -107,9 +107,9 @@
             admin: config.user || {},
             
             get avatarText() {
-                if (this.admin.initials) return this.admin.initials;
-                if (this.admin.name) return this.admin.name.trim().slice(0, 2);
-                return 'د';
+                if (this.admin && this.admin.initials) return this.admin.initials;
+                if (this.admin && this.admin.name) return String(this.admin.name).trim().slice(0, 2).toUpperCase();
+                return 'D';
             },
             
             toggle(which) {
@@ -147,8 +147,8 @@
             
             init() {
                 try {
-                    const data = config.notificationsJson || '';
-                    let tempNotifs = data ? JSON.parse(data) : [];
+                    const data = config.notificationsJson;
+                    let tempNotifs = Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
                     
                     if (tempNotifs.length > 0) {
                         const lastReadId = localStorage.getItem('dms_last_read_notification');

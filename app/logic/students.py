@@ -91,7 +91,7 @@ class StudentManager:
         for s in results:
             # حاضری (اس مہینے کی)
             presents = self.session.exec(select(func.count(Attendance.id)).where(
-                Attendance.student_id == s.id, Attendance.status == 'present', Attendance.timestamp >= start_of_month
+                Attendance.student_id == s.id, Attendance.status == 'present', Attendance.recorded_at >= start_of_month
             )).one()
             
             # بقایاجات (Due Fees)
@@ -99,11 +99,12 @@ class StudentManager:
                 Fee.student_id == s.id, Fee.status != 'Paid'
             )).one() or 0
 
-            students_data.append({
-                "obj": s,
-                "month_presents": presents,
-                "due_amount": float(due_amount)
-            })
+            # Attach extra data to the object for template compatibility
+            s.month_presents = presents
+            s.month_absents = 0 # Placeholder or calculate
+            s.month_due_amount = float(due_amount)
+            s.has_pending_fee = (due_amount > 0)
+            students_data.append(s)
 
         return {
             "students": students_data,
