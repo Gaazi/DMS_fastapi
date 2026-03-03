@@ -58,14 +58,17 @@
         
         <!-- Timeline -->
         <div class="col-span-2 md:col-span-2 flex flex-col gap-1">
-            <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">دورانیہ</span>
-            <div class="flex items-center gap-2 text-slate-300">
-                <i class="fas fa-calendar-alt text-slate-500"></i>
-                <span>
-                    {% if course.start_date %}{{ course.start_date|date("d M Y") }}{% else %}--{% endif %}
-                    <span class="text-slate-600 mx-1">➜</span>
-                    {% if course.end_date %}{{ course.end_date|date("d M Y") }}{% else %}--{% endif %}
-                </span>
+            <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">تعلیمی دورانیہ (Timeline)</span>
+            <div class="flex items-center gap-3 text-slate-300">
+                <div class="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                    <span class="text-[9px] text-slate-500 font-bold uppercase">آغاز:</span>
+                    <span class="text-xs font-mono">{% if course.start_date %}{{ course.start_date|date("d-m-Y") }}{% else %}--{% endif %}</span>
+                </div>
+                <i class="fas fa-long-arrow-alt-left text-slate-600"></i>
+                <div class="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                    <span class="text-[9px] text-slate-500 font-bold uppercase">اختتام:</span>
+                    <span class="text-xs font-mono">{% if course.end_date %}{{ course.end_date|date("d-m-Y") }}{% else %}--{% endif %}</span>
+                </div>
             </div>
         </div>
 
