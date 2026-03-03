@@ -38,10 +38,13 @@
     <!-- Rows Container -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4" dir="rtl">
         {% for course in courses %}
-        <a href="{% if institution.type == 'masjid' %}{{ url('program_detail', institution.slug, course.id) }}{% else %}{{ url('dms_course_detail', institution.slug, course.id) }}{% endif %}" class="block group">
+        <div class="relative group">
             <!-- Card Content (Grid Item) -->
             <div class="h-full bg-white/[0.02] border border-white/5 rounded-xl p-4 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all group-hover:-translate-y-1 relative overflow-hidden">
-                
+                <!-- Main Nav Link (Overlay) -->
+                <a href="{% if institution.type == 'masjid' %}{{ url('program_detail', institution.slug, course.id) }}{% else %}{{ url('dms_course_detail', institution.slug, course.id) }}{% endif %}" 
+                   class="absolute inset-0 z-10"></a>
+
                 <!-- ID Badge -->
                 <div class="absolute top-0 left-0 px-2 py-1 bg-white/5 rounded-br-lg border-b border-r border-white/5">
                     <span class="text-[10px] font-mono text-slate-500">#{{ loop.index|stringformat("02d") }}</span>
@@ -49,10 +52,10 @@
 
                 <!-- Icon & Title -->
                 <div class="flex flex-col items-center text-center mt-2 mb-4">
-
                     <h4 class="text-sm font-bold text-white line-clamp-2 h-10 flex items-center justify-center group-hover:text-indigo-400 transition-colors">
                         {{ course.title }}
                     </h4>
+                    
                     {% if is_academic_admin %}
                     <div class="absolute top-2 right-2 flex gap-1 z-20">
                          <a href="{{ url('dms_course', institution.slug) }}?edit={{ course.id }}#course_form" 
@@ -86,9 +89,8 @@
                         </div>
                     </div>
                 </div>
-
             </div>
-        </a>
+        </div>
         {% else %}
         <div class="py-6 text-center text-sm text-slate-500">
             کوئی ریکارڈ نہیں

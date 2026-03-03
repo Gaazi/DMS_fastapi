@@ -100,12 +100,14 @@
             <div class="grid grid-cols-2 gap-4">
                 <!-- Start Date -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">تاریخ آغاز</label>
+                    <label class="block text-xs text-slate-400 mb-1.5 uppercase">تاریخ آغاز</label>
                     <div class="relative">
-                        <input type="text" name="start_date" value="{{ form_data.start_date if form_data else (editing_course.start_date|date('d-m-Y') if editing_course and editing_course.start_date else '') }}" placeholder="DD-MM-YYYY" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
-                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
-                            <i class="fas fa-calendar-alt text-sm"></i>
-                        </div>
+                        <input type="date" name="start_date" 
+                               value="{{ form_data.start_date if form_data else (editing_course.start_date|time('%Y-%m-%d') if editing_course and editing_course.start_date else '') }}" 
+                               class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm block cursor-pointer
+                                      [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                               onclick="this.showPicker()"
+                               autocomplete="off">
                     </div>
                 </div>
                 <!-- Capacity -->

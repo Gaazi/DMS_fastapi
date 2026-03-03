@@ -146,7 +146,12 @@
                 <div class="md:col-span-6 space-y-2">
                     <label class="glass-label px-1">تاریخ (Date)</label>
                     <div class="relative group">
-                        <input type="date" name="date" class="w-full h-12 glass-input font-mehr {% if errors.date %}border-rose-500/50{% endif %}" value="{{ form_data.date if form_data else date_today }}">
+                        <input type="date" name="date" 
+                               value="{{ form_data.date if form_data else date_today }}"
+                               class="w-full h-12 glass-input font-mehr block cursor-pointer 
+                                      [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer 
+                                      {% if errors.date %}border-rose-500/50{% endif %}"
+                               onclick="this.showPicker()">
                     </div>
                     {% if errors.date %}
                     <p class="text-[9px] text-rose-500 px-1">{{ errors.date }}</p>

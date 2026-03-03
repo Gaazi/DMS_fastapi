@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.logic.utils import get_random_string
 try:
     from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["pbkdf2_sha256", "django_pbkdf2_sha256", "md5_crypt", "sha256_crypt"], deprecated="auto")
+    pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256", "django_pbkdf2_sha256", "md5_crypt", "sha256_crypt"], deprecated="auto")
 except ImportError:
     class DummyContext:
         def hash(self, p): return p
@@ -122,8 +122,14 @@ class UserManager:
     def authenticate(username, password, session: Session) -> Optional[User]:
         """صارف کی تصدیق۔"""
         user = session.exec(select(User).where(User.username == username)).first()
-        if user and pwd_context.verify(password, user.password):
-            return user
+        if user:
+            try:
+                if pwd_context.verify(password, user.password):
+                    return user
+            except Exception as e:
+                import logging
+                logging.getLogger("dms_app").error(f"Password hash error for user {username}: {e}")
+                return None
         return None
 
     @staticmethod

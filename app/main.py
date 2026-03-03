@@ -3,6 +3,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import os
+import traceback
+import logging
+from logging.handlers import RotatingFileHandler
 from sqlmodel import Session
 
 from app.core.config import settings
@@ -31,6 +34,60 @@ async def lifespan(app: FastAPI):
     # Shutdown logic
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, lifespan=lifespan)
+
+# --- Enhanced Logging Configuration ---
+LOG_FILE = "debug.log"
+log_formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+
+# Rotating file handler (10MB per file, keep 5 backups)
+file_handler = RotatingFileHandler(LOG_FILE, maxBytes=10*1024*1024, backupCount=5, encoding='utf-8')
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.INFO)
+
+# Stream handler for terminal
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(log_formatter)
+stream_handler.setLevel(logging.INFO)
+
+app_logger = logging.getLogger("dms_app")
+app_logger.setLevel(logging.INFO)
+app_logger.addHandler(file_handler)
+app_logger.addHandler(stream_handler)
+app_logger.propagate = False # Prevent double logging since uvicorn also logs
+
+# --- Error & Request Logging ---
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Logs requests that result in errors, and catches any underlying unhandled crashes."""
+    try:
+        response = await call_next(request)
+        if response.status_code >= 400:
+            app_logger.warning(f"HTTP {response.status_code} | {request.method} {request.url.path}")
+        return response
+    except Exception as exc:
+        error_trace = traceback.format_exc()
+        app_logger.critical(f"\n{'X'*60}\n❌ CRITICAL MIDDLEWARE CRASH\nURL: {request.url}\nMethod: {request.method}\nTraceback:\n{error_trace}\n{'X'*60}")
+        raise exc # Re-raise to let the global exception handler deal with the final response
+
+@app.post("/log-client-error")
+async def log_client_error(request: Request):
+    """Receives and prints browser console errors to log file and terminal"""
+    try:
+        data = await request.json()
+        error_msg = (
+            f"\n" + "!"*60 + "\n"
+            f"🌐 BROWSER ERROR CAPTURED:\n"
+            f"Message : {data.get('message')}\n"
+            f"Source  : {data.get('source')} (Line: {data.get('lineno')}, Col: {data.get('colno')})\n"
+            f"Location: {data.get('url')}\n"
+            f"Stack Trace:\n{data.get('stack')}\n"
+            + "!"*60
+        )
+        app_logger.error(error_msg)
+    except Exception as e:
+        app_logger.error(f"Error logging client error: {e}")
+    return {"status": "logged"}
+# -------------------------------
 
 # Mount Static Files
 if os.path.exists("static"):
@@ -149,14 +206,19 @@ async def unauthorized_handler(request: Request, exc: HTTPException):
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/login/", status_code=303)
 
-@app.exception_handler(500)
-async def internal_error_handler(request: Request, exc):
-    import traceback
-    print("\n" + "="*50)
-    print("CRITICAL SERVER ERROR DETECTED:")
-    print("="*50)
-    traceback.print_exc()
-    print("="*50 + "\n")
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_trace = traceback.format_exc()
+    error_msg = (
+        f"\n" + "X"*60 + "\n"
+        f"❌ UNHANDLED FATAL SERVER ERROR DETECTED:\n"
+        f"URL: {request.url}\n"
+        f"Method: {request.method}\n"
+        f"Error: {repr(exc)}\n"
+        f"Traceback:\n{error_trace}\n"
+        + "X"*60
+    )
+    app_logger.critical(error_msg)
     
     try:
         # Try to render the pretty 500 page
@@ -165,6 +227,6 @@ async def internal_error_handler(request: Request, exc):
         # Fallback if 500.html ALSO has a syntax error
         print(f"ERROR: Fallback rendering failed: {render_exc}")
         return HTMLResponse(
-            content=f"<html><body><h1>500 Internal Server Error</h1><p>Original Error: {exc}</p><p>Template Error: {render_exc}</p></body></html>",
+            content=f"<html><body style='background:#111;color:#f87171;padding:2rem;font-family:sans-serif;'><h1>500 Internal Server Error</h1><p>Original Error: {exc}</p><p>Template Error: {render_exc}</p></body></html>",
             status_code=500
         )

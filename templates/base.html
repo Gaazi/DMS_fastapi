@@ -141,6 +141,41 @@
         </div>
     </div>
 
+    <!-- 🛡️ Global Error Monitor -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            const errorData = {
+                message: msg,
+                source: url,
+                lineno: line,
+                colno: col,
+                stack: error ? error.stack : 'No stack trace',
+                url: window.location.href
+            };
+            fetch('/log-client-error', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(errorData)
+            }).catch(e => console.error("Logger failed:", e));
+            return false;
+        };
+
+        window.onunhandledrejection = function(event) {
+            const errorData = {
+                message: 'Unhandled Promise Rejection: ' + (event.reason ? event.reason.message : event.reason),
+                source: 'Promise Rejection',
+                stack: event.reason && event.reason.stack ? event.reason.stack : 'No stack trace',
+                url: window.location.href
+            };
+            fetch('/log-client-error', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(errorData)
+            }).catch(e => console.error("Promise logger failed:", e));
+        };
+        console.log("🛡️ Error Monitoring Active");
+    </script>
+
     <script src="{{ static('js/vendors/tailwindcss.js') }}"></script>
     <script src="{{ static('js/vendors/htmx.min.js') }}" defer></script>
     <script defer src="{{ static('js/vendors/alpine.min.js') }}"></script>
