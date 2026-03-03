@@ -66,19 +66,19 @@ async def dashboard(request: Request, institution_slug: str, session: Session = 
 async def institution_overview(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """Summary of all institutions owned by the user."""
     insts = session.exec(select(Institution).where(Institution.user_id == current_user.id)).all()
-    return await TemplateResponse.render("dms/overview.html", request, session, {"institutions": insts})
+    return await TemplateResponse.render("dms/institution_overview.html", request, session, {"institutions": insts})
 
 # --- 5. institution_detail ---
 @router.get("/{institution_slug}/details/", response_class=HTMLResponse, name="institution_detail")
 async def institution_detail(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    return await TemplateResponse.render("dms/institution_detail.html", request, session, {"institution": institution})
+    return await TemplateResponse.render("dms/institution_settings.html", request, session, {"institution": institution})
 
 # --- 6. manage_accounts ---
 @router.get("/{institution_slug}/accounts-manager/", response_class=HTMLResponse, name="manage_accounts")
 async def manage_accounts(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    return await TemplateResponse.render("dms/accounts_manager.html", request, session, {"institution": institution})
+    return await TemplateResponse.render("dms/manage_accounts.html", request, session, {"institution": institution})
 
 # --- 7. settings ---
 @router.api_route("/{institution_slug}/settings/", methods=["GET", "POST"], name="institution_settings")
@@ -96,16 +96,16 @@ async def settings(request: Request, institution_slug: str, session: Session = D
             return RedirectResponse(url=request.url.path, status_code=303)
         except ValidationError as e:
             errors = {err['loc'][0]: err['msg'] for err in e.errors()}
-            return await TemplateResponse.render("dms/settings.html", request, session, {
+            return await TemplateResponse.render("dms/institution_settings.html", request, session, {
                 "institution": institution, "errors": errors, "form_data": data
             })
-    return await TemplateResponse.render("dms/settings.html", request, session, {"institution": institution})
+    return await TemplateResponse.render("dms/institution_settings.html", request, session, {"institution": institution})
 
 # --- 8. admin_tools ---
 @router.get("/{institution_slug}/admin-tools/", response_class=HTMLResponse, name="institution_admin_tools")
 async def admin_tools_view(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    return await TemplateResponse.render("dms/admin_tools.html", request, session, {"institution": institution})
+    return await TemplateResponse.render("dms/tools.html", request, session, {"institution": institution})
 
 # --- 9. superadmin_overview ---
 @router.get("/superadmin/overview", response_class=HTMLResponse, name="superadmin_overview")
@@ -130,7 +130,7 @@ async def share_target():
 # --- 11. all_notifications ---
 @router.get("/{institution_slug}/notifications/", response_class=HTMLResponse, name="all_notifications")
 async def all_notifications(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    return await TemplateResponse.render("dms/notifications.html", request, session, {"institution_slug": institution_slug})
+    return await TemplateResponse.render("dms/all_notifications.html", request, session, {"institution_slug": institution_slug})
 
 # --- 12. smart_shortcut ---
 @router.get("/shortcut/{action}/", name="smart_shortcut")

@@ -20,7 +20,7 @@ router = APIRouter()
 @router.api_route("/{institution_slug}/staff/", methods=["GET", "POST"], name="dms_staff")
 async def staff_list(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='staff_view')
-    sm = StaffManager(session, current_user, institution=institution)
+    sm = StaffManager(current_user, session, institution=institution)
     
     if request.method == "POST":
         form_data = await request.form()
@@ -33,10 +33,16 @@ async def staff_list(request: Request, institution_slug: str, session: Session =
     role = request.query_params.get('role')
     staff_members = sm.get_staff_list(q=q, role=role)
     
+    # Calculate stats
+    total_count = len(staff_members)
+    active_count = len([m for m in staff_members if m.is_active])
+
     context = {
         "request": request, 
         "institution": institution, 
         "staff_members": staff_members,
+        "total_count": total_count,
+        "active_count": active_count,
         "query": q,
         "role": role
     }
@@ -50,7 +56,7 @@ async def staff_list(request: Request, institution_slug: str, session: Session =
 @router.api_route("/{institution_slug}/staff/manage/add/", methods=["GET", "POST"], name="dms_staff_create")
 async def staff_create_edit(request: Request, institution_slug: str, staff_id: Optional[int] = None, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    sm = StaffManager(session, current_user, institution=institution)
+    sm = StaffManager(current_user, session, institution=institution)
     from ..schemas.forms import StaffFormSchema
     from pydantic import ValidationError
 
@@ -105,7 +111,7 @@ async def staff_attendance(request: Request, institution_slug: str, session: Ses
 @router.api_route("/{institution_slug}/staff/payroll/", methods=["GET", "POST"], name="staff_payroll")
 async def staff_payroll(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    sm = StaffManager(session, current_user, institution=institution)
+    sm = StaffManager(current_user, session, institution=institution)
     
     month = int(request.query_params.get('month', date.today().month))
     year = int(request.query_params.get('year', date.today().year))
@@ -205,4 +211,18 @@ async def promote_to_staff(request: Request, institution_slug: str, student_id: 
     session.refresh(new_staff)
     
     return RedirectResponse(url=request.url_for("dms_staff_edit", institution_slug=institution_slug, staff_id=new_staff.id), status_code=303)
+
+# --- 7. staff_detail ---
+@router.get("/{institution_slug}/staff/{staff_id}/", response_class=HTMLResponse, name="dms_staff_detail")
+async def staff_detail(request: Request, institution_slug: str, staff_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='staff_view')
+    sm = StaffManager(current_user, session, institution=institution)
+    staff = session.get(Staff, staff_id)
+    if not staff or staff.inst_id != institution.id:
+        raise HTTPException(status_code=404)
+        
+    return await TemplateResponse.render("dms/staff_detail.html", request, session, {
+        "institution": institution,
+        "member": staff
+    })
 

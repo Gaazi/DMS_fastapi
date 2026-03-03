@@ -120,12 +120,12 @@ async def get_global_context(request, session: Session, current_user: Optional[U
         "date_today": datetime.date.today().isoformat(),
         "csrf_token": lambda: "", # Dummy for now
         "dms_header": {
-            "notifications_json": "[]",
-            "notifications_url": "#",
+            "notifications_json": [],
+            "notifications_url": f"/{institution.slug}/notifications/" if institution else "#",
             "unread_count": 0,
             "user": user_payload,
-            "all_institutions": UserManager.get_user_institutions(current_user, session) if current_user and session else []
         },
+        "all_institutions": UserManager.get_user_institutions(current_user, session) if current_user and session else [],
         "user": current_user,
         "errors": {},
         "currency_label": currency_label,

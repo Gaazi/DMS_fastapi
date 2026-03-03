@@ -233,23 +233,38 @@ class StaffManager:
             advances.append(adv)
         return advances
 
-    def get_staff_list(self, q: Optional[str] = None):
+    def get_staff_list(self, q: Optional[str] = None, role: Optional[str] = None):
         """اسٹاف کارڈز کے لیے ڈیٹا مہیا کرنا مع حاضری۔"""
-        # ... (keep existing implementation but I'll replace it to ensure full file)
         self._check_access()
         stmt = select(Staff).where(Staff.inst_id == self.institution.id)
         if q:
             stmt = stmt.where(or_(Staff.name.contains(q), Staff.mobile.contains(q)))
+        if role:
+            stmt = stmt.where(Staff.role == role)
         
         members = self.session.exec(stmt.order_by(Staff.name)).all()
         today = dt_date.today()
         start_of_month = today.replace(day=1)
         
         for m in members:
+            # Presents
             presents = self.session.exec(select(func.count(Staff_Attendance.id)).where(
                 Staff_Attendance.staff_member_id == m.id,
                 Staff_Attendance.status == 'present',
                 Staff_Attendance.date >= start_of_month
             )).one()
-            setattr(m, 'month_presents', presents)
+            
+            # Absents
+            absents = self.session.exec(select(func.count(Staff_Attendance.id)).where(
+                Staff_Attendance.staff_member_id == m.id,
+                Staff_Attendance.status == 'absent',
+                Staff_Attendance.date >= start_of_month
+            )).one()
+
+            m.month_presents = presents
+            m.month_absents = absents
+            # Defaults for finance fields to prevent template errors
+            m.has_pending_salary = False 
+            m.month_due_amount = Decimal("0.00")
+            
         return members

@@ -25,6 +25,10 @@ class Person(AuditModel):
     @property
     def full_name(self) -> str:
         return self.name
+    
+    @full_name.setter
+    def full_name(self, value):
+        self.name = value
 
 
 class Staff(Person, table=True):
@@ -43,6 +47,83 @@ class Staff(Person, table=True):
     
     courses_taught: List["Course"] = Relationship(back_populates="instructors", link_model=CourseStaffLink)
     user: Optional["User"] = Relationship(back_populates="staff")
+
+    # Extra properties for template compatibility
+    @property
+    def month_presents(self) -> int:
+        return getattr(self, "_month_presents", 0)
+    
+    @month_presents.setter
+    def month_presents(self, value):
+        self._month_presents = value
+
+    @property
+    def month_absents(self) -> int:
+        return getattr(self, "_month_absents", 0)
+    
+    @month_absents.setter
+    def month_absents(self, value):
+        self._month_absents = value
+
+    @property
+    def has_pending_salary(self) -> bool:
+        return getattr(self, "_has_pending_salary", False)
+    
+    @has_pending_salary.setter
+    def has_pending_salary(self, value):
+        self._has_pending_salary = value
+
+    @property
+    def month_due_amount(self) -> Decimal:
+        return getattr(self, "_month_due_amount", Decimal("0.00"))
+    
+    @month_due_amount.setter
+    def month_due_amount(self, value):
+        self._month_due_amount = value
+
+    def get_role_display(self):
+        return self.role.title()
+
+    # Attendance Properties
+    @property
+    def current_status(self) -> str:
+        return getattr(self, "_current_status", "present")
+    
+    @current_status.setter
+    def current_status(self, value):
+        self._current_status = value
+
+    @property
+    def current_remarks(self) -> str:
+        return getattr(self, "_current_remarks", "")
+    
+    @current_remarks.setter
+    def current_remarks(self, value):
+        self._current_remarks = value
+
+    @property
+    def is_absent(self) -> bool:
+        return getattr(self, "_is_absent", False)
+    
+    @is_absent.setter
+    def is_absent(self, value):
+        self._is_absent = value
+
+    @property
+    def is_late(self) -> bool:
+        return getattr(self, "_is_late", False)
+    
+    @is_late.setter
+    def is_late(self, value):
+        self._is_late = value
+
+    @property
+    def is_excused(self) -> bool:
+        return getattr(self, "_is_excused", False)
+    
+    @is_excused.setter
+    def is_excused(self, value):
+        self._is_excused = value
 
 class Parent(Person, table=True):
     __tablename__ = "dms_parent"
@@ -103,6 +184,47 @@ class Student(Person, table=True):
     @month_due_amount.setter
     def month_due_amount(self, value):
         self._month_due_amount = value
+
+    # Attendance Properties
+    @property
+    def current_status(self) -> str:
+        return getattr(self, "_current_status", "present")
+    
+    @current_status.setter
+    def current_status(self, value):
+        self._current_status = value
+
+    @property
+    def current_remarks(self) -> str:
+        return getattr(self, "_current_remarks", "")
+    
+    @current_remarks.setter
+    def current_remarks(self, value):
+        self._current_remarks = value
+
+    @property
+    def is_absent(self) -> bool:
+        return getattr(self, "_is_absent", False)
+    
+    @is_absent.setter
+    def is_absent(self, value):
+        self._is_absent = value
+
+    @property
+    def is_late(self) -> bool:
+        return getattr(self, "_is_late", False)
+    
+    @is_late.setter
+    def is_late(self, value):
+        self._is_late = value
+
+    @property
+    def is_excused(self) -> bool:
+        return getattr(self, "_is_excused", False)
+    
+    @is_excused.setter
+    def is_excused(self, value):
+        self._is_excused = value
 
 class Admission(AuditModel, table=True):
     __tablename__ = "dms_enrollment" # Keeping original table name for data safety

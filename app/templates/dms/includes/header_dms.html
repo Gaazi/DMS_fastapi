@@ -1,17 +1,11 @@
 
 <div class="relative bg-slate-900 text-white shadow-xl pb-1 mb-0.5" 
-     x-data='dmsHeader({
-         unread: {{ dms_header.unread_count|default(0)|tojson|safe }},
-         notificationsUrl: {{ dms_header.notifications_url|default("#")|tojson|safe }},
-         notificationsJson: {{ dms_header.notifications_json|tojson|safe }},
-         user: {
-             name: {{ dms_header.user.name|default("منتظم")|tojson|safe }},
-             email: {{ dms_header.user.email|default("")|tojson|safe }},
-             role: {{ dms_header.user.role|default("")|tojson|safe }},
-             initials: {{ dms_header.user.initials|default("DMS")|tojson|safe }}
-         }
-     })' 
+     x-data="dmsHeader" 
      x-init="init()">
+    
+    <script id="dms-header-config" type="application/json">
+        {{ dms_header|tojson|safe }}
+    </script>
 
     <!-- Horizon Glow -->
     <div class="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50"></div>
@@ -97,90 +91,88 @@
     </div>
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('dmsHeader', (config) => ({
-            mobileOpen: false,
-            userOpen: false,
-            notificationsOpen: false,
-            notifications: [],
-            unread: parseInt(config.unread || 0),
-            notificationsUrl: config.notificationsUrl || '#',
-            admin: config.user || {},
+        Alpine.data('dmsHeader', () => {
+            const configEl = document.getElementById('dms-header-config');
+            const config = configEl ? JSON.parse(configEl.textContent || '{}') : {};
             
-            get avatarText() {
-                if (this.admin && this.admin.initials) return this.admin.initials;
-                if (this.admin && this.admin.name) return String(this.admin.name).trim().slice(0, 2).toUpperCase();
-                return 'D';
-            },
-            
-            toggle(which) {
-                if (which === 'mobile') {
-                    this.mobileOpen = !this.mobileOpen;
-                    this.notificationsOpen = false;
-                    this.userOpen = false;
-                } else if (which === 'user') {
-                    this.userOpen = !this.userOpen;
-                    this.mobileOpen = false;
-                    this.notificationsOpen = false;
-                } else if (which === 'notifications') {
-                    this.notificationsOpen = !this.notificationsOpen;
-                    this.mobileOpen = false;
-                    this.userOpen = false;
-                    if (this.notificationsOpen) {
-                        this.markAsRead();
+            return {
+                mobileOpen: false,
+                userOpen: false,
+                notificationsOpen: false,
+                notifications: [],
+                unread: parseInt(config.unread_count || 0),
+                notificationsUrl: config.notifications_url || '#',
+                admin: config.user || {},
+                
+                get avatarText() {
+                    if (this.admin && this.admin.initials) return this.admin.initials;
+                    if (this.admin && this.admin.name) return String(this.admin.name).trim().slice(0, 2).toUpperCase();
+                    return 'D';
+                },
+                
+                toggle(which) {
+                    if (which === 'mobile') {
+                        this.mobileOpen = !this.mobileOpen;
+                        this.notificationsOpen = false;
+                        this.userOpen = false;
+                    } else if (which === 'user') {
+                        this.userOpen = !this.userOpen;
+                        this.mobileOpen = false;
+                        this.notificationsOpen = false;
+                    } else if (which === 'notifications') {
+                        this.notificationsOpen = !this.notificationsOpen;
+                        this.mobileOpen = false;
+                        this.userOpen = false;
+                        if (this.notificationsOpen) {
+                            this.markAsRead();
+                        }
                     }
-                }
-            },
-            
-            markAsRead() {
-                if (this.unread > 0 && this.notifications.length > 0) {
-                    // Get latest notification ID to store
-                    const latestId = this.notifications[0].id;
-                    localStorage.setItem('dms_last_read_notification', latestId);
-                    this.unread = 0;
-                }
-            },
+                },
+                
+                markAsRead() {
+                    if (this.unread > 0 && this.notifications.length > 0) {
+                        const latestId = this.notifications[0].id;
+                        localStorage.setItem('dms_last_read_notification', latestId);
+                        this.unread = 0;
+                    }
+                },
 
-            openNotification(note) {
-                const url = note.url || this.notificationsUrl;
-                if (url) window.location.href = url;
-            },
-            
-            init() {
-                try {
-                    const data = config.notificationsJson;
-                    let tempNotifs = Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
-                    
-                    if (tempNotifs.length > 0) {
-                        const lastReadId = localStorage.getItem('dms_last_read_notification');
+                openNotification(note) {
+                    const url = note.url || this.notificationsUrl;
+                    if (url) window.location.href = url;
+                },
+                
+                init() {
+                    try {
+                        const data = config.notifications_json;
+                        let tempNotifs = Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
                         
-                        // If we have a last read notification
-                        if (lastReadId) {
-                            const readIndex = tempNotifs.findIndex(n => n.id === lastReadId);
-                            
-                            if (readIndex !== -1) {
-                                // Keep only the notifications that are NEWER (before the read index in the array)
-                                this.notifications = tempNotifs.slice(0, readIndex);
-                                this.unread = this.notifications.length;
+                        if (tempNotifs.length > 0) {
+                            const lastReadId = localStorage.getItem('dms_last_read_notification');
+                            if (lastReadId) {
+                                const readIndex = tempNotifs.findIndex(n => n.id === lastReadId);
+                                if (readIndex !== -1) {
+                                    this.notifications = tempNotifs.slice(0, readIndex);
+                                    this.unread = this.notifications.length;
+                                } else {
+                                    this.notifications = tempNotifs;
+                                    this.unread = this.notifications.length;
+                                }
                             } else {
-                                // Last read not found in this batch (very old), show all as new
                                 this.notifications = tempNotifs;
                                 this.unread = this.notifications.length;
                             }
                         } else {
-                            // Never read anything
-                            this.notifications = tempNotifs;
-                            this.unread = this.notifications.length;
+                            this.notifications = [];
+                            this.unread = 0;
                         }
-                    } else {
+                    } catch (e) {
+                        console.error('Error parsing notifications:', e);
                         this.notifications = [];
                         this.unread = 0;
                     }
-                } catch (e) {
-                    console.error('Error parsing notifications:', e);
-                    this.notifications = [];
-                    this.unread = 0;
                 }
-            }
-        }))
+            };
+        });
     });
 </script>

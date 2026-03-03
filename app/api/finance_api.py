@@ -363,7 +363,7 @@ async def donor_create_edit(request: Request, institution_slug: str, donor_id: O
         dm.update_donor(donor_id, dict(form_data)) # Assuming update_donor method exists
         return RedirectResponse(url=f"/{institution_slug}/donor/", status_code=303)
     editing_donor = session.get(Donor, donor_id) if donor_id else None
-    return await TemplateResponse.render("dms/donor_form_page.html", request, session, {"institution": institution, "editing_donor": editing_donor})
+    return await TemplateResponse.render("dms/donor_form.html", request, session, {"institution": institution, "editing_donor": editing_donor})
 
 @router.post("/{institution_slug}/donor/{donor_id}/delete/", name="donor_delete")
 async def donor_delete(institution_slug: str, donor_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
