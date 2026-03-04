@@ -99,7 +99,7 @@
                         <option value="" class="bg-[#020617]">گھنٹی (Period)</option>
                         {% for sess in sessions %}
                         <option value="{{ sess.id }}" class="bg-[#020617]" {% if sess.id|stringformat('s') == selected_session_id %}selected{% endif %}>
-                            {{ sess.get_session_type_display() }} - {{ sess.topic|truncatechars(10) or sess.date|date('%H:%M') }}
+                            {{ sess.topic|truncatechars(20) or sess.date|date('%H:%M') }}
                         </option>
                         {% endfor %}
                     </select>

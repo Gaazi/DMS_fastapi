@@ -3,8 +3,12 @@
 {% block title %}{{ institution.name }} - کورسز مینجمنٹ{% endblock %}
 
 {% block content %}
-<div class="relative z-10 text-slate-200 selection:bg-indigo-500/30" x-data="{ loaded: false }"
-    x-init="setTimeout(() => loaded = true, 50)">
+<div class="relative z-10 text-slate-200 selection:bg-indigo-500/30" 
+     x-data="{ 
+        loaded: false, 
+        searchQuery: '' 
+     }"
+     x-init="setTimeout(() => loaded = true, 50)">
 
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-12">
 
@@ -17,83 +21,115 @@
 <!-- Compact Course List Container -->
 <div class="w-full bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-sm">
     
-    <!-- Header (Optional: Remove if you want even less space) -->
-    <div class="flex items-center justify-between px-3 py-2 bg-white/5 border-b border-white/5">
-        <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-400">
-                {% if institution.type == 'masjid' %}رجسٹرڈ پروگرامات{% else %}رجسٹرڈ کورسز{% endif %}
-            </span>
-            <span class="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-1.5 rounded">{{ courses|length }}</span>
+    <!-- Header (Premium Layout) -->
+    <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5 gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                <i class="fas fa-book text-xs"></i>
+            </div>
+            <div>
+                <span class="text-xs font-bold text-white block">
+                    {% if institution.type == 'masjid' %}رجسٹرڈ پروگرامات{% else %}رجسٹرڈ کورسز{% endif %}
+                </span>
+                <span class="text-[10px] text-slate-500">{{ courses|length }} اسامی دستیاب ہیں</span>
+            </div>
         </div>
+
+        <!-- Search Input (Compact) -->
+        <div class="relative w-full sm:w-64">
+            <input type="text" 
+                   placeholder="تلاش جاری ہے..." 
+                   class="w-full bg-black/40 border border-white/10 rounded-xl px-9 py-2 text-[11px] text-white focus:border-indigo-500 outline-none transition-all"
+                   x-model="searchQuery">
+            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-500">
+                <i class="fas fa-search text-[10px]"></i>
+            </div>
+        </div>
+
         {% if is_academic_admin %}
-        <a href="#course_form" class="flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded text-[10px] transition-all">
+        <a href="#course_form" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-[11px] font-bold transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
             <i class="fas fa-plus"></i>
             <span>
-                {% if institution.type == 'masjid' %}نیا پروگرام بنائیں{% else %}نیا کورس بنائیں{% endif %}
+                {% if institution.type == 'masjid' %}نیا پروگرام{% else %}نیا کورس{% endif %}
             </span>
         </a>
         {% endif %}
     </div>
 
-    <!-- Rows Container -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4" dir="rtl">
+    <!-- Rows Container (Optimized Grid) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6" dir="rtl">
         {% for course in courses %}
-        <div class="relative group">
-            <!-- Card Content (Grid Item) -->
-            <div class="h-full bg-white/[0.02] border border-white/5 rounded-xl p-4 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all group-hover:-translate-y-1 relative overflow-hidden">
-                <!-- Main Nav Link (Overlay) -->
-                <a href="{% if institution.type == 'masjid' %}{{ url('program_detail', institution.slug, course.id) }}{% else %}{{ url('dms_course_detail', institution.slug, course.id) }}{% endif %}" 
-                   class="absolute inset-0 z-10"></a>
+        <div class="relative group h-full" x-show="!searchQuery || '{{ course.title }}'.toLowerCase().includes(searchQuery.toLowerCase())">
+            <!-- Premium Card Structure -->
+            <div class="h-full flex flex-col bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/40 hover:bg-white/[0.05] transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] relative">
+                
+                <!-- Background Accent Selection (Dynamic coloring) -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-all"></div>
 
-                <!-- ID Badge -->
-                <div class="absolute top-0 left-0 px-2 py-1 bg-white/5 rounded-br-lg border-b border-r border-white/5">
-                    <span class="text-[10px] font-mono text-slate-500">#{{ loop.index|stringformat("02d") }}</span>
-                </div>
+                <!-- Card Body -->
+                <div class="p-5 flex-1 flex flex-col">
+                    <!-- Top Badge & Actions -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[9px] font-bold tracking-widest uppercase border border-indigo-500/20">
+                            #{{ loop.index|stringformat("02d") }}
+                        </span>
+                        
+                        {% if is_academic_admin %}
+                        <a href="{{ url('dms_course', institution.slug) }}?edit={{ course.id }}#course_form" 
+                           class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 border border-white/5 text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all opacity-0 group-hover:opacity-100 z-20" 
+                           title="ترمیم">
+                            <i class="fas fa-pen text-[9px]"></i>
+                        </a>
+                        {% endif %}
+                    </div>
 
-                <!-- Icon & Title -->
-                <div class="flex flex-col items-center text-center mt-2 mb-4">
-                    <h4 class="text-sm font-bold text-white line-clamp-2 h-10 flex items-center justify-center group-hover:text-indigo-400 transition-colors">
+                    <!-- Title -->
+                    <h4 class="text-base font-bold text-white mb-4 group-hover:text-indigo-400 transition-colors leading-tight">
                         {{ course.title }}
                     </h4>
-                    
-                    {% if is_academic_admin %}
-                    <div class="absolute top-2 right-2 flex gap-1 z-20">
-                         <a href="{{ url('dms_course', institution.slug) }}?edit={{ course.id }}#course_form" 
-                            class="p-1 px-2 rounded-md bg-white/5 border border-white/5 text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all opacity-0 group-hover:opacity-100" 
-                            title="ترمیم">
-                            <i class="fas fa-pen text-[10px]"></i>
-                         </a>
+
+                    <!-- Middle Meta -->
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
+                            <i class="fas fa-tags text-[9px] text-blue-400/70"></i>
+                            <span class="text-[10px] text-slate-300 font-bold">{{ course.get_category_display() }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
+                            <i class="fas fa-money-bill-wave text-[9px] text-emerald-400/70"></i>
+                            <span class="text-[10px] text-slate-300 font-bold">{{ course.get_fee_type_display() }}</span>
+                        </div>
                     </div>
-                    {% endif %}
+
+                    <!-- Main Navigation Overlay -->
+                    <a href="{% if institution.type == 'masjid' %}{{ url('program_detail', institution.slug, course.id) }}{% else %}{{ url('dms_course_detail', institution.slug, course.id) }}{% endif %}" 
+                       class="absolute inset-0 z-10"></a>
                 </div>
 
-                <!-- Meta Info -->
-                <div class="space-y-2 border-t border-white/5 pt-3">
-                    <div class="flex items-center justify-between text-sm">
-                        <span>زمرہ</span>
-                        <span class="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20 text-[10px]">
-                            {{ course.get_category_display() }}
-                        </span>
+                <!-- Footer Stats -->
+                <div class="px-5 py-4 bg-white/[0.02] border-t border-white/5 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">کل طلبہ</span>
+                            <span class="text-sm font-bold text-emerald-400">{{ course.student_count }}</span>
+                        </div>
+                        <div class="w-[1px] h-6 bg-white/5"></div>
+                        <div class="flex flex-col">
+                            <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">اساتذہ</span>
+                            <span class="text-sm font-bold text-blue-400">{{ course.instructors|length }}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between text-xs mt-2 pt-2 border-t border-white/5">
-                        <!-- Students Count -->
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-emerald-500/70">{% if institution.type == 'masjid' %}ممبران{% else %}طلبہ{% endif %}:</span>
-                            <span class="text-emerald-400">{{ course.student_count }}</span>
-                        </div>
-
-                        <!-- Teachers Count -->
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-blue-500/70">{% if institution.type == 'masjid' %}خدام{% else %}اساتذہ{% endif %}:</span>
-                            <span class="text-blue-400">{{ course.instructors|length }}</span>
-                        </div>
+                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
+                        <i class="fas fa-arrow-left text-[10px]"></i>
                     </div>
                 </div>
             </div>
         </div>
         {% else %}
-        <div class="py-6 text-center text-sm text-slate-500">
-            کوئی ریکارڈ نہیں
+        <div class="col-span-full py-16 text-center space-y-4">
+            <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-folder-open text-2xl text-slate-700"></i>
+            </div>
+            <p class="text-slate-500 font-bold">کوئی ریکارڈ نہیں ملا</p>
         </div>
         {% endfor %}
     </div>

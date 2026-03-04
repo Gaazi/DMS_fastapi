@@ -37,8 +37,10 @@ class CourseManager:
     def _parse_date(self, d_str: Any, default: Any = None) -> Optional[dt_date]:
         if not d_str: return default
         if isinstance(d_str, dt_date): return d_str
-        for fmt in ('%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d', '%H:%M'): # Added some common formats
-            try: return datetime.strptime(d_str, fmt).date()
+        if isinstance(d_str, datetime): return d_str.date()
+        s = str(d_str).strip()
+        for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%Y/%m/%d'):
+            try: return datetime.strptime(s, fmt).date()
             except: continue
         return default
 
@@ -104,6 +106,19 @@ class CourseManager:
         self._check_access()
         if not self.course: raise HTTPException(status_code=400, detail="Course context required.")
         
+        # Check if already enrolled
+        existing = self.session.exec(select(Admission).where(
+            Admission.student_id == student_id, 
+            Admission.course_id == self.course.id,
+            Admission.status == 'active'
+        )).first()
+        if existing:
+            return False, "This student is already actively enrolled in this course.", existing
+            
+        # Capacity check
+        if self.course.capacity and self.course.student_count >= self.course.capacity:
+            return False, f"Course capacity ({self.course.capacity}) has been reached.", None
+
         # Extract valid fields
         admission = Admission(
             student_id=student_id,
@@ -126,28 +141,77 @@ class CourseManager:
         self.session.refresh(admission)
         return True, "Student admission has been completed.", admission
 
+    def update_admission(self, admission_id: int, status: str):
+        """داخلے کی حیثیت (Status) تبدیل کرنا۔"""
+        self._check_access()
+        admission = self.session.get(Admission, admission_id)
+        if not admission or (self.course and admission.course_id != self.course.id):
+             raise HTTPException(status_code=404, detail="Admission record not found.")
+        
+        old_status = admission.status
+        admission.status = status
+        self.session.flush()
+        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'update_admission', 'Admission', admission_id, f"Status: {old_status} -> {status}", {"status": status})
+        self.session.commit()
+        return True, f"Admission status updated to {status}.", admission
+
+    def delete_admission(self, admission_id: int):
+        """داخلہ حذف کرنا۔"""
+        self._check_access()
+        admission = self.session.get(Admission, admission_id)
+        if not admission: raise HTTPException(status_code=404, detail="Admission not found.")
+        
+        self.session.delete(admission)
+        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'delete_admission', 'Admission', admission_id, "Record deleted", {})
+        self.session.commit()
+        return True, "Admission record deleted.", None
+
     def save_session(self, data: dict):
-        """تعلیمی پروگرام کے تحت ایک انفرادی کلاس سیشن کا شیڈول بنانا۔"""
+        """تعلیمی پروگرام کے تحت ایک انفرادی کلاس سیشن کا شیڈول بنانا یا اپڈیٹ کرنا۔"""
         self._check_access()
         if not self.course: raise HTTPException(status_code=400, detail="Course context required.")
         
-        class_session = ClassSession(
-            course_id=self.course.id,
-            date=self._parse_date(data.get('date'), dt_date.today()),
-            start_time=self._parse_time(data.get('start_time')),
-            end_time=self._parse_time(data.get('end_time')),
-            topic=data.get('topic', 'Daily'),
-            session_type=data.get('session_type', 'class'),
-            notes=data.get('notes', '')
-        )
-        
-        self.session.add(class_session)
+        session_id = data.get('session_id') or data.get('id')
+        if session_id:
+            class_session = self.session.get(ClassSession, int(session_id))
+            if not class_session: raise HTTPException(status_code=404, detail="Session not found")
+            
+            if 'date' in data: class_session.date = self._parse_date(data.get('date'), class_session.date)
+            if 'start_time' in data: class_session.start_time = self._parse_time(data.get('start_time'))
+            if 'end_time' in data: class_session.end_time = self._parse_time(data.get('end_time'))
+            if 'topic' in data: class_session.topic = data.get('topic')
+            if 'session_type' in data: class_session.session_type = data.get('session_type')
+            if 'notes' in data: class_session.notes = data.get('notes')
+            action = "update_session"
+        else:
+            class_session = ClassSession(
+                course_id=self.course.id,
+                date=self._parse_date(data.get('date'), dt_date.today()),
+                start_time=self._parse_time(data.get('start_time')),
+                end_time=self._parse_time(data.get('end_time')),
+                topic=data.get('topic', 'Daily'),
+                session_type=data.get('session_type', 'class'),
+                notes=data.get('notes', '')
+            )
+            self.session.add(class_session)
+            action = "schedule_session"
+            
         self.session.flush()
-        
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'schedule_session', 'ClassSession', class_session.id or 0, data.get('topic', 'Daily'), data)
+        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'ClassSession', class_session.id or 0, class_session.topic or 'Daily', data)
         self.session.commit()
         self.session.refresh(class_session)
-        return True, "Class session scheduled successfully.", class_session
+        return True, "Class session saved successfully.", class_session
+
+    def delete_session(self, session_id: int):
+        """سیشن حذف کرنا۔"""
+        self._check_access()
+        class_session = self.session.get(ClassSession, session_id)
+        if not class_session: raise HTTPException(status_code=404, detail="Session not found.")
+        
+        self.session.delete(class_session)
+        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'delete_session', 'ClassSession', session_id, "Session deleted", {})
+        self.session.commit()
+        return True, "Session deleted successfully.", None
 
 
     def get_stats(self):
@@ -171,12 +235,48 @@ class CourseManager:
         admissions = self.session.exec(select(Admission).where(Admission.course_id == self.course.id).order_by(desc(Admission.admission_date))).all()
         sessions = self.session.exec(select(ClassSession).where(ClassSession.course_id == self.course.id).order_by(desc(ClassSession.date), desc(ClassSession.id))).all()
         
+        # Available staff to assign
+        from app.models import Staff
+        all_staff = self.session.exec(select(Staff).where(Staff.inst_id == self.institution.id).order_by(Staff.name)).all()
+
         return {
             "institution": self.institution,
             "course": self.course,
             "admissions": admissions,
             "sessions": sessions,
-            "stats": self.get_stats()
+            "stats": self.get_stats(),
+            "all_staff": all_staff
         }
+
+    def assign_instructor(self, staff_id: int):
+        """کسی استاد/خادم کو پروگرام کی ذمہ داری سونپنا۔"""
+        self._check_access()
+        if not self.course: raise HTTPException(status_code=400, detail="Course context required.")
+        staff = self.session.get(Staff, staff_id)
+        if not (staff and staff.inst_id == self.institution.id):
+            raise HTTPException(status_code=404, detail="Staff member not found.")
+        
+        if staff not in self.course.instructors:
+            self.course.instructors.append(staff)
+            self.session.flush()
+            AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'assign_instructor', 'Course', self.course.id, f"Assigned {staff.name}", {"staff_id": staff_id})
+            self.session.commit()
+            return True, f"Instructor {staff.name} assigned.", staff
+        return False, "Already assigned.", staff
+
+    def remove_instructor(self, staff_id: int):
+        """پروگرام سے کسی استاد کو ہٹانا۔"""
+        self._check_access()
+        if not self.course: raise HTTPException(status_code=400, detail="Course context required.")
+        staff = self.session.get(Staff, staff_id)
+        if not staff: raise HTTPException(status_code=404, detail="Staff not found.")
+        
+        if staff in self.course.instructors:
+            self.course.instructors.remove(staff)
+            self.session.flush()
+            AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'remove_instructor', 'Course', self.course.id, f"Removed {staff.name}", {"staff_id": staff_id})
+            self.session.commit()
+            return True, "Instructor removed.", None
+        return False, "Instructor not part of this course.", None
 
 

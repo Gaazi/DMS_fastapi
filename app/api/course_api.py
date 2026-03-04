@@ -94,6 +94,10 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
             cm.save_session(data)
         elif action == "session_delete":
             cm.delete_session(int(data.get('session_id')))
+        elif action == "assign_instructor":
+            cm.assign_instructor(int(data.get('staff_id')))
+        elif action == "remove_instructor":
+            cm.remove_instructor(int(data.get('staff_id')))
         elif action == "update_course":
             from app.schemas.forms import CourseFormSchema
             try:
