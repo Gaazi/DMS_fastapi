@@ -86,6 +86,7 @@ def translate_filter(text):
         "date": "تاریخ",
         "source": "ذریعہ",
         "donor_id": "عطیہ دہندہ",
+        "logic": "سسٹم",
     }
     return translations.get(str(text).lower(), text)
 

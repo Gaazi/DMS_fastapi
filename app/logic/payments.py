@@ -22,6 +22,7 @@ class Cashier:
         self.user = user
 
     def collect_fee(self, student_id: Optional[int] = None, fee_id: Optional[int] = None, 
+                    admission_id: Optional[int] = None,
                     amount: float = 0, method: str = "Cash", use_wallet: bool = False):
         """طالب علم سے فیس وصول کرنا (Waterfall Logic)"""
         amount_dec = Decimal(str(amount or 0))
@@ -31,7 +32,7 @@ class Cashier:
 
         receipts = []
         remaining_cash = amount_dec
-        pending_fees = self._get_pending_fees(student)
+        pending_fees = self._get_pending_fees(student, admission_id=admission_id)
 
         # Step A: Wallet Use
         if use_wallet and student.wallet_balance > 0:
@@ -115,18 +116,26 @@ class Cashier:
             return self.session.get(Student, fee.student_id)
         return self.session.get(Student, s_id)
 
-    def _get_pending_fees(self, student: Student) -> List[Fee]:
+    def _get_pending_fees(self, student: Student, admission_id: Optional[int] = None) -> List[Fee]:
         # بقایا فیسیں حاصل کریں (جہاں ادا شدہ رقم کل واجبات سے کم ہو)
-        # Note: In SQLModel, complex annotate/filter is easier with separate logic or subqueries
-        # Simple approach: Fetch all pending/partial and sort
         stmt = select(Fee).where(
             Fee.student_id == student.id,
             Fee.inst_id == self.institution.id,
             Fee.status != "Paid"
         )
-        fees = self.session.exec(stmt).all()
-        # Sort manually: Admission first, then by due date
-        return sorted(fees, key=lambda x: (0 if x.fee_type == "admission" else 1, x.due_date or date.max))
+        all_pending = self.session.exec(stmt).all()
+        
+        # Sort logic: 
+        # 1. If admission_id is provided, prioritize it
+        # 2. Admission fees before regular fees
+        # 3. Oldest first
+        def sort_key(f):
+            priority = 0
+            if admission_id and f.admission_id == admission_id: priority = -10
+            type_weight = 0 if f.fee_type == "admission" else 1
+            return (priority, type_weight, f.due_date or date.max)
+
+        return sorted(all_pending, key=sort_key)
 
     def _process_single_payment(self, student: Student, fee: Fee, amount: Decimal, method: str, is_wallet: bool = False):
         p_rec = Fee_Payment(

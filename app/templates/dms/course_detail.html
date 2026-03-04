@@ -9,6 +9,28 @@
          editSession: {id: '', date: '', start_time: '', end_time: '', topic: '', type: ''}
      }">
 
+  <!-- Error Handling -->
+  {% if errors %}
+  <div class="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl flex items-center gap-3 animate-shake">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div class="text-sm">
+          <span class="font-bold">غلطی:</span>
+          <ul class="list-disc list-inside">
+          {% for field, msg in errors.items() %}
+              <li>{{ field|translate }}: {{ msg }}</li>
+          {% endfor %}
+          </ul>
+      </div>
+  </div>
+  {% endif %}
+
+  {% if message %}
+  <div class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl flex items-center gap-3">
+      <i class="fas fa-check-circle"></i>
+      <div class="text-sm font-bold">{{ message }}</div>
+  </div>
+  {% endif %}
+
   <!-- Course Overview Card (Compact Mobile-First) -->
   <div class="bg-slate-900/50 rounded-xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
     <div class="p-4 sm:p-6">

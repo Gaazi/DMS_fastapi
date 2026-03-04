@@ -52,11 +52,14 @@ async def pay_installment(request: Request, institution_slug: str, fee_id: int, 
     student_id = int(data.get('student_id')) if data.get('student_id') else None
     use_wallet = data.get('use_wallet') == 'on'
     
+    admission_id = int(data.get('admission_id')) if data.get('admission_id') else None
+    
     cashier = Cashier(session, institution, current_user)
     try:
         result = cashier.collect_fee(
             fee_id=fee_id if fee_id != 0 else None,
             student_id=student_id,
+            admission_id=admission_id,
             amount=amount,
             method=method,
             use_wallet=use_wallet

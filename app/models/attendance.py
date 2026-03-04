@@ -1,5 +1,5 @@
 from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship, Column, Integer, ForeignKey
+from sqlmodel import SQLModel, Field, Relationship, Column, Integer, ForeignKey, UniqueConstraint
 from datetime import date as dt_date, time, datetime
 from app.models.base import AuditModel
 
@@ -19,6 +19,10 @@ class ClassSession(AuditModel, table=True):
     session_type: str = Field(default="class", max_length=20)
     topic: str = Field(default="", max_length=255)
     notes: str = Field(default="")
+    
+    __table_args__ = (
+        UniqueConstraint("course_id", "date", "start_time", name="uq_course_session"),
+    )
 
     attendance_records: List["Attendance"] = Relationship(back_populates="session")
     course: Optional["Course"] = Relationship()
@@ -57,6 +61,10 @@ class Attendance(AuditModel, table=True):
     student_id: int = Field(foreign_key="dms_student.id")
     status: str = Field(default="present", max_length=20)
     remarks: str = Field(default="")
+    
+    __table_args__ = (
+        UniqueConstraint("session_id", "student_id", name="uq_student_attendance"),
+    )
     recorded_at: datetime = Field(default_factory=datetime.utcnow)
 
     @property

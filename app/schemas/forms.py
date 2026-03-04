@@ -86,6 +86,7 @@ class StudentAdmissionSchema(BaseModel):
     initial_payment: Decimal = 0
     payment_method: str = "Cash"
     custom_fee_type: str = "regular"
+    roll_no: Optional[str] = ""
     notes: Optional[str] = ""
     
     @validator('course_id', pre=True)

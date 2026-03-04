@@ -84,12 +84,21 @@
             </div>
         </div>
         <div>
-            <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">داخلہ فیس</label>
-            <input type="text" name="actual_adm" value="{{ selected_course.admission_fee if selected_course else '0.00' }}" class="!py-0 !px-2 !text-xs !text-emerald-400 !rounded-xl !h-10 !bg-slate-950/40 border-white/5 w-full opacity-70 mb-0 pointer-events-none" readonly>
+            <label class="block text-xs text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold text-center">رول نمبر (Roll No)</label>
+            <div class="relative">
+                <input type="text" name="roll_no" value="{{ form_data.roll_no if form_data else '' }}" class="!py-0 !px-9 !text-xs !text-emerald-400 !rounded-xl !h-10 !bg-slate-950/40 border border-white/10 w-full outline-none focus:border-emerald-500 transition-all text-center" placeholder="--">
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/30">
+                    <i class="fas fa-id-badge text-[10px]"></i>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label class="block text-xs text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold text-center">داخلہ فیس</label>
+            <input type="text" name="actual_adm" value="{{ selected_course.admission_fee if selected_course else '0.00' }}" class="!py-0 !px-2 !text-xs !text-emerald-400 !rounded-xl !h-10 !bg-slate-950/40 border-white/5 w-full opacity-70 mb-0 pointer-events-none text-center" readonly>
         </div>
         <div class="relative">
-            <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">ماہانہ فیس</label>
-            <input type="text" name="actual_crs" value="{{ selected_course.monthly_fee if selected_course else '0.00' }}" class="!py-0 !px-2 !text-xs !text-emerald-400 !font-bold !rounded-xl !h-10 !bg-slate-950/40 border-white/5 w-full font-bold mb-0 pointer-events-none" readonly>
+            <label class="block text-xs text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold text-center">ماہانہ فیس</label>
+            <input type="text" name="actual_crs" value="{{ selected_course.monthly_fee if selected_course else '0.00' }}" class="!py-0 !px-2 !text-xs !text-emerald-400 !font-bold !rounded-xl !h-10 !bg-slate-950/40 border-white/5 w-full font-bold mb-0 pointer-events-none text-center" readonly>
         </div>
     </div>
 

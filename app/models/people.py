@@ -1,5 +1,5 @@
 from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship, Column, Float, Integer, ForeignKey, Date
+from sqlmodel import SQLModel, Field, Relationship, Column, Float, Integer, ForeignKey, Date, UniqueConstraint
 from datetime import date as dt_date, time, datetime
 from app.models.base import AuditModel
 from decimal import Decimal
@@ -149,6 +149,10 @@ class Student(Person, table=True):
     notes: str = Field(default="")
     wallet_balance: Decimal = Field(default=Decimal("0.00"), sa_column=Column(Float))
     admission_date: dt_date = Field(sa_column=Column("enrollment_date", Date)) # Map to existing DB column
+    
+    __table_args__ = (
+        UniqueConstraint("institution_id", "reg_id", name="uq_student_reg_id"),
+    )
 
     parents: List[Parent] = Relationship(back_populates="students", link_model=StudentParentLink)
     admissions: List["Admission"] = Relationship(back_populates="student")
@@ -243,6 +247,10 @@ class Admission(AuditModel, table=True):
     fee_start_month: Optional[dt_date] = Field(default=None)
     fee_type_override: Optional[str] = Field(default=None, max_length=20)
     status: str = Field(default="active", max_length=20)
+
+    __table_args__ = (
+        UniqueConstraint("student_id", "course_id", "status", name="uq_active_admission"),
+    )
 
     student: Student = Relationship(back_populates="admissions")
     course: "Course" = Relationship(back_populates="admissions")

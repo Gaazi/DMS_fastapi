@@ -90,9 +90,8 @@ class FinanceManager:
         now = dt_date.today()
         target_month = now.replace(year=year or now.year, month=month or now.month, day=1)
         
-        # چیک کریں کہ کیا اس مہینے کی فیسیں پہلے ہی بن چکی ہیں؟
-        stmt = select(func.count(Fee.id)).where(Fee.inst_id == self.institution.id, Fee.month == target_month, Fee.fee_type == 'monthly')
-        if self.session.exec(stmt).one() > 0: return 0
+        # target_month logic remains
+        count = 0
 
         admissions = self.session.exec(select(Admission).where(Admission.status == 'active')).all()
         
@@ -101,6 +100,15 @@ class FinanceManager:
             # طالب علم کا انسٹی ٹیوشن چیک کریں
             student = self.session.get(Student, ad.student_id)
             if not student or student.inst_id != self.institution.id: continue
+
+            # Check if fee already exists for THIS student admission in this month
+            exists_stmt = select(func.count(Fee.id)).where(
+                Fee.student_id == ad.student_id,
+                Fee.admission_id == ad.id,
+                Fee.month == target_month,
+                Fee.fee_type == 'monthly'
+            )
+            if self.session.exec(exists_stmt).one() > 0: continue
 
             fee = Fee(
                 inst_id=self.institution.id,

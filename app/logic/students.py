@@ -142,12 +142,19 @@ class StudentManager:
                     action = "update"
             
             if not student:
-                # Generate reg_id if missing
+                # Robust reg_id generation (Format: InstPrefix-InstID-S-Serial)
                 if not data.get('reg_id'):
-                    last_id = self.session.exec(select(func.max(Student.id))).one() or 0
-                    data['reg_id'] = f"STD-{self.institution.id}-{last_id + 1}"
-                
-                # Set admission date if missing
+                    inst_prefix = (self.institution.reg_id or self.institution.slug[:3] or "INST").upper()
+                    inst_id_padded = f"{self.institution.id:03d}"
+                    inst_count = self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id)).one()
+                    serial = inst_count + 1
+                    data['reg_id'] = f"{inst_prefix}-{inst_id_padded}-S-{serial}"
+                    
+                    # Double check for reg_id uniqueness in this institution & increment serial if collision
+                    while self.session.exec(select(Student).where(Student.inst_id == self.institution.id, Student.reg_id == data['reg_id'])).first():
+                        serial += 1
+                        data['reg_id'] = f"{inst_prefix}-{inst_id_padded}-S-{serial}"
+
                 if not data.get('admission_date'):
                     data['admission_date'] = dt_date.today()
 
@@ -163,38 +170,28 @@ class StudentManager:
         self.session.commit()
         self.session.refresh(student)
 
-        # 2. Admission (Enrollment) & Finance Handling
+        # 2. Admission (Enrollment) via CourseManager
         if enrollment_data and enrollment_data.get('course_id'):
-            self._handle_admission(student, enrollment_data)
+            from app.logic.courses import CourseManager
+            course_obj = self.session.get(Course, enrollment_data['course_id'])
+            if course_obj:
+                cm = CourseManager(self.session, self.user, target=course_obj)
+                # Map Student Schema to Course Enrollment Format
+                enroll_params = {
+                    'enrollment_date': dt_date.today(),
+                    'agreed_admission_fee': enrollment_data.get('admission_fee'),
+                    'agreed_course_fee': enrollment_data.get('agreed_fee'),
+                    'initial_payment': enrollment_data.get('initial_payment', 0),
+                    'payment_method': enrollment_data.get('payment_method', 'Cash'),
+                    'roll_no': enrollment_data.get('roll_no')
+                }
+                cm.enroll_student(student.id, enroll_params)
 
         AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'Student', student.id, student.name, data)
         self.session.commit()
         self.session.refresh(student)
         return student
 
-    def _handle_admission(self, student: Student, e_data: dict):
-        """داخلہ (Admission) اور ابتدائی ادائیگی کو سنبھالنا۔"""
-        existing = self.session.exec(select(Admission).where(
-            Admission.student_id == student.id, Admission.course_id == e_data['course_id'], Admission.status == 'active'
-        )).first()
-        
-        if not existing:
-            admission = Admission(
-                student_id=student.id,
-                course_id=e_data['course_id'],
-                status='active',
-                admission_date=dt_date.today(),
-                agreed_course_fee=e_data.get('agreed_fee'),
-                agreed_admission_fee=e_data.get('admission_fee')
-            )
-            self.session.add(admission)
-            
-            # Initial Payment Handling
-            initial_pay = e_data.get('initial_payment', 0)
-            if initial_pay > 0:
-                from app.logic.payments import Cashier
-                cashier = Cashier(self.session, self.institution, self.user)
-                cashier.collect_fee(student_id=student.id, amount=initial_pay, method=e_data.get('payment_method', 'Cash'))
 
     def update_status(self, student_id: int, is_active: bool):
         """طالب علم اور اس کے داخلوں (Admissions) کا اسٹیٹس بدلنا۔"""

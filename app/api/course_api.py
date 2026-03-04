@@ -78,40 +78,45 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
         raise HTTPException(status_code=404, detail="Course not found")
 
     cm = CourseManager(session, current_user, target=course_obj)
+    errors = None
     
     if request.method == "POST":
         form_data_raw = await request.form()
         data = dict(form_data_raw)
         action = data.get('action')
         
+        success, msg, _ = True, "", None
         if action == "enroll":
-            cm.enroll_student(int(data.get('student_id')), data)
+            success, msg, _ = cm.enroll_student(int(data.get('student_id')), data)
         elif action == "enrollment_update":
-            cm.update_admission(int(data.get('enrollment_id')), data.get('status'))
+            success, msg, _ = cm.update_admission(int(data.get('enrollment_id')), data.get('status'))
         elif action == "enrollment_delete":
-            cm.delete_admission(int(data.get('enrollment_id')))
+            success, msg, _ = cm.delete_admission(int(data.get('enrollment_id')))
         elif action in ["session", "schedule"]:
-            cm.save_session(data)
+            success, msg, _ = cm.save_session(data)
         elif action == "session_delete":
-            cm.delete_session(int(data.get('session_id')))
+            success, msg, _ = cm.delete_session(int(data.get('session_id')))
         elif action == "assign_instructor":
-            cm.assign_instructor(int(data.get('staff_id')))
+            success, msg, _ = cm.assign_instructor(int(data.get('staff_id')))
         elif action == "remove_instructor":
-            cm.remove_instructor(int(data.get('staff_id')))
+            success, msg, _ = cm.remove_instructor(int(data.get('staff_id')))
         elif action == "update_course":
             from app.schemas.forms import CourseFormSchema
             try:
                 data['id'] = course_id
                 validated_data = CourseFormSchema(**data)
-                cm.save_course(validated_data.dict())
+                success, msg, _ = cm.save_course(validated_data.dict())
             except Exception as e:
-                # You might want to pass errors back to context here
-                print(f"Error updating course: {e}")
+                success, msg = False, str(e)
         elif action == "delete":
             cm.delete_course(course_id)
             return RedirectResponse(url=request.url_for('dms_course', institution_slug=institution_slug), status_code=303)
             
-        return RedirectResponse(url=request.url_for('dms_course_detail', institution_slug=institution_slug, course_id=course_id), status_code=303)
+        if not success:
+            # If not success, don't redirect, just fall through to render with errors
+            errors = {"logic": msg}
+        else:
+            return RedirectResponse(url=request.url_for('dms_course_detail', institution_slug=institution_slug, course_id=course_id), status_code=303)
 
     is_academic_admin = access.can_manage_academics()
     context = cm.get_detail_context()
@@ -124,6 +129,7 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
     context.update({
         "request": request, 
         "institution": institution, 
+        "errors": errors,
         "is_academic_admin": is_academic_admin,
         "all_students": all_students,
         "today": dt_date.today(),

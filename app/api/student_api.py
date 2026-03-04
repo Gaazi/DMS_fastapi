@@ -49,7 +49,8 @@ async def students_list_view(request: Request, institution_slug: str, session: S
                 "agreed_fee": data.get("agreed_fee"),
                 "admission_fee": data.get("admission_fee"),
                 "initial_payment": data.get("initial_payment", 0),
-                "payment_method": data.get("payment_method", "Cash")
+                "payment_method": data.get("payment_method", "Cash"),
+                "roll_no": data.get("roll_no")
             }
             sm.save_student(data, enroll_data if enroll_data["course_id"] else None)
         elif action == "update_status":
@@ -132,7 +133,8 @@ async def admission(request: Request, institution_slug: str, session: Session = 
                 "agreed_fee": validated_data.agreed_course_fee,
                 "admission_fee": validated_data.agreed_admission_fee,
                 "initial_payment": validated_data.initial_payment,
-                "payment_method": validated_data.payment_method
+                "payment_method": validated_data.payment_method,
+                "roll_no": validated_data.roll_no
             }
             
             sm.save_student(student_data, enroll_data if validated_data.course_id else None)

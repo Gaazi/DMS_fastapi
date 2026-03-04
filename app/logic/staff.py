@@ -156,6 +156,19 @@ class StaffManager:
                 if hasattr(staff, k): setattr(staff, k, v)
             action = "update"
         else:
+            # Generate reg_id for Staff
+            if not data.get('reg_id'):
+                inst_prefix = (self.institution.reg_id or self.institution.slug[:3] or "INST").upper()
+                inst_id_padded = f"{self.institution.id:03d}"
+                staff_count = self.session.exec(select(func.count(Staff.id)).where(Staff.inst_id == self.institution.id)).one()
+                serial = staff_count + 1
+                data['reg_id'] = f"{inst_prefix}-{inst_id_padded}-E-{serial}"
+                
+                # Double check for reg_id uniqueness in this institution & increment serial if collision
+                while self.session.exec(select(Staff).where(Staff.inst_id == self.institution.id, Staff.reg_id == data['reg_id'])).first():
+                    serial += 1
+                    data['reg_id'] = f"{inst_prefix}-{inst_id_padded}-E-{serial}"
+
             staff = Staff(**data)
             staff.inst_id = self.institution.id
             self.session.add(staff)

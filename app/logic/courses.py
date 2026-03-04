@@ -135,6 +135,18 @@ class CourseManager:
         )
         self.session.add(admission)
         self.session.flush()
+
+        # Generate Fees & Payments
+        from app.logic.finance import FinanceManager
+        fm = FinanceManager(self.session, self.institution, self.user)
+        fm.generate_initial_fees_for_admission(admission)
+
+        # Initial Payment
+        initial_pay = data.get('initial_payment', 0)
+        if initial_pay and float(initial_pay) > 0:
+            from app.logic.payments import Cashier
+            cashier = Cashier(self.session, self.institution, self.user)
+            cashier.collect_fee(student_id=student_id, amount=Decimal(str(initial_pay)), method=data.get('payment_method', 'Cash'))
         
         AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'enroll', 'Admission', admission.id or 0, f"Student {student_id}", data)
         self.session.commit()
