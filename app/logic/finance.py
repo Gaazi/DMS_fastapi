@@ -232,13 +232,16 @@ class FinanceManager:
             'paginator': {'num_pages': 1, 'count': total_count}
         }
         
+        summary_extended = self.get_institution_financial_summary()
         return {
             "incomes": latest, # Template expects 'incomes'
             "latest_income": latest,
             "total_donations": summary['total_amount'],
             "total_amount": summary['total_amount'], # Used in logic
+            "total_expenses": summary['total_expenses'],
             "latest_donation_amount": latest[0].amount if latest else 0,
             "balance": summary['balance'],
+            "total_pending": summary_extended['total_pending'],
             "page_obj": page_obj,
             "top_donors": [], # Fallback for now
             "monthly_totals": [] # Fallback for now
@@ -256,12 +259,15 @@ class FinanceManager:
             'paginator': {'num_pages': 1, 'count': total_count}
         }
         
+        summary_extended = self.get_institution_financial_summary()
         return {
             "expenses": latest,
             "latest_expenses": latest,
+            "total_amount": summary['total_amount'],
             "total_expenses": summary['total_expenses'],
             "latest_expense_amount": latest[0].amount if latest else 0,
             "balance": summary['balance'],
+            "total_pending": summary_extended['total_pending'],
             "page_obj": page_obj,
             "expenses_count": total_count
         }
@@ -293,13 +299,17 @@ class FinanceManager:
             'paginator': {'num_pages': 1, 'count': len(txs)}
         }
         
+        summary_extended = self.get_institution_financial_summary()
+        
         return {
             "recent_transactions": txs[:15],
             "total_amount": summary['total_amount'],
             "total_expenses": summary['total_expenses'],
             "balance": summary['balance'],
             "page_obj": page_obj,
-            "summary": summary
+            "summary": summary,
+            "course_stats": summary_extended['course_stats'],
+            "total_pending": summary_extended['total_pending']
         }
 
     def pay_fee(self, fee_id: int, amount: Decimal, method: str = "Cash"):
@@ -407,3 +417,72 @@ class FinanceManager:
         except Exception as e:
             print(f"B-Task Error: {e}")
             session.rollback()
+    def get_institution_financial_summary(self):
+        """پورے ادارے کے مالیاتی اعداد و شمار کا مجموعہ۔"""
+        self._check_access()
+        from app.models import Fee, Course, Income, Expense
+        from sqlalchemy import func
+        
+        # 1. Total Income & Expense (Current Month)
+        today = dt_date.today()
+        start_of_month = today.replace(day=1)
+        
+        total_income = self.session.exec(select(func.sum(Income.amount)).where(Income.inst_id == self.institution.id, Income.date >= start_of_month)).one() or 0
+        total_expense = self.session.exec(select(func.sum(Expense.amount)).where(Expense.inst_id == self.institution.id, Expense.date >= start_of_month)).one() or 0
+        
+        # 2. Receivables (Pending Fees)
+        total_pending = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
+            Fee.inst_id == self.institution.id, Fee.status != 'Paid'
+        )).one() or 0
+        
+        # 3. Income per Course (Breakdown)
+        course_stats = []
+        courses = self.session.exec(select(Course).where(Course.inst_id == self.institution.id)).all()
+        for c in courses:
+            c_income = self.session.exec(select(func.sum(Fee.amount_paid)).where(Fee.course_id == c.id, Fee.month >= start_of_month)).one() or 0
+            c_pending = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
+                Fee.course_id == c.id, Fee.status != 'Paid'
+            )).one() or 0
+            course_stats.append({
+                "id": c.id,
+                "title": c.title,
+                "income": float(c_income),
+                "pending": float(c_pending)
+            })
+            
+        return {
+            "total_income": float(total_income),
+            "total_expense": float(total_expense),
+            "total_pending": float(total_pending),
+            "course_stats": course_stats
+        }
+
+    def get_family_financial_report(self):
+        """خاندان کے اعتبار سے مالیاتی رپورٹ (Family Wise Ledger)۔"""
+        self._check_access()
+        from app.models import Parent, Fee
+        from sqlalchemy import func
+        
+        parents = self.session.exec(select(Parent).where(Parent.inst_id == self.institution.id)).all()
+        family_report = []
+        
+        for p in parents:
+            student_ids = [s.id for s in p.students]
+            if not student_ids: continue
+            
+            pending_dues = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
+                Fee.student_id.in_(student_ids),
+                Fee.status != 'Paid'
+            )).one() or 0
+            
+            family_report.append({
+                "family_id": p.family_id,
+                "parent_name": p.name,
+                "mobile": p.mobile,
+                "student_count": len(student_ids),
+                "total_pending": float(pending_dues)
+            })
+            
+        # Sort by pending dues (highest first)
+        family_report.sort(key=lambda x: x['total_pending'], reverse=True)
+        return family_report

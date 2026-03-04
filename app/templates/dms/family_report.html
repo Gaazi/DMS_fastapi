@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Family Dues Report - {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8" dir="rtl">
+    
+    <!-- Header with Stats -->
+    <div class="flex flex-col md:flex-row items-end justify-between gap-6 mb-10">
+        <div class="text-right">
+            <h1 class="text-3xl font-black text-white mb-2 tracking-tight">خاندانی بقایا جات (Family Ledger Report)</h1>
+            <p class="text-slate-500 text-sm uppercase tracking-[0.2em] font-bold">Comprehensive Outstanding dues per household</p>
+        </div>
+        
+        <div class="flex gap-4 no-print">
+            <button onclick="window.print()" class="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2">
+                <i class="fas fa-print opacity-50"></i>
+                رپورٹ پرنٹ کریں
+            </button>
+            <a href="{{ url('family_fee_collection', institution.slug) }}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                فیس وصولی اسکرین
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Insights -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="glass-card p-6 border border-white/5 rounded-[2rem] bg-indigo-500/5 overflow-hidden relative group">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-600/10 rounded-full blur-2xl group-hover:bg-indigo-600/20 transition-all"></div>
+            <span class="text-[10px] text-indigo-400 font-black uppercase tracking-widest block mb-1">Total Families</span>
+            <span class="text-3xl font-black text-white leading-none">{{ report_data|length }}</span>
+        </div>
+        
+        {% set total_global_pending = report_data | map(attribute='total_pending') | sum %}
+        <div class="glass-card p-6 border border-white/5 rounded-[2rem] bg-rose-500/5 overflow-hidden relative group">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-600/10 rounded-full blur-2xl group-hover:bg-rose-600/20 transition-all"></div>
+            <span class="text-[10px] text-rose-400 font-black uppercase tracking-widest block mb-1">Total Outstanding Dues</span>
+            <span class="text-3xl font-black text-rose-400 leading-none">Rs {{ total_global_pending | int }}</span>
+        </div>
+
+        <div class="glass-card p-6 border border-white/5 rounded-[2rem] bg-emerald-500/5 overflow-hidden relative group">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-600/10 rounded-full blur-2xl group-hover:bg-emerald-600/20 transition-all"></div>
+            <span class="text-[10px] text-emerald-400 font-black uppercase tracking-widest block mb-1">Average per Household</span>
+            {% if report_data|length > 0 %}
+            <span class="text-3xl font-black text-white leading-none">Rs {{ (total_global_pending / report_data|length) | int }}</span>
+            {% else %}
+            <span class="text-3xl font-black text-white leading-none">Rs 0</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- The Ledger Table -->
+    <div class="glass-card rounded-[2.5rem] border border-white/10 overflow-hidden backdrop-blur-3xl shadow-2xl">
+        <div class="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
+            <table class="min-w-full text-right divide-y divide-white/5">
+                <thead class="bg-white/[0.03] sticky top-0 z-10">
+                    <tr>
+                        <th class="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">ID</th>
+                        <th class="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">سربراہ خاندان (Parent)</th>
+                        <th class="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">بچے (Students)</th>
+                        <th class="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">فون نمبر</th>
+                        <th class="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-300">بقایا جات (Dues)</th>
+                        <th class="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-300 text-center no-print">ایکشن</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/[0.03] bg-transparent">
+                    {% for row in report_data %}
+                    <tr class="group hover:bg-white/[0.02] transition-colors {% if row.total_pending > 10000 %}bg-rose-500/[0.01]{% endif %}">
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-mono font-bold text-slate-500">{{ row.family_id }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-200">{{ row.parent_name }}</div>
+                            <div class="text-[9px] text-slate-600 uppercase tracking-tighter mt-0.5">Verified Guardian</div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                {{ row.student_count }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="tel:{{ row.mobile }}" class="text-xs font-mono text-slate-400 hover:text-indigo-400 transition-colors">{{ row.mobile }}</a>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-base font-black {% if row.total_pending > 0 %}text-rose-400{% else %}text-emerald-400 opacity-30{% endif %}">
+                                Rs {{ row.total_pending | int }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center no-print">
+                            <a href="{{ url('family_fee_collection', institution.slug) }}?family_id={{ row.family_id }}" 
+                               class="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-600/20 hover:border-indigo-400/40 transition-all text-[10px] font-black uppercase">
+                                <i class="fas fa-money-check-alt"></i>
+                                فیس لیں
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="py-32 text-center">
+                            <div class="opacity-20 italic flex flex-col items-center gap-4">
+                                <i class="fas fa-layer-group text-6xl"></i>
+                                <span>کوئی ریکارڈ موجود نہیں۔</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Print Disclaimer -->
+    <div class="mt-8 text-center opacity-0 print:opacity-100 transition-opacity">
+        <p class="text-[10px] text-slate-500 uppercase tracking-[0.3em]">Official Family Dues Statement - Generated by Nebula DMS</p>
+    </div>
+</div>
+{% endblock %}

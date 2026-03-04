@@ -83,6 +83,53 @@ class Cashier:
             "wallet_balance": student.wallet_balance
         }
 
+    def collect_family_fee(self, family_id: str, amount: float, method: str = "Cash"):
+        """خاندان (Family) کی بنیاد پر تمام طلبہ کی فیس وصول کرنا اور تقسیم کرنا۔"""
+        from app.models import Parent
+        parent = self.session.exec(select(Parent).where(Parent.family_id == family_id, Parent.inst_id == self.institution.id)).first()
+        if not parent:
+            raise HTTPException(status_code=404, detail="Family record not found")
+            
+        all_students = parent.students
+        amount_dec = Decimal(str(amount or 0))
+        remaining_cash = amount_dec
+        receipts = []
+        
+        # Aggregate all pending fees for all children
+        all_pending_fees = []
+        for student in all_students:
+            all_pending_fees.extend(self._get_pending_fees(student))
+            
+        # Sort by date (oldest first) across all children
+        all_pending_fees.sort(key=lambda f: f.due_date or date.max)
+        
+        for fee in all_pending_fees:
+            if remaining_cash <= 0: break
+            student = next(s for s in all_students if s.id == fee.student_id)
+            
+            balance = (fee.amount_due + fee.late_fee - fee.discount) - fee.amount_paid
+            if balance <= 0: continue
+            
+            pay_amount = min(remaining_cash, balance)
+            p_rec = self._process_single_payment(student, fee, pay_amount, method)
+            receipts.append(p_rec.receipt_number)
+            remaining_cash -= pay_amount
+            
+        # If surplus, add to the first student's wallet
+        if remaining_cash > 0 and all_students:
+            w_rec = self._deposit_to_wallet(all_students[0], remaining_cash, method)
+            receipts.append(w_rec.receipt_number)
+            
+        self.session.commit()
+        return {
+            "status": "success",
+            "receipts": receipts,
+            "total_paid": amount_dec,
+            "remaining_surplus": remaining_cash,
+            "parent": parent,
+            "students": all_students
+        }
+
     def pay_salary(self, staff_id: int, amount: float, month_date: Optional[date] = None, notes: str = ""):
         """اسٹاف کو تنخواہ دینا food"""
         from app.logic.staff import StaffManager

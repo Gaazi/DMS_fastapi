@@ -103,6 +103,7 @@ templates.env.filters["upper"] = lambda v: str(v).upper() if v else ""
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 templates.env.filters["translate"] = translate_filter
 templates.env.globals["csrf_token"] = lambda: ""
+templates.env.globals["now"] = lambda: datetime.datetime.now()
 
 async def get_global_context(request, session: Session, current_user: Optional[User] = None) -> Dict[str, Any]:
     # Mocking resolver_match for Django template compatibility

@@ -313,3 +313,31 @@ class CourseManager:
         return False, "Instructor not part of this course.", None
 
 
+    def promote_students(self, student_ids: List[int], target_course_id: int, agreed_fee: Optional[Decimal] = None):
+        """موجودہ کورس سے طلبہ کی ایک بڑی تعداد کو نئے کورس میں منتقل کرنا۔"""
+        self._check_access()
+        if not self.course: raise HTTPException(status_code=400, detail="Current course context required.")
+        
+        target_course = self.session.get(Course, target_course_id)
+        if not target_course: raise HTTPException(status_code=404, detail="Target course not found.")
+        
+        promoted_count = 0
+        for s_id in student_ids:
+            # 1. Archive old admission
+            stmt = select(Admission).where(Admission.student_id == s_id, Admission.course_id == self.course.id, Admission.status == 'active')
+            old_admission = self.session.exec(stmt).first()
+            if old_admission:
+                old_admission.status = 'completed' # or 'promoted'
+                self.session.add(old_admission)
+            
+            # 2. Create new admission
+            enroll_data = {
+                'enrollment_date': dt_date.today(),
+                'agreed_course_fee': agreed_fee or target_course.course_fee,
+                'status': 'active'
+            }
+            success, _, _ = CourseManager(self.session, self.user, target=target_course).enroll_student(s_id, enroll_data)
+            if success: promoted_count += 1
+            
+        self.session.commit()
+        return True, f"{promoted_count} students have been promoted to {target_course.title}.", promoted_count

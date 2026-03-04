@@ -169,6 +169,37 @@ class StudentManager:
                 if hasattr(student, k): setattr(student, k, v)
             action = "update"
 
+        # 1.5 Handle Parent/Family Linking
+        guardian_name = (data.get('guardian_name') or data.get('father_name', '')).strip()
+        guardian_mobile = data.get('mobile', '').strip() or data.get('mobile2', '').strip()
+        
+        if guardian_name and guardian_mobile:
+            from app.models import Parent
+            # Try to find existing parent by mobile in this institution
+            parent = self.session.exec(select(Parent).where(Parent.inst_id == self.institution.id, Parent.mobile == guardian_mobile)).first()
+            
+            if not parent:
+                # Generate Family ID
+                inst_prefix = (self.institution.reg_id or self.institution.slug[:3] or "INST").upper()
+                parent_count = self.session.exec(select(func.count(Parent.id)).where(Parent.inst_id == self.institution.id)).one()
+                serial = parent_count + 1
+                family_id = f"{inst_prefix}-F-{serial:04d}"
+                
+                parent = Parent(
+                    name=guardian_name,
+                    mobile=guardian_mobile,
+                    inst_id=self.institution.id,
+                    family_id=family_id,
+                    relationship=data.get('guardian_relation', 'father')
+                )
+                self.session.add(parent)
+                self.session.flush()
+            
+            # Link student to parent if not already linked
+            if student not in parent.students:
+                parent.students.append(student)
+                self.session.add(parent)
+
         self.session.commit()
         self.session.refresh(student)
 

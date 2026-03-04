@@ -111,6 +111,11 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
         elif action == "delete":
             cm.delete_course(course_id)
             return RedirectResponse(url=request.url_for('dms_course', institution_slug=institution_slug), status_code=303)
+        elif action == "promote":
+            student_ids = request.query_params.getlist('student_ids') or data.get('student_ids', [])
+            if isinstance(student_ids, str): student_ids = [student_ids]
+            target_course_id = int(data.get('target_course_id'))
+            success, msg, _ = cm.promote_students(student_ids, target_course_id)
             
         if not success:
             # If not success, don't redirect, just fall through to render with errors
@@ -125,6 +130,7 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
     from app.models import Student, Admission
     from datetime import date as dt_date
     all_students = session.exec(select(Student).where(Student.inst_id == institution.id).order_by(Student.name)).all()
+    all_courses = session.exec(select(Course).where(Course.inst_id == institution.id)).all()
     
     context.update({
         "request": request, 
@@ -132,6 +138,7 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
         "errors": errors,
         "is_academic_admin": is_academic_admin,
         "all_students": all_students,
+        "all_courses": all_courses,
         "today": dt_date.today(),
         "enrollment_status_choices": Admission.get_status_choices(),
         "enrollments": context.get('admissions') # Alias if needed

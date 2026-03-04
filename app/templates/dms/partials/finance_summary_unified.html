@@ -56,18 +56,18 @@
         </div>
     </a>
 
-    <!-- 4. Activity/Count Card -->
-    <a href="{{ url('balance', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-indigo-500/20 transition-all group block">
+    <!-- 4. Family Dues / Receivables -->
+    <a href="{{ url('family_financial_report', institution.slug) }}" class="glass-card rounded-3xl p-5 border border-white/5 hover:border-amber-500/20 transition-all group block">
         <div class="flex items-start justify-between mb-4">
-            <div class="w-10 h-10 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
-                <i class="fas fa-bolt-lightning text-sm"></i>
+            <div class="w-10 h-10 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
+                <i class="fas fa-hand-holding-dollar text-sm"></i>
             </div>
-            <span class="text-[8px] uppercase tracking-widest text-indigo-500/50 font-bold">Activity</span>
+            <span class="text-[8px] uppercase tracking-widest text-amber-500/50 font-bold">Receivables</span>
         </div>
-        <p class="text-xs text-slate-400 mb-1">کل اندراجات</p>
+        <p class="text-xs text-slate-400 mb-1">خاندانی بقایا جات</p>
         <div class="flex items-baseline gap-1">
-            <h3 class="text-2xl text-white font-amiri">{{ total_entries|default(0) }}</h3>
-            <span class="text-[9px] text-slate-500 font-medium uppercase">Records</span>
+            <h3 class="text-2xl text-amber-400 font-amiri">{{ total_pending|default(0)|int }}</h3>
+            <span class="text-[9px] text-slate-500 font-medium">{{ currency_label }}</span>
         </div>
     </a>
 </div>

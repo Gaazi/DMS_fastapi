@@ -130,6 +130,7 @@ class Parent(Person, table=True):
     
     id: Optional[int] = Field(default=None, primary_key=True)
     inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
+    family_id: Optional[str] = Field(default=None, max_length=25, index=True)
     relationship: str = Field(default="guardian", max_length=20)
     
     students: List["Student"] = Relationship(back_populates="parents", link_model=StudentParentLink)

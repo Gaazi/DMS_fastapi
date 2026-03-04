@@ -238,3 +238,20 @@ async def student_attendance(request: Request, institution_slug: str, session: S
         return await TemplateResponse.render("dms/partials/student_attendance_table.html", request, session, context)
     return await TemplateResponse.render("dms/student_attendance.html", request, session, context)
 
+@router.get("/{institution_slug}/students/{student_id}/id-card/", response_class=HTMLResponse, name="student_id_card")
+async def student_id_card(request: Request, institution_slug: str, student_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
+    student = session.get(Student, student_id)
+    if not student or student.inst_id != institution.id:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get admissions with courses
+    admissions = session.exec(select(Admission).where(Admission.student_id == student.id)).all()
+    
+    context = {
+        "request": request,
+        "institution": institution,
+        "student": student,
+        "admissions": admissions
+    }
+    return await TemplateResponse.render("dms/id_card.html", request, session, context)
