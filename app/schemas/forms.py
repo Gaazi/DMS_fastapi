@@ -150,6 +150,11 @@ class CourseFormSchema(BaseModel):
     capacity: Optional[int] = None
     is_active: bool = True
     
+    @validator("start_date", "end_date", pre=True)
+    def handle_empty_date(cls, v):
+        if v == "" or v is None: return None
+        return v
+    
     @validator("is_active", pre=True)
     def handle_checkbox(cls, v):
         if v in (True, "true", "on", "1"): return True

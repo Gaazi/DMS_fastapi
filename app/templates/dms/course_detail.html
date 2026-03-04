@@ -62,12 +62,12 @@
             <div class="flex items-center gap-3 text-slate-300">
                 <div class="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
                     <span class="text-[9px] text-slate-500 font-bold uppercase">آغاز:</span>
-                    <span class="text-xs font-mono">{% if course.start_date %}{{ course.start_date|date("d-m-Y") }}{% else %}--{% endif %}</span>
+                    <span class="text-xs font-mono">{% if course.start_date %}{{ course.start_date|date("%d-%m-%Y") }}{% else %}--{% endif %}</span>
                 </div>
                 <i class="fas fa-long-arrow-alt-left text-slate-600"></i>
                 <div class="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
                     <span class="text-[9px] text-slate-500 font-bold uppercase">اختتام:</span>
-                    <span class="text-xs font-mono">{% if course.end_date %}{{ course.end_date|date("d-m-Y") }}{% else %}--{% endif %}</span>
+                    <span class="text-xs font-mono">{% if course.end_date %}{{ course.end_date|date("%d-%m-%Y") }}{% else %}--{% endif %}</span>
                 </div>
             </div>
         </div>
@@ -140,7 +140,7 @@
                   <div class="text-[11px] text-slate-500 font-mono mt-0.5">{{ enrollment.student.mobile }}</div>
                   {% endif %}
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.admission_date|date("d M Y") }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.admission_date|date("%d %b %Y") }}</td>
                 <td class="px-4 py-3 whitespace-nowrap">
                    {% if is_academic_admin %}
                    <form method="post" class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -183,7 +183,10 @@
       <!-- Sessions Section -->
       <div class="bg-slate-900/50 rounded-2xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
         <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
-          <h2 class="text-lg font-bold text-white">روزانہ سیشن</h2>
+          <div class="flex flex-col">
+            <h2 class="text-lg font-bold text-white">روزانہ سیشن (Period History)</h2>
+            <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">{{ course.title }}</span>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-white/5">
@@ -199,15 +202,18 @@
               {% for session in sessions %}
               <tr class="hover:bg-white/[0.04] transition-colors group">
                 <td class="px-4 py-3 whitespace-nowrap">
-                  <div class="font-bold text-slate-200 font-mono">{{ session.date|date("d M, Y") }}</div>
-                  <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{{ session.get_session_type_display() }}</div>
+                  <div class="font-bold text-slate-200 font-mono">{{ session.date|date("%d %b, %Y") }}</div>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-tighter">{{ session.get_session_type_display() }}</span>
+                    <span class="text-[10px] text-slate-500 font-bold">برائے: {{ course.title }}</span>
+                  </div>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">
                   {% if session.start_time %}
-                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.start_time|time("H:i") }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.start_time|time("%H:%M") }}</span>
                     {% if session.end_time %}
                     <span class="text-slate-600 mx-1">-</span>
-                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.end_time|time("H:i") }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.end_time|time("%H:%M") }}</span>
                     {% endif %}
                   {% else %}
                   <span class="text-slate-600">—</span>
@@ -217,18 +223,22 @@
                     {{ session.topic|default("—")|truncatechars(30) }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
-                  <div class="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="flex items-center gap-2 justify-end">
+                      <!-- Mark Attendance Button -->
                       <a href="{{ url('dms_session_attendance', institution.slug, session.id) }}"
-                        class="p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all" title="حاضری لگائیں">
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all text-xs font-bold shadow-sm">
                         <i class="fas fa-clipboard-check"></i>
+                        <span>حاضری لگائیں</span>
                       </a>
+
                       {% if is_academic_admin %}
-                      <form method="post" onsubmit="return confirm('سیشن حذف کرنا چاہتے ہیں؟');" class="inline-block">
+                      <!-- Delete Session (Only visible on hover to keep it clean) -->
+                      <form method="post" onsubmit="return confirm('سیشن حذف کرنا چاہتے ہیں؟');" class="inline-block opacity-0 group-hover:opacity-100 transition-opacity">
                         {{ csrf_token() }}
                         <input type="hidden" name="action" value="session_delete">
                         <input type="hidden" name="session_id" value="{{ session.id }}">
-                        <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="حذف کریں">
-                            <i class="fas fa-trash-alt"></i>
+                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="حذف کریں">
+                            <i class="fas fa-trash-alt text-[10px]"></i>
                         </button>
                       </form>
                       {% endif %}
@@ -286,7 +296,7 @@
                 <label class="block text-xs font-semibold text-slate-400">تاریخ داخلہ</label>
                 <div class="relative">
                     <input type="date" name="enrollment_date" 
-                           value="{{ today|date('Y-m-d') }}" 
+                           value="{{ today|date('%Y-%m-%d') }}" 
                            class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-9 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-xs block cursor-pointer
                                   [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                            onclick="this.showPicker()"
@@ -300,7 +310,7 @@
                 <label class="block text-xs font-semibold text-slate-400">آغازِ فیس</label>
                 <div class="relative">
                     <input type="date" name="fee_start_month" 
-                           value="{{ today|date('Y-m-d') }}" 
+                           value="{{ today|date('%Y-%m-%d') }}" 
                            class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-9 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-xs block cursor-pointer
                                   [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                            onclick="this.showPicker()"
@@ -346,7 +356,7 @@
             <label class="block text-xs font-semibold text-slate-400">تاریخ</label>
             <div class="relative">
                 <input type="date" name="date" 
-                       value="{{ today|date('Y-m-d') }}" 
+                       value="{{ today|date('%Y-%m-%d') }}" 
                        required 
                        class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-9 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-all text-xs block cursor-pointer
                               [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer"

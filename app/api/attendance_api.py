@@ -14,6 +14,7 @@ from app.logic.permissions import get_institution_with_access
 router = APIRouter()
 from app.helper.context import TemplateResponse
 from datetime import date as dt_date
+from app.models.attendance import ClassSession
 
 @router.get("/{institution_slug}/attendance-report/", response_class=HTMLResponse, name="attendance_report")
 async def attendance_report(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
@@ -55,3 +56,15 @@ async def save_attendance_bulk(request: Request, institution_slug: str, session:
     
     return RedirectResponse(url=request.headers.get("Referer", f"/{institution_slug}/dashboard"), status_code=303)
 
+
+@router.get("/{institution_slug}/session/{session_id}/attendance/", name="dms_session_attendance")
+async def dms_session_attendance(request: Request, institution_slug: str, session_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    """مخصوص سیشن کے لیے حاضری کے پیج پر ری ڈائریکٹ کرنا۔"""
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
+    class_session = session.get(ClassSession, session_id)
+    if not class_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Redirect to global student attendance with session's date and course
+    target_url = request.url_for('student_attendance', institution_slug=institution_slug)
+    return RedirectResponse(url=f"{target_url}?date={class_session.date}&course_id={class_session.course_id}&session_id={class_session.id}", status_code=303)

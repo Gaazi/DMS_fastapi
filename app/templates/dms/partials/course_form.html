@@ -97,6 +97,7 @@
                 </div>
             </div>
 
+            <!-- Dates: Start & End -->
             <div class="grid grid-cols-2 gap-4">
                 <!-- Start Date -->
                 <div>
@@ -110,12 +111,28 @@
                                autocomplete="off">
                     </div>
                 </div>
+                <!-- End Date -->
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5 uppercase">تاریخ اختتام</label>
+                    <div class="relative">
+                        <input type="date" name="end_date" 
+                               value="{{ form_data.end_date if form_data else (editing_course.end_date|time('%Y-%m-%d') if editing_course and editing_course.end_date else '') }}" 
+                               class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm block cursor-pointer
+                                      [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                               onclick="this.showPicker()"
+                               autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Capacity row -->
+            <div class="grid grid-cols-2 gap-4">
                 <!-- Capacity -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">نشستیں (Capacity)</label>
                     <div class="relative">
-                        <input type="number" name="capacity" value="{{ form_data.capacity if form_data else (editing_course.capacity if editing_course else '') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
-                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                        <input type="number" name="capacity" value="{{ form_data.capacity if form_data else (editing_course.capacity if editing_course else '') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm" placeholder="تعداد درج کریں">
+                        <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-indigo-500/50">
                             <i class="fas fa-users text-sm"></i>
                         </div>
                     </div>

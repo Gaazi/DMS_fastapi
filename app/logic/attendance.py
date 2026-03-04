@@ -40,10 +40,17 @@ class AttendanceManager:
             raise HTTPException(status_code=403, detail="Access denied.")
         return True
 
-    def get_prepared_list(self, type='student', target_date=None, course_id=None):
+    def get_prepared_list(self, type='student', target_date=None, course_id=None, session_id=None):
         """فارم کے لیے طلبہ یا اسٹاف کی فہرست تیار کرنا۔"""
         self._check_permission()
         target_date = target_date or dt_date.today()
+        
+        # If session_id is provided, prioritize it
+        if type == 'student' and session_id:
+            class_session = self.session.get(ClassSession, session_id)
+            if class_session:
+                course_id = class_session.course_id
+                target_date = class_session.date
         
         if type == 'staff':
             members = self.session.exec(select(Staff).where(Staff.inst_id == self.institution.id, Staff.is_active == True).order_by(Staff.name)).all()
@@ -58,7 +65,10 @@ class AttendanceManager:
             
             # طالب علم کی حاضری سیشن پر مبنی ہوتی ہے
             records_stmt = select(Attendance).where(Attendance.inst_id == self.institution.id)
-            if course_id:
+            
+            if session_id:
+                records_stmt = records_stmt.where(Attendance.session_id == session_id)
+            elif course_id:
                 records_stmt = records_stmt.join(ClassSession).where(ClassSession.course_id == course_id, ClassSession.date == target_date)
             else:
                 records_stmt = records_stmt.join(ClassSession).where(ClassSession.date == target_date)
@@ -77,7 +87,16 @@ class AttendanceManager:
             m.is_late = (m.current_status == 'late' or getattr(rec, 'is_late', False))
             m.is_excused = (m.current_status == 'excused')
             
-        return members, target_date, course_id
+        return members, target_date, course_id, session_id
+
+    def get_sessions(self, course_id: int, target_date: dt_date):
+        """کورس اور تاریخ کی بنیاد پر سیشنز کی لسٹ حاصل کرنا۔"""
+        self._check_permission()
+        stmt = select(ClassSession).where(
+            ClassSession.course_id == course_id,
+            ClassSession.date == target_date
+        ).order_by(ClassSession.start_time)
+        return self.session.exec(stmt).all()
 
     def save_bulk(self, type: str, post_data: dict, target_date: dt_date, course_id: Optional[int] = None):
         """کئی طلبہ یا ملازمین کی حاضری ایک ساتھ ڈیٹا بیس میں محفوظ کرنا۔"""
@@ -101,12 +120,19 @@ class AttendanceManager:
         else:
             if not course_id: return False, "کورس کا انتخاب ضروری ہے۔"
             
-            session_stmt = select(ClassSession).where(ClassSession.course_id == course_id, ClassSession.date == target_date)
-            class_session = self.session.exec(session_stmt).first()
+            # If session_id is explicitly provided in post_data
+            session_id = post_data.get('session_id')
+            class_session = None
+            if session_id:
+                class_session = self.session.get(ClassSession, int(session_id))
+            
             if not class_session:
-                class_session = ClassSession(course_id=course_id, date=target_date)
-                self.session.add(class_session)
-                self.session.flush()
+                session_stmt = select(ClassSession).where(ClassSession.course_id == course_id, ClassSession.date == target_date)
+                class_session = self.session.exec(session_stmt).first()
+                if not class_session:
+                    class_session = ClassSession(course_id=course_id, date=target_date)
+                    self.session.add(class_session)
+                    self.session.flush()
 
             members = self.session.exec(select(Student).join(Admission).where(
                 Admission.course_id == course_id, 

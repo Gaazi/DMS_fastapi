@@ -11,7 +11,9 @@ from app.db.session import get_session
 from app.models import User, Institution, Student, Course
 from app.logic.auth import get_current_user
 from app.logic.students import StudentManager
+from app.logic.courses import CourseManager
 from app.logic.attendance import AttendanceManager
+from app.models.attendance import ClassSession
 from app.logic.permissions import get_institution_with_access
 from app.helper.context import TemplateResponse, PaginatedData
 
@@ -170,31 +172,67 @@ async def student_attendance(request: Request, institution_slug: str, session: S
     am = AttendanceManager(session, institution=institution, user=current_user)
     
     target_date_str = request.query_params.get('date')
-    target_date = datetime.strptime(target_date_str, '%Y-%m-%d').date() if target_date_str else date.today()
-    course_id = request.query_params.get('course_id')
-    if course_id: course_id = int(course_id)
+    course_id_raw = request.query_params.get('course_id')
+    session_id_raw = request.query_params.get('session_id')
+    
+    # Robust date parsing
+    try:
+        target_date = datetime.strptime(target_date_str, '%Y-%m-%d').date() if target_date_str else date.today()
+    except (ValueError, TypeError):
+        target_date = date.today()
+        
+    course_id = int(course_id_raw) if course_id_raw and course_id_raw.isdigit() else None
+    session_id = int(session_id_raw) if session_id_raw and session_id_raw.isdigit() else None
 
     if request.method == "POST":
         form_data = await request.form()
         data = dict(form_data)
-        # Parse date from form if redirected
-        am.save_bulk(type='student', post_data=data, target_date=target_date, course_id=course_id)
-        return RedirectResponse(url=request.url.path + f"?date={target_date}&course_id={course_id or ''}", status_code=303)
+        
+        # Prioritize form data for saving
+        post_date_str = data.get('date')
+        post_course_id = data.get('course_id')
+        
+        try:
+            effective_date = datetime.strptime(post_date_str, '%Y-%m-%d').date() if post_date_str else target_date
+        except:
+            effective_date = target_date
+            
+        effective_course_id = int(post_course_id) if post_course_id and post_course_id.isdigit() else course_id
+        
+        # Action handling
+        action = data.get('action')
+        if action == "add_session" and effective_course_id:
+            cm = CourseManager(session, current_user, target=session.get(Course, effective_course_id))
+            success, msg, new_session = cm.save_session(data)
+            if success:
+                return RedirectResponse(url=request.url.path + f"?date={effective_date}&course_id={effective_course_id}&session_id={new_session.id}", status_code=303)
 
-    members, active_date, active_course_id = am.get_prepared_list(type='student', target_date=target_date, course_id=course_id)
+        if effective_course_id:
+            am.save_bulk(type='student', post_data=data, target_date=effective_date, course_id=effective_course_id)
+            return RedirectResponse(url=request.url.path + f"?date={effective_date}&course_id={effective_course_id}&session_id={data.get('session_id', '')}", status_code=303)
+        else:
+            # Handle case where no course is selected during POST
+            pass
+
+    members, active_date, active_course_id, active_session_id = am.get_prepared_list(type='student', target_date=target_date, course_id=course_id, session_id=session_id)
+    courses = session.exec(select(Course).where(Course.inst_id == institution.id).order_by(Course.title)).all()
+    sessions = am.get_sessions(active_course_id, active_date) if active_course_id else []
     
-    courses = session.exec(select(Course).where(Course.inst_id == institution.id)).all()
-    
+    selected_course = next((c for c in courses if c.id == active_course_id), None) if active_course_id else None
+
     context = {
         "request": request,
         "institution": institution,
         "members": members,
-        "target_date": active_date,
-        "course_id": active_course_id,
-        "courses": courses
+        "selected_date": active_date,
+        "selected_course_id": str(active_course_id) if active_course_id else "",
+        "selected_course": selected_course,
+        "selected_session_id": str(active_session_id) if active_session_id else "",
+        "sessions": sessions,
+        "all_courses": courses
     }
     
-    if request.headers.get("HX-Request"):
+    if request.headers.get("HX-Request") and not request.query_params.get("full_page"):
         return await TemplateResponse.render("dms/partials/student_attendance_table.html", request, session, context)
     return await TemplateResponse.render("dms/student_attendance.html", request, session, context)
 

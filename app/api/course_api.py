@@ -95,8 +95,14 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
         elif action == "session_delete":
             cm.delete_session(int(data.get('session_id')))
         elif action == "update_course":
-            data['id'] = course_id
-            cm.save_course(data)
+            from app.schemas.forms import CourseFormSchema
+            try:
+                data['id'] = course_id
+                validated_data = CourseFormSchema(**data)
+                cm.save_course(validated_data.dict())
+            except Exception as e:
+                # You might want to pass errors back to context here
+                print(f"Error updating course: {e}")
         elif action == "delete":
             cm.delete_course(course_id)
             return RedirectResponse(url=request.url_for('dms_course', institution_slug=institution_slug), status_code=303)
