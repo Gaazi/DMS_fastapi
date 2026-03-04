@@ -31,7 +31,12 @@
             <!-- Title -->
             <div>
                 <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider {% if errors.title %}text-rose-500{% endif %}">{% if institution.type == 'masjid' %}پروگرام کا نام{% else %}کورس کا نام{% endif %}</label>
-                <input type="text" name="title" value="{{ form_data.title if form_data else (editing_course.title if editing_course else '') }}" required class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm {% if errors.title %}border-rose-500/50{% endif %}" placeholder="کورس کا عنوان درج کریں">
+                <div class="relative">
+                    <input type="text" name="title" value="{{ form_data.title if form_data else (editing_course.title if editing_course else '') }}" required class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.title %}border-rose-500/50{% endif %}" placeholder="کورس کا عنوان درج کریں">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                        <i class="fas fa-book-open text-sm"></i>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -88,12 +93,22 @@
                 <!-- Admission Fee -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider {% if errors.admission_fee %}text-rose-500{% endif %}">{% if institution.type == 'masjid' %}ممبرشپ فیس{% else %}داخلہ فیس{% endif %}</label>
-                    <input type="number" step="0.01" name="admission_fee" value="{{ form_data.admission_fee if form_data else (editing_course.admission_fee if editing_course else '0') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.admission_fee %}border-rose-500/50{% endif %}">
+                    <div class="relative">
+                        <input type="number" step="0.01" name="admission_fee" value="{{ form_data.admission_fee if form_data else (editing_course.admission_fee if editing_course else '0') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.admission_fee %}border-rose-500/50{% endif %}">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-hand-holding-usd text-sm"></i>
+                        </div>
+                    </div>
                 </div>
                 <!-- Course Fee -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider {% if errors.course_fee %}text-rose-500{% endif %}">{% if institution.type == 'masjid' %}ماہانہ تعاون{% else %}کورس فیس{% endif %}</label>
-                    <input type="number" step="0.01" name="course_fee" value="{{ form_data.course_fee if form_data else (editing_course.course_fee if editing_course else '0') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.course_fee %}border-rose-500/50{% endif %}">
+                    <div class="relative">
+                        <input type="number" step="0.01" name="course_fee" value="{{ form_data.course_fee if form_data else (editing_course.course_fee if editing_course else '0') }}" class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm {% if errors.course_fee %}border-rose-500/50{% endif %}">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-coins text-sm"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -105,10 +120,13 @@
                     <div class="relative">
                         <input type="date" name="start_date" 
                                value="{{ form_data.start_date if form_data else (editing_course.start_date|time('%Y-%m-%d') if editing_course and editing_course.start_date else '') }}" 
-                               class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm block cursor-pointer
-                                      [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                               class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm block cursor-pointer
+                                      [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                                onclick="this.showPicker()"
                                autocomplete="off">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-calendar-alt text-sm"></i>
+                        </div>
                     </div>
                 </div>
                 <!-- End Date -->
@@ -117,10 +135,13 @@
                     <div class="relative">
                         <input type="date" name="end_date" 
                                value="{{ form_data.end_date if form_data else (editing_course.end_date|time('%Y-%m-%d') if editing_course and editing_course.end_date else '') }}" 
-                               class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm block cursor-pointer
-                                      [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-30 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                               class="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-10 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm block cursor-pointer
+                                      [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                                onclick="this.showPicker()"
                                autocomplete="off">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-indigo-500/50">
+                            <i class="fas fa-calendar-check text-sm"></i>
+                        </div>
                     </div>
                 </div>
             </div>

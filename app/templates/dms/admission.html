@@ -58,14 +58,24 @@
                 </div>
                 {% endif %}
             </div>
-            <input type="text" name="name" value="{{ form_data.name if form_data else (editing_student.full_name if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-4 h-11 text-sm focus:border-emerald-500 outline-none transition-all {% if errors.name %}border-rose-500/50{% endif %}" placeholder="نام درج کریں...">
+            <div class="relative">
+                <input type="text" name="name" value="{{ form_data.name if form_data else (editing_student.full_name if editing_student else '') }}" class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm focus:border-emerald-500 outline-none transition-all {% if errors.name %}border-rose-500/50{% endif %}" placeholder="نام درج کریں...">
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                    <i class="fas fa-user-graduate text-sm"></i>
+                </div>
+            </div>
         </div>
 
         <!-- 2. GUARDIAN & CONTACT DETAILS -->
         <div class="grid grid-cols-1 {% if institution.type != 'masjid' %}sm:grid-cols-2{% endif %} gap-4">
             <div class="space-y-1">
                 <label class="text-xs text-emerald-400 px-1">والد کا نام (Father's Name)</label>
-                <input type="text" name="father_name" value="{{ form_data.father_name if form_data else (editing_student.father_name if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50">
+                <div class="relative">
+                    <input type="text" name="father_name" value="{{ form_data.father_name if form_data else (editing_student.father_name if editing_student else '') }}" class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none focus:border-emerald-500/50">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-user-tie text-sm"></i>
+                    </div>
+                </div>
             </div>
             
             {% if institution.type != 'masjid' %}
@@ -89,11 +99,21 @@
         <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
             <div class="space-y-1">
                 <label class="text-xs text-emerald-400 px-1 {% if errors.mobile %}text-rose-500{% endif %}">فون نمبر (Mobile)</label>
-                <input type="text" name="mobile" value="{{ form_data.mobile if form_data else (editing_student.mobile if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 text-left {% if errors.mobile %}border-rose-500/50{% endif %}">
+                <div class="relative">
+                    <input type="text" name="mobile" value="{{ form_data.mobile if form_data else (editing_student.mobile if editing_student else '') }}" class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none focus:border-emerald-500/50 text-left {% if errors.mobile %}border-rose-500/50{% endif %}">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-phone text-sm"></i>
+                    </div>
+                </div>
             </div>
             <div class="space-y-1">
                 <label class="text-xs text-emerald-400 px-1">دوسرا نمبر (Secondary Mobile)</label>
-                <input type="text" name="mobile2" value="{{ form_data.mobile2 if form_data else (editing_student.mobile2 if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 text-left">
+                <div class="relative">
+                    <input type="text" name="mobile2" value="{{ form_data.mobile2 if form_data else (editing_student.mobile2 if editing_student else '') }}" class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none focus:border-emerald-500/50 text-left">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-mobile-alt text-sm"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -101,16 +121,30 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">جنس (Gender)</label>
-                <select name="gender" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50 [&>option]:text-black">
-                    {% set gen = form_data.gender if form_data else (editing_student.gender if editing_student else 'male') %}
-                    <option value="male" {% if gen == 'male' %}selected{% endif %}>مرد</option>
-                    <option value="female" {% if gen == 'female' %}selected{% endif %}>عورت</option>
-                </select>
+                <div class="relative">
+                    <select name="gender" class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none appearance-none focus:border-emerald-500/50 [&>option]:text-black">
+                        {% set gen = form_data.gender if form_data else (editing_student.gender if editing_student else 'male') %}
+                        <option value="male" {% if gen == 'male' %}selected{% endif %}>مرد</option>
+                        <option value="female" {% if gen == 'female' %}selected{% endif %}>عورت</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-venus-mars text-sm"></i>
+                    </div>
+                </div>
             </div>
             {% if institution.type != 'masjid' %}
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">تاریخ پیدائش (Date of Birth)</label>
-                <input type="text" name="date_of_birth" value="{{ form_data.date_of_birth if form_data else (editing_student.date_of_birth if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="YYYY-MM-DD">
+                <div class="relative">
+                    <input type="date" name="date_of_birth" 
+                           value="{{ form_data.date_of_birth if form_data else (editing_student.date_of_birth|time('%Y-%m-%d') if editing_student and editing_student.date_of_birth else '') }}" 
+                           class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none focus:border-emerald-500/50 cursor-pointer
+                                  [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                           onclick="this.showPicker()">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-birthday-cake text-sm"></i>
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>
@@ -119,16 +153,35 @@
         <div class="grid {% if institution.type != 'masjid' %}grid-cols-3 sm:grid-cols-3 gap-4{% else %}grid-cols-1 sm:grid-cols-1 gap-4{% endif %}">
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">ای میل (Email)</label>
-                <input type="email" name="email" value="{{ form_data.email if form_data else (editing_student.email if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-1 h-11 text-sm outline-none focus:border-emerald-500/50 text-left">
+                <div class="relative">
+                    <input type="email" name="email" value="{{ form_data.email if form_data else (editing_student.email if editing_student else '') }}" class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none focus:border-emerald-500/50 text-left">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-envelope text-sm"></i>
+                    </div>
+                </div>
             </div>
             {% if institution.type != 'masjid' %}
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">بلڈ گروپ (Blood Group)</label>
-                <input type="text" name="blood_group" value="{{ form_data.blood_group if form_data else (editing_student.blood_group if editing_student else '') }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50">
+                <div class="relative">
+                    <input type="text" name="blood_group" value="{{ form_data.blood_group if form_data else (editing_student.blood_group if editing_student else '') }}" class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none focus:border-emerald-500/50">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-tint text-sm"></i>
+                    </div>
+                </div>
             </div>
             <div class="space-y-1">
                 <label class="text-[11px] text-emerald-400 px-1">فیس کا آغاز (Fee Start Month)</label>
-                <input type="text" name="fee_start_month" value="{{ form_data.fee_start_month if form_data else '' }}" class="w-full bg-slate-950/30 !text-emerald-400 border border-white/10 rounded-xl px-3 h-11 text-sm outline-none focus:border-emerald-500/50" placeholder="YYYY-MM">
+                <div class="relative">
+                    <input type="date" name="fee_start_month" 
+                           value="{{ form_data.fee_start_month if form_data else '' }}" 
+                           class="w-full bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl px-10 h-11 text-sm outline-none focus:border-emerald-500/50 cursor-pointer
+                                  [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                           onclick="this.showPicker()">
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/50">
+                        <i class="fas fa-calendar-check text-sm"></i>
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>

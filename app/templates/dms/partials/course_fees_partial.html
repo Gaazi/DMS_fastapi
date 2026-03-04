@@ -69,12 +69,18 @@
                  hx-target="#course-fees-section"
                  hx-select="#course-fees-section"
                  hx-swap="outerHTML">
-                <select name="course_id" class="!py-0 !px-4 !text-[11px] sm:!text-sm !text-emerald-400 !rounded-xl !h-10 !bg-slate-900/80 border-white/10 w-full outline-none focus:border-emerald-500">
+                <select name="course_id" class="!py-0 !px-10 !text-[11px] sm:!text-sm !text-emerald-400 !rounded-xl !h-10 !bg-slate-900/80 border-white/10 w-full outline-none appearance-none focus:border-emerald-500">
                     <option value="">کورس منتخب کریں...</option>
                     {% for c in courses %}
                         <option value="{{ c.id }}" {% if selected_course and selected_course.id == c.id %}selected{% endif %}>{{ c.name }}</option>
                     {% endfor %}
                 </select>
+                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/30">
+                    <i class="fas fa-book-reader text-xs"></i>
+                </div>
+                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600">
+                    <i class="fas fa-chevron-down text-[10px]"></i>
+                </div>
             </div>
         </div>
         <div>
@@ -121,19 +127,25 @@
     <div class="glass-card-sm p-3 sm:p-4 rounded-3xl border border-white/5 bg-white/[0.02]" dir="ltr">
         <div class="grid grid-cols-12 gap-2 sm:gap-4">
             <div class="col-span-5">
-                <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold">AGREED FEE</label>
+                <label class="block text-sm text-emerald-400/90 px-1 mb-1.5 truncate uppercase font-bold text-left">AGREED FEE</label>
                 <div class="relative overflow-hidden rounded-xl">
-                    <input type="text" name="agreed_course_fee" value="{{ selected_course.monthly_fee }}" readonly class="!py-0 !px-3 !text-[12px] !text-emerald-400 !font-extrabold !rounded-xl !h-9 !bg-transparent border border-white/10 w-full pointer-events-none">
+                    <input type="text" name="agreed_course_fee" value="{{ selected_course.monthly_fee }}" readonly class="!py-0 !px-10 !text-[12px] !text-emerald-400 !font-extrabold !rounded-xl !h-9 !bg-slate-950/40 border border-white/10 w-full pointer-events-none">
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-emerald-500/30">
+                        <i class="fas fa-file-invoice-dollar text-[10px]"></i>
+                    </div>
                 </div>
             </div>
             <div class="col-span-7">
                 <div class="flex items-center px-1 mb-1.5">
-                    <label class="text-sm text-emerald-400/90 flex-1 truncate uppercase font-bold">DISCOUNT</label>
+                    <label class="text-sm text-emerald-400/90 flex-1 truncate uppercase font-bold text-left">DISCOUNT</label>
                     <label class="text-[10px] text-emerald-400/90 w-16 text-center truncate font-bold">TYPE</label>
                 </div>
-                <div class="flex items-center bg-slate-950/40 border border-white/10 rounded-xl h-9">
+                <div class="flex items-center bg-slate-950/40 border border-white/10 rounded-xl h-9 relative">
                     <div class="dir-rtl relative flex-1">
-                        <input type="number" name="course_discount" value="0" class="w-full !bg-transparent !border-0 !h-8 !px-3 !text-[11px] !text-emerald-400 focus:ring-0 zero-clear">
+                        <input type="number" name="course_discount" value="0" class="w-full !bg-transparent !border-0 !h-8 !px-10 !text-[11px] !text-emerald-400 focus:ring-0 zero-clear">
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/30">
+                            <i class="fas fa-percent text-[10px]"></i>
+                        </div>
                     </div>
                     <div class="relative shrink-0 flex items-center border-l border-white/10 ml-2">
                         <select name="crs_discount_type" class="text-emerald-400 text-[10px] !p-0.5 !pl-2 !pr-5 outline-none appearance-none cursor-pointer bg-transparent">
@@ -166,30 +178,37 @@
     <div class="glass-card-sm p-3 sm:p-4 rounded-3xl border border-white/5 bg-white/[0.02] mt-6">
         <div class="grid grid-cols-3 gap-2 sm:gap-4 items-end">
             <div class="space-y-1" dir="ltr">
-                <label class="block text-sm text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">INITIAL PAYMENT</label>
-                <input type="number" name="initial_payment" value="0" class="w-full !bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl !px-3 !py-0 !h-9 !text-[11px] transition-all outline-none zero-clear !text-left">
+                <label class="block text-xs text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">INITIAL PAYMENT</label>
+                <div class="relative">
+                    <input type="number" name="initial_payment" value="0" class="w-full !bg-slate-950/60 !text-emerald-400 border border-white/10 rounded-xl !px-10 !py-0 !h-9 !text-[11px] transition-all outline-none zero-clear !text-left">
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-emerald-500/30">
+                        <i class="fas fa-money-bill-wave text-[10px]"></i>
+                    </div>
+                </div>
             </div>
             <div class="space-y-1">
-                <label class="block text-sm text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">FEE TYPE</label>
+                <label class="block text-xs text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">FEE TYPE</label>
                 <div class="relative">
-                    <select name="custom_fee_type" class="w-full !bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl !px-3 !py-0 !h-9 !text-[11px] transition-all outline-none appearance-none">
+                    <select name="custom_fee_type" class="w-full !bg-slate-950/60 !text-emerald-400 border border-white/10 rounded-xl !px-10 !py-0 !h-9 !text-[11px] transition-all outline-none appearance-none">
                         <option value="regular">Regular</option>
                         <option value="free">Free</option>
                         <option value="custom">Custom</option>
                     </select>
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"><i class="fas fa-chevron-down text-[8px]"></i></div>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/30"><i class="fas fa-star text-[10px]"></i></div>
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600"><i class="fas fa-chevron-down text-[8px]"></i></div>
                 </div>
             </div>
             
             <div class="space-y-1">
-                <label class="block text-sm text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">PAY METHOD</label>
+                <label class="block text-xs text-emerald-400/90 mb-1.5 truncate text-center font-bold uppercase">PAY METHOD</label>
                 <div class="relative">
-                    <select name="payment_method" class="w-full !bg-slate-950/40 !text-emerald-400 border border-white/10 rounded-xl !px-3 !py-0 !h-9 !text-[11px] transition-all outline-none appearance-none">
+                    <select name="payment_method" class="w-full !bg-slate-950/60 !text-emerald-400 border border-white/10 rounded-xl !px-10 !py-0 !h-9 !text-[11px] transition-all outline-none appearance-none">
                         <option value="Cash">Cash</option>
                         <option value="Bank">Bank Transfer</option>
                         <option value="Cheque">Cheque</option>
                     </select>
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"><i class="fas fa-chevron-down text-[8px]"></i></div>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-emerald-500/30"><i class="fas fa-wallet text-[10px]"></i></div>
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600"><i class="fas fa-chevron-down text-[8px]"></i></div>
                 </div>
             </div>
         </div>
