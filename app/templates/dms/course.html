@@ -71,7 +71,7 @@
                     <!-- Top Badge & Actions -->
                     <div class="flex items-center justify-between mb-4">
                         <span class="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[9px] font-bold tracking-widest uppercase border border-indigo-500/20">
-                            #{{ loop.index|stringformat("02d") }}
+                            {{ course.course_code|default("#" ~ loop.index|stringformat("02d")) }}
                         </span>
                         
                         {% if is_academic_admin %}

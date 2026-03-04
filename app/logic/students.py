@@ -81,6 +81,8 @@ class StudentManager:
         if course_id:
             statement = statement.join(Admission).where(Admission.course_id == course_id)
 
+        statement = statement.distinct()
+
         # 2. اعداد و شمار
         results = self.session.exec(statement.order_by(Student.name).offset((page-1)*page_size).limit(page_size)).all()
         
@@ -255,6 +257,10 @@ class StudentManager:
             select(Admission).where(Admission.student_id == student.id)
         ).all()
         
+        # Attach course-specific attendance to each admission
+        for ad in admissions:
+            ad.attendance = self.attendance().get_member_summary(student, course_id=ad.course_id)
+
         from app.logic.institution import InstitutionManager
         return {
             "student": student,

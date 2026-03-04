@@ -28,11 +28,13 @@
                         {{ enr.get_status_display }}
                     </span>
                 </div>
-                <!-- Categories -->
+                <!-- Categories & Attendance -->
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-[10px] text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-md uppercase font-bold">{{ enr.course.get_category_display }}</span>
-                    {% if enr.course.is_active %}
-                    <span class="text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md uppercase font-bold">Active {{ enr.course.get_fee_type_display }}</span>
+                    {% if enr.attendance %}
+                    <span class="text-[10px] {% if enr.attendance.percentage > 75 %}text-emerald-300 bg-emerald-500/10 border-emerald-500/20{% else %}text-amber-300 bg-amber-500/10 border-amber-500/20{% endif %} border px-2 py-0.5 rounded-md uppercase font-bold">
+                        <i class="fas fa-check-double mr-1 text-[8px]"></i> Attendance: {{ enr.attendance.percentage }}%
+                    </span>
                     {% endif %}
                 </div>
             </div>

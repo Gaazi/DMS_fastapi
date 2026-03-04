@@ -45,6 +45,7 @@ class Course(AuditModel, table=True):
     start_date: Optional[date] = Field(default=None)
     end_date: Optional[date] = Field(default=None)
     capacity: Optional[int] = Field(default=None)
+    course_code: Optional[str] = Field(default=None, max_length=25, index=True)
     is_active: bool = Field(default=True)
 
     def get_category_display(self) -> str:

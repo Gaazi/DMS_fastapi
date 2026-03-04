@@ -61,6 +61,7 @@ class AttendanceManager:
             if course_id:
                 stmt = stmt.join(Admission).where(Admission.course_id == course_id, Admission.status == 'active')
             
+            stmt = stmt.distinct()
             members = self.session.exec(stmt.order_by(Student.name)).all()
             
             # طالب علم کی حاضری سیشن پر مبنی ہوتی ہے
@@ -199,7 +200,7 @@ class AttendanceManager:
             'day_span': (end_date - start_date).days + 1,
             'no_records': False
         }
-    def get_member_summary(self, member, days=30) -> dict:
+    def get_member_summary(self, member, days=30, course_id: Optional[int] = None) -> dict:
         """کسی ایک طالب علم یا ملازم کی حاضری کا مختصر خلاصہ۔"""
         end_date = dt_date.today()
         start_date = end_date - timedelta(days=days-1)
@@ -209,6 +210,10 @@ class AttendanceManager:
                 Attendance.student_id == member.id,
                 Attendance.inst_id == self.institution.id
             ).join(ClassSession).where(ClassSession.date >= start_date)
+            
+            if course_id:
+                stmt = stmt.where(ClassSession.course_id == course_id)
+                
             records = self.session.exec(stmt).all()
         else:
             stmt = select(Staff_Attendance).where(

@@ -37,13 +37,22 @@
       
       <!-- Header Row: Title & Actions -->
       <div class="flex items-start justify-between gap-3 mb-4">
-          <div class="flex items-center gap-2 mb-1">
-            <h1 class="text-xl sm:text-2xl font-bold text-white leading-tight">{{ course.title }}</h1>
-            {% if course.is_active %}
-            <span class="flex h-1.5 w-1.5 relative">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-            </span>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2 mb-1">
+              <h1 class="text-xl sm:text-2xl font-bold text-white leading-tight">{{ course.title }}</h1>
+              {% if course.is_active %}
+              <span class="flex h-1.5 w-1.5 relative">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
+              {% endif %}
+            </div>
+            {% if course.course_code %}
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 tracking-wider">
+                {{ course.course_code }}
+              </span>
+            </div>
             {% endif %}
           </div>
           <div class="mt-2">
@@ -237,6 +246,7 @@
             <thead class="bg-white/[0.02] text-slate-500 text-xs uppercase font-medium">
               <tr>
                 <th class="px-4 py-3 text-right">طالب علم</th>
+                <th class="px-4 py-3 text-right">رول نمبر</th>
                 <th class="px-4 py-3 text-right">تاریخ</th>
                 <th class="px-4 py-3 text-right">حیثیت</th>
                 <th class="px-4 py-3 text-right print:hidden">عمل</th>
@@ -247,8 +257,13 @@
               <tr class="hover:bg-white/[0.04] transition-colors group">
                 <td class="px-4 py-3 whitespace-nowrap">
                   <div class="font-bold text-slate-200">{{ enrollment.student.full_name }}</div>
-                  {% if enrollment.student.mobile %}
-                  <div class="text-[11px] text-slate-500 font-mono mt-0.5">{{ enrollment.student.mobile }}</div>
+                  <div class="text-[10px] text-indigo-400 font-mono mt-0.5">{{ enrollment.student.reg_id }}</div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  {% if enrollment.roll_no %}
+                  <span class="text-xs font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10">{{ enrollment.roll_no }}</span>
+                  {% else %}
+                  <span class="text-[10px] text-slate-600 italic">--</span>
                   {% endif %}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.admission_date|date }}</td>

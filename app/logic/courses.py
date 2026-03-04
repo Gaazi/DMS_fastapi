@@ -77,6 +77,17 @@ class CourseManager:
                 if hasattr(course, k): setattr(course, k, v)
             action = "update"
         else:
+            # Generate Simple Course Code (Format: C-Serial)
+            if not data.get('course_code'):
+                inst_count = self.session.exec(select(func.count(Course.id)).where(Course.inst_id == self.institution.id)).one()
+                serial = inst_count + 1
+                data['course_code'] = f"C-{serial}"
+                
+                # Uniqueness check per institution
+                while self.session.exec(select(Course).where(Course.inst_id == self.institution.id, Course.course_code == data['course_code'])).first():
+                    serial += 1
+                    data['course_code'] = f"C-{serial}"
+
             course = Course(**data)
             course.inst_id = self.institution.id
             self.session.add(course)
@@ -120,11 +131,16 @@ class CourseManager:
             return False, f"Course capacity ({self.course.capacity}) has been reached.", None
 
         # Extract valid fields
+        student_obj = self.session.get(Student, student_id)
+        auto_roll_no = data.get('roll_no')
+        if not auto_roll_no and student_obj and self.course.course_code:
+            auto_roll_no = f"{student_obj.reg_id}-{self.course.course_code}"
+
         admission = Admission(
             student_id=student_id,
             course_id=self.course.id,
             admission_date=self._parse_date(data.get('enrollment_date'), dt_date.today()),
-            roll_no=data.get('roll_no'),
+            roll_no=auto_roll_no,
             admission_fee_discount=Decimal(str(data.get('admission_fee_discount', 0))),
             agreed_admission_fee=Decimal(str(data.get('agreed_admission_fee'))) if data.get('agreed_admission_fee') else None,
             course_fee_discount=Decimal(str(data.get('course_fee_discount', 0))),
@@ -146,7 +162,12 @@ class CourseManager:
         if initial_pay and float(initial_pay) > 0:
             from app.logic.payments import Cashier
             cashier = Cashier(self.session, self.institution, self.user)
-            cashier.collect_fee(student_id=student_id, amount=Decimal(str(initial_pay)), method=data.get('payment_method', 'Cash'))
+            cashier.collect_fee(
+                student_id=student_id, 
+                admission_id=admission.id, # Link payment to THIS admission
+                amount=Decimal(str(initial_pay)), 
+                method=data.get('payment_method', 'Cash')
+            )
         
         AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'enroll', 'Admission', admission.id or 0, f"Student {student_id}", data)
         self.session.commit()
