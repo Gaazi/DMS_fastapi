@@ -100,6 +100,7 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
         elif action == "timetable_delete":
             success, msg, _ = cm.delete_timetable_item(int(data.get('timetable_id')))
         elif action == "timetable_save":
+            data['days'] = form_data_raw.getlist('days')
             success, msg, _ = cm.save_timetable_item(data)
         elif action == "assign_instructor":
             success, msg, _ = cm.assign_instructor(int(data.get('staff_id')))

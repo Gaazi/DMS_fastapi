@@ -356,12 +356,12 @@
                   <i class="fas fa-clock"></i>
               </div>
               <div class="flex flex-col">
-                <h2 class="text-lg font-bold text-white">مستقل شیڈول (Timetable)</h2>
+                <h2 class="text-lg font-bold text-white"> تعلیمی نظام الاوقات (Timetable)</h2>
                 <span class="text-[10px] text-indigo-400 uppercase tracking-widest font-bold">ہفتہ وار تعلیمی دورانیہ</span>
               </div>
           </div>
           {% if is_academic_admin %}
-          <button @click="editTimetable = {id: '', day_of_week: '0', start_time: '08:00', end_time: '09:00', subject: ''}; showTimetableModal = true"
+          <button @click="editTimetable = {ids: '', days: [], start_time: '08:00', end_time: '09:00', subject: ''}; showTimetableModal = true"
                   class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20">
               <i class="fas fa-plus text-sm"></i>
           </button>
@@ -379,44 +379,54 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5 bg-transparent">
-              {% set day_names = {'0': 'پیر', '1': 'منگل', '2': 'بدھ', '3': 'جمعرات', '4': 'جمعہ', '5': 'ہفتہ', '6': 'اتوار'} %}
-              {% set day_en = {'0': 'Mon', '1': 'Tue', '2': 'Wed', '3': 'Thu', '4': 'Fri', '5': 'Sat', '6': 'Sun'} %}
-              {% for item in timetable %}
-              <tr class="hover:bg-white/[0.04] transition-colors group">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex flex-col">
-                    <span class="text-sm font-bold text-white">{{ day_names.get(item.day_of_week) }}</span>
-                    <span class="text-[9px] text-slate-500 font-mono tracking-tighter uppercase">{{ day_en.get(item.day_of_week) }}</span>
+              {% set day_short = {'0': 'پ', '1': 'م', '2': 'ب', '3': 'ج', '4': 'جم', '5': 'ہ', '6': 'ا'} %}
+              {% set day_full = {'0': 'پیر', '1': 'منگل', '2': 'بدھ', '3': 'جمعرات', '4': 'جمعہ', '5': 'ہفتہ', '6': 'اتوار'} %}
+              {% for slot in timetable %}
+              <tr class="hover:bg-white/[0.04] transition-colors group border-r-2 border-transparent hover:border-indigo-500">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-1.5 flex-wrap min-w-[120px]">
+                    {% for day in slot.days %}
+                    <span class="w-7 h-7 flex items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 text-[10px] font-bold border border-indigo-500/20 shadow-sm" title="{{ day_full.get(day) }}">
+                        {{ day_short.get(day) }}
+                    </span>
+                    {% endfor %}
                   </div>
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
                     <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
-                    <div class="text-sm font-bold text-slate-200">{{ item.subject or 'تعلیمی سیشن' }}</div>
+                    <div class="text-sm font-bold text-slate-200">{{ slot.subject or 'تعلیمی سیشن' }}</div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                    <div class="inline-flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1 gap-2 shadow-inner">
                       <i class="fas fa-history text-[10px] text-indigo-400/50"></i>
-                      <span class="text-xs font-mono font-bold text-slate-300">{{ item.start_time|time }} - {{ item.end_time|time }}</span>
+                      <span class="text-xs font-mono font-bold text-slate-300">{{ slot.start_time|time }} - {{ slot.end_time|time }}</span>
                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center print:hidden">
                   <div class="flex items-center justify-center gap-1">
                     {% if is_academic_admin %}
+                    {% set ids_str = slot.records | map(attribute='id') | join(',') %}
                     <button type="button" 
-                            @click="editTimetable = {id: '{{ item.id }}', day_of_week: '{{ item.day_of_week }}', start_time: '{{ item.start_time|time('%H:%M') }}', end_time: '{{ item.end_time|time('%H:%M') }}', subject: '{{ item.subject|default('')|replace('\'','\\\'') }}'}; showTimetableModal = true"
+                            @click="editTimetable = {ids: '{{ ids_str }}', days: [{% for day in slot.days %}'{{ day }}'{% if not loop.last %},{% endif %}{% endfor %}], start_time: '{{ slot.start_time|time('%H:%M') }}', end_time: '{{ slot.end_time|time('%H:%M') }}', subject: '{{ slot.subject|default('')|replace('\'','\\\'') }}'}; showTimetableModal = true"
                             class="text-blue-400 hover:text-blue-300 p-2 transition-colors">
                       <i class="fas fa-edit text-xs"></i>
                     </button>
-                    <form method="post" action="" onsubmit="return confirm('شیڈول حذف کریں؟');" class="inline-block">
-                      {{ csrf_token() }}
-                      <input type="hidden" name="action" value="timetable_delete">
-                      <input type="hidden" name="timetable_id" value="{{ item.id }}">
-                      <button type="submit" class="text-slate-600 hover:text-rose-500 p-2 transition-colors">
-                        <i class="fas fa-trash-alt text-xs"></i>
-                      </button>
-                    </form>
+                    
+                    {# Delete action might need to be specific or bulk. For now, individual delete is in the loop or we keep it simple. #}
+                    <div class="flex flex-col gap-1">
+                      {% for item in slot.records %}
+                      <form method="post" action="" onsubmit="return confirm('حذف کریں؟');" class="inline-block">
+                        {{ csrf_token() }}
+                        <input type="hidden" name="action" value="timetable_delete">
+                        <input type="hidden" name="timetable_id" value="{{ item.id }}">
+                        <button type="submit" class="text-slate-600 hover:text-rose-500 p-1 transition-colors" title="{{ day_full.get(item.day_of_week) }}">
+                          <i class="fas fa-times text-[10px]"></i>
+                        </button>
+                      </form>
+                      {% endfor %}
+                    </div>
                     {% endif %}
                   </div>
                 </td>
@@ -503,6 +513,14 @@
             </tbody>
           </table>
         </div>
+        {% if sessions|length >= 15 %}
+        <div class="p-3 bg-white/[0.01] border-t border-white/5 text-center">
+            <a href="{{ url('dms_attendance_manage', institution.slug) }}?course_id={{ course.id }}" class="text-[9px] text-slate-500 hover:text-blue-400 transition-all uppercase font-bold tracking-widest flex items-center justify-center gap-1.5">
+                <i class="fas fa-list-ul text-[8px]"></i>
+                مکمل سیشن ہسٹری دیکھیں (View All Records)
+            </a>
+        </div>
+        {% endif %}
       </div>
     </div>
     </div>
@@ -707,7 +725,7 @@
     <div x-show="showTimetableModal" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <div @click.away="showTimetableModal = false" class="bg-[#0a0f1a] border border-indigo-500/20 rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
             <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-                <h2 class="text-lg font-bold text-white">شیڈول میں ترمیم</h2>
+                <h2 class="text-lg font-bold text-white">مستقل شیڈول سیٹ کریں</h2>
                 <button @click="showTimetableModal = false" class="text-slate-400 hover:text-white transition-all">
                     <i class="fas fa-times"></i>
                 </button>
@@ -716,39 +734,50 @@
             <form method="post" class="space-y-4">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="timetable_save">
-                <input type="hidden" name="timetable_id" :value="editTimetable.id">
+                <input type="hidden" name="timetable_ids" :value="editTimetable.ids">
 
-                <div class="space-y-1">
-                    <label class="block text-xs font-semibold text-slate-400">دن</label>
-                    <select name="day_of_week" :value="editTimetable.day_of_week" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500">
-                        <option value="0">پیر (Mon)</option>
-                        <option value="1">منگل (Tue)</option>
-                        <option value="2">بدھ (Wed)</option>
-                        <option value="3">جمعرات (Thu)</option>
-                        <option value="4">جمعہ (Fri)</option>
-                        <option value="5">ہفتہ (Sat)</option>
-                        <option value="6">اتوار (Sun)</option>
-                    </select>
+                <!-- Repeating Days (Alarm Style) -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-semibold text-slate-400">دن منتخب کریں (Days)</label>
+                        <button type="button" @click="editTimetable.days = ['0','1','2','3','4','5','6']" 
+                                class="text-[9px] px-2.5 py-1 rounded-full border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-all font-bold">
+                            تمام دن
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between gap-1">
+                        {% set tt_day_list = [('0', 'پ'), ('1', 'م'), ('2', 'ب'), ('3', 'ج'), ('4', 'جم'), ('5', 'ہ'), ('6', 'ا')] %}
+                        {% for val, name in tt_day_list %}
+                        <label class="relative group cursor-pointer">
+                            <input type="checkbox" name="days" value="{{ val }}" class="sr-only peer" x-model="editTimetable.days">
+                            <div class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[10px] font-bold text-slate-400 bg-black/20 
+                                        peer-checked:bg-indigo-600 peer-checked:border-indigo-400 peer-checked:text-white peer-checked:shadow-[0_0_15px_rgba(79,70,229,0.3)]
+                                        group-hover:border-indigo-500/50 transition-all">
+                                {{ name }}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
 
-                <div class="space-y-1">
+                <div class="space-y-1 mt-4">
                     <label class="block text-xs font-semibold text-slate-400">مضمون/عنوان</label>
-                    <input type="text" name="subject" :value="editTimetable.subject" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500">
+                    <input type="text" name="subject" x-model="editTimetable.subject" placeholder="مثال: ریاضی" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-indigo-500">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-1">
                         <label class="block text-[10px] text-slate-400 uppercase">شروع</label>
-                        <input type="time" name="start_time" :value="editTimetable.start_time" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500">
+                        <input type="time" name="start_time" x-model="editTimetable.start_time" required class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500 [&::-webkit-calendar-picker-indicator]:invert">
                     </div>
                     <div class="space-y-1">
                         <label class="block text-[10px] text-slate-400 uppercase">ختم</label>
-                        <input type="time" name="end_time" :value="editTimetable.end_time" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500">
+                        <input type="time" name="end_time" x-model="editTimetable.end_time" required class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500 [&::-webkit-calendar-picker-indicator]:invert">
                     </div>
                 </div>
 
-                <button type="submit" class="w-full h-11 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all font-bold shadow-lg shadow-indigo-500/20 active:scale-95">
-                    تبدیلی محفوظ کریں
+                <button type="submit" class="w-full h-11 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all font-bold shadow-lg shadow-indigo-500/20 active:scale-95 mt-2">
+                    محفوظ کریں
                 </button>
             </form>
         </div>

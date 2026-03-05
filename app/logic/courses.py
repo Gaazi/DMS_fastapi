@@ -296,9 +296,25 @@ class CourseManager:
         admissions = self.session.exec(select(Admission).where(Admission.course_id == self.course.id).order_by(desc(Admission.admission_date))).all()
         sessions = self.session.exec(select(ClassSession).where(ClassSession.course_id == self.course.id).order_by(desc(ClassSession.date), desc(ClassSession.id)).limit(15)).all()
         
-        # Recurring Schedule
+        # Recurring Schedule - Grouped by Slot for better UI
         from app.models.schedule import TimetableItem
-        timetable = self.session.exec(select(TimetableItem).where(TimetableItem.course_id == self.course.id).order_by(TimetableItem.day_of_week, TimetableItem.start_time)).all()
+        raw_timetable = self.session.exec(select(TimetableItem).where(TimetableItem.course_id == self.course.id).order_by(TimetableItem.day_of_week, TimetableItem.start_time)).all()
+        
+        grouped_slots = {}
+        for item in raw_timetable:
+            key = (item.start_time, item.end_time, item.subject)
+            if key not in grouped_slots:
+                grouped_slots[key] = {
+                    'start_time': item.start_time,
+                    'end_time': item.end_time,
+                    'subject': item.subject,
+                    'days': [],
+                    'records': [] # Keep raw items for IDs
+                }
+            grouped_slots[key]['days'].append(item.day_of_week)
+            grouped_slots[key]['records'].append(item)
+            
+        timetable = sorted(grouped_slots.values(), key=lambda x: x['start_time'])
 
         # Available staff to assign
         from app.models import Staff
@@ -315,25 +331,42 @@ class CourseManager:
         }
 
     def save_timetable_item(self, data: dict):
-        """ٹائم ٹیبل کے کسی آئٹم کو اپڈیٹ کرنا یا نیا بنانا۔"""
+        """ٹائم ٹیبل کے کسی آئٹم کو اپڈیٹ کرنا یا نیا بنانا (ایک ساتھ کئی دن)۔"""
         self._check_access()
         from app.models.schedule import TimetableItem
-        item_id = data.get('timetable_id') or data.get('id')
         
-        if item_id:
-            item = self.session.get(TimetableItem, int(item_id))
-            if not item: raise HTTPException(status_code=404, detail="Item not found")
-        else:
-            item = TimetableItem(inst_id=self.institution.id, course_id=self.course.id)
-            self.session.add(item)
+        start_time = self._parse_time(data.get('start_time'))
+        end_time = self._parse_time(data.get('end_time'))
+        subject = data.get('subject')
+        days = data.get('days', [])
+        
+        if not days:
+            return False, "براہ کرم کم از کم ایک دن منتخب کریں۔", None
+            
+        timetable_ids_str = data.get('timetable_ids') or data.get('id') or data.get('timetable_id')
+        
+        # اگر پرانے ریکارڈز ایڈٹ ہو رہے ہیں تو انہیں حذف کر کے نئے بنائیں
+        if timetable_ids_str:
+            ids = [int(i) for i in str(timetable_ids_str).split(',') if i.strip()]
+            for item_id in ids:
+                item = self.session.get(TimetableItem, item_id)
+                if item and item.course_id == self.course.id:
+                    self.session.delete(item)
+                    
+        # منتخب کردہ تمام دنوں کے لیے نئے ریکارڈز کا اندراج
+        for day in days:
+            new_item = TimetableItem(
+                inst_id=self.institution.id, 
+                course_id=self.course.id,
+                day_of_week=str(day),
+                start_time=start_time,
+                end_time=end_time,
+                subject=subject
+            )
+            self.session.add(new_item)
 
-        if 'day_of_week' in data: item.day_of_week = str(data.get('day_of_week'))
-        if 'start_time' in data: item.start_time = self._parse_time(data.get('start_time'))
-        if 'end_time' in data: item.end_time = self._parse_time(data.get('end_time'))
-        if 'subject' in data: item.subject = data.get('subject')
-        
         self.session.commit()
-        return True, "Schedule updated.", item
+        return True, "Schedule updated.", None
 
     def delete_timetable_item(self, item_id: int):
         """ٹائم ٹیبل سے مخصوص شیڈول حذف کرنا۔"""
