@@ -7,12 +7,12 @@ from datetime import datetime
 import json
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import Institution, Income, Expense, User
 from app.logic.auth import get_current_user, UserManager
 from app.logic.institution import InstitutionManager
 from app.logic.permissions import get_institution_with_access
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 
 router = APIRouter()
 

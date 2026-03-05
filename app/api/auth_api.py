@@ -6,12 +6,12 @@ from typing import Optional
 import json
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import User, Institution, Staff, Student, Parent
 from app.logic.auth import UserManager, get_current_user, create_access_token
 from app.logic.permissions import get_institution_with_access
 from app.core.config import settings
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 
 
 

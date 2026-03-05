@@ -21,7 +21,7 @@ log = logging.getLogger("dms.commands")
 
 def main(institution_slug: str = None, label: str = None):
     from sqlmodel import Session, select
-    from app.db.session import engine
+    from app.core.database import engine
     from app.models.foundation import Institution
     from app.models.backup import SystemSnapshot
 

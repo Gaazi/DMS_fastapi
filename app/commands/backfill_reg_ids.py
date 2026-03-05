@@ -14,7 +14,7 @@ log = logging.getLogger("dms.commands")
 
 def main():
     from sqlmodel import Session, select
-    from app.db.session import engine
+    from app.core.database import engine
     from app.models.foundation import Institution
 
     log.info("=" * 55)

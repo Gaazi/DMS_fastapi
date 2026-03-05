@@ -10,11 +10,11 @@ import os
 from datetime import datetime
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import Institution, SystemSnapshot, User
 from app.logic.auth import get_current_user
 from app.logic.permissions import get_institution_with_access
-from app.helper.exporting import (
+from app.utils.exporting import (
     export_all_institutions_bundle,
     export_institution_to_csv_zip,
     export_institution_to_json,
@@ -25,7 +25,7 @@ from app.helper.exporting import (
 
 router = APIRouter()
 from fastapi import Response
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 from app.logic.auth import get_current_user
 
 # --- 1. ZIP Restore Logic ---

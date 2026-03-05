@@ -4,11 +4,11 @@ from sqlmodel import Session
 from typing import Optional
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import User
 from app.logic.auth import get_current_user
 from app.logic.global_logic import GlobalManager
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 
 router = APIRouter()
 

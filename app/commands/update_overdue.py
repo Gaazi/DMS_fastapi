@@ -15,7 +15,7 @@ log = logging.getLogger("dms.commands")
 
 def main():
     from sqlmodel import Session, select, col
-    from app.db.session import engine
+    from app.core.database import engine
     from app.models.finance import Fee
 
     today = datetime.date.today()

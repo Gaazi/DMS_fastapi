@@ -6,10 +6,10 @@ from datetime import date
 import traceback
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import Institution, Student, Admission, Course
 
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 from datetime import date as dt_date
 
 router = APIRouter()

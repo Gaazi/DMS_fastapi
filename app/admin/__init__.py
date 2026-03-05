@@ -1,5 +1,5 @@
 from sqladmin import Admin, ModelView
-from app.db.session import engine
+from app.core.database import engine
 from app.admin.auth import AdminAuth
 
 # Core

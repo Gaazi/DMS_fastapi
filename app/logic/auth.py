@@ -16,7 +16,7 @@ except ImportError:
 
 # Internal Imports
 from app.models import User, Institution, Staff, Student, Parent
-from app.db.session import get_session
+from app.core.database import get_session
 
 def create_access_token(data: dict):
     to_encode = data.copy()

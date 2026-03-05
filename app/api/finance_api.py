@@ -6,13 +6,13 @@ from typing import Optional
 import json
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import Institution, Donor, Income, Expense, User, Fee, Fee_Payment
 from app.logic.auth import get_current_user
 from app.logic.finance import FinanceManager
 from app.logic.donations import DonationManager
 from app.logic.permissions import get_institution_with_access
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 
 router = APIRouter()
 
@@ -67,7 +67,7 @@ async def pay_installment(request: Request, institution_slug: str, fee_id: int, 
             use_wallet=use_wallet
         )
         
-        from app.helper.helper import number_to_words
+        from app.utils.helper import number_to_words
         from app.logic.institution import InstitutionManager
         context = {
             "result": result["result"],

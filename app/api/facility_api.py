@@ -6,13 +6,13 @@ from typing import Optional
 import json
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import User, Institution
 from app.logic.auth import get_current_user
 from app.logic.facilities import FacilityManager
 from app.logic.permissions import get_institution_with_access
 
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 
 router = APIRouter()
 

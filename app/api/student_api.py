@@ -7,7 +7,7 @@ import re
 from datetime import datetime, date
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import User, Institution, Student, Course
 from app.logic.auth import get_current_user
 from app.logic.students import StudentManager
@@ -15,7 +15,7 @@ from app.logic.courses import CourseManager
 from app.logic.attendance import AttendanceManager
 from app.models.attendance import ClassSession
 from app.logic.permissions import get_institution_with_access
-from app.helper.context import TemplateResponse, PaginatedData
+from app.utils.context import TemplateResponse, PaginatedData
 
 router = APIRouter()
 

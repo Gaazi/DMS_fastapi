@@ -31,7 +31,7 @@ from app.models import (
     Exam,
     ExamResult,
 )
-from app.helper.resources import (
+from app.utils.resources import (
     InstitutionResource, CourseResource, FacilityResource,
     StudentResource, StaffResource, ParentResource, EnrollmentResource,
     ClassSessionResource, AttendanceResource, StaffAttendanceResource,

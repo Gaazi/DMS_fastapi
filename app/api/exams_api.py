@@ -5,12 +5,12 @@ from typing import Optional, List
 import json
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import User, Institution, Exam, Student, Course
 from app.logic.auth import get_current_user
 from app.logic.exams import ExamManager
 from app.logic.permissions import get_institution_with_access
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 
 router = APIRouter()
 

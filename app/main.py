@@ -9,8 +9,8 @@ from logging.handlers import RotatingFileHandler
 from sqlmodel import Session
 
 from app.core.config import settings
-from app.db.session import get_session
-from app.helper.context import get_global_context
+from app.core.database import get_session
+from app.utils.context import get_global_context
 from app.logic.auth import get_current_user
 
 # API Routers
@@ -24,7 +24,7 @@ from app.api import (
 from app.admin import setup_admin
 
 from contextlib import asynccontextmanager
-from app.db.session import init_db
+from app.core.database import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -108,7 +108,7 @@ async def log_client_error(request: Request):
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-from app.helper.context import templates, TemplateResponse
+from app.utils.context import templates, TemplateResponse
 
 # Configure Templates Globals
 def smart_url_for(name: str, *args, **kwargs):

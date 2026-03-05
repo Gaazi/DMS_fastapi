@@ -5,14 +5,14 @@ from typing import Optional
 from datetime import datetime
 
 # Internal Imports
-from app.db.session import get_session
+from app.core.database import get_session
 from app.models import User, Institution, Income, Expense
 from app.logic.auth import get_current_user
 from app.logic.permissions import get_institution_with_access
 
 router = APIRouter()
 
-from app.helper.context import TemplateResponse
+from app.utils.context import TemplateResponse
 from app.logic.finance import FinanceManager
 
 # --- 1. income_edit ---

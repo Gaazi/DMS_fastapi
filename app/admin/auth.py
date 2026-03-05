@@ -42,7 +42,7 @@ class AdminAuth(AuthenticationBackend):
         """
         from jose import JWTError, jwt
         from sqlmodel import Session, select
-        from app.db.session import engine
+        from app.core.database import engine
         from app.models import User
         from app.core.config import settings
 

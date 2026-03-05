@@ -16,7 +16,7 @@ log = logging.getLogger("dms.commands")
 
 def main(dry_run: bool = False):
     from sqlmodel import Session, select
-    from app.db.session import engine
+    from app.core.database import engine
     from app.models.finance import Fee
     from app.models.people import Student
 
