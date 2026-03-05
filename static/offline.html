@@ -4,133 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#020617">
-    <title>آف لائن - DMS</title>
+    <title>آف لائن | DMS Premium</title>
     <link rel="stylesheet" href="/static/css/fonts.css">
     <link rel="stylesheet" href="/static/css/fontawesome.all.min.css">
     <style>
         :root {
-            --primary: #4f46e5;
+            --primary: #6366f1;
+            --secondary: #a855f7;
             --emerald: #10b981;
             --dark: #020617;
         }
-        body {
-            margin: 0;
-            padding: 0;
+        body, html {
+            margin: 0; padding: 0; height: 100%;
             background-color: var(--dark);
-            color: white;
-            font-family: 'Smart', 'Mehr', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-            overflow: hidden;
-            position: relative;
+            color: white; font-family: 'Smart', 'Mehr', sans-serif;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden; perspective: 1000px;
         }
 
-        /* Ambient Mesh Background */
+        /* Animated Mesh Gradient */
         .mesh-bg {
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            overflow: hidden;
+            position: absolute; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, var(--dark) 100%);
         }
         .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.15;
-            animation: move 20s infinite alternate;
+            position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.1;
+            animation: drift 25s infinite alternate ease-in-out;
         }
-        .orb-1 {
-            width: 400px; height: 400px;
-            background: var(--primary);
-            top: -100px; right: -100px;
-        }
-        .orb-2 {
-            width: 300px; height: 300px;
-            background: var(--emerald);
-            bottom: -50px; left: -50px;
-            animation-delay: -5s;
-        }
-        @keyframes move {
-            from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(50px, 50px) scale(1.1); }
+        .orb-1 { width: 500px; height: 500px; background: var(--primary); top: -250px; left: -100px; }
+        .orb-2 { width: 400px; height: 400px; background: var(--secondary); bottom: -200px; right: -50px; animation-delay: -7s; }
+
+        @keyframes drift {
+            0% { transform: translateY(0) rotate(0deg) scale(1.0); }
+            100% { transform: translateY(100px) rotate(90deg) scale(1.2); }
         }
 
-        .container {
-            z-index: 10;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 2.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
-            width: 90%;
+        /* Glass Container */
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 3rem;
+            padding: 3rem 2rem;
+            width: 90%; max-width: 440px;
+            text-align: center;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8);
+            transform: translateZ(0);
+            animation: float 6s infinite ease-in-out;
         }
 
-        .icon-circle {
-            width: 80px;
-            height: 80px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: #ef4444;
-            font-size: 2rem;
-            animation: pulse 2s infinite;
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50% { transform: translateY(-20px) rotateX(2deg); }
         }
+
+        .icon-box {
+            width: 100px; height: 100px; margin: 0 auto 2rem;
+            position: relative;
+        }
+        .icon-ring {
+            position: absolute; inset: 0; border: 2px solid rgba(239, 68, 68, 0.2);
+            border-radius: 40%; animation: spin 10s infinite linear;
+        }
+        .icon {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #ef4444; font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         h1 {
-            font-size: 1.75rem;
-            font-weight: 900;
-            margin: 0 0 0.75rem 0;
+            font-size: 2.25rem; font-weight: 900; margin: 0 0 1rem;
             background: linear-gradient(to bottom, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            background-clip: text;
+            -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        p {
-            color: #94a3b8;
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
+        p { color: #94a3b8; font-size: 1.1rem; line-height: 1.7; margin-bottom: 2.5rem; }
 
         .btn {
-            background: linear-gradient(135deg, var(--emerald) 0%, #059669 100%);
-            color: white;
-            border: none;
-            padding: 0.875rem 2rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 1rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+            position: relative; overflow: hidden;
+            background: white; color: black;
+            padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 800;
+            border-radius: 1.25rem; border: none; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            display: inline-flex; align-items: center; gap: 0.75rem;
         }
-
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px rgba(16, 185, 129, 0.5);
+            background: var(--primary); color: white;
+            box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.5);
+            transform: scale(1.05);
         }
+        .btn:active { transform: scale(0.95); }
 
-        .btn:active {
-            transform: scale(0.96);
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
+        /* Floating Particles */
+        .particle {
+            position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.1);
+            border-radius: 50%; pointer-events: none;
         }
     </style>
 </head>
@@ -140,16 +112,29 @@
         <div class="orb orb-2"></div>
     </div>
 
-    <div class="container">
-        <div class="icon-circle">
-            <i class="fas fa-wifi"></i>
+    <div class="card">
+        <div class="icon-box">
+            <div class="icon-ring"></div>
+            <div class="icon"><i class="fas fa-signal-perfect-slash"></i></div>
         </div>
-        <h1>انٹرنیٹ منقطع ہے</h1>
-        <p>آپ اس وقت آف لائن ہیں۔ براہ کرم اپنا انٹرنیٹ کنکشن چیک کریں اور دوبارہ کوشش کریں۔</p>
+        <h1>رابطہ منقطع</h1>
+        <p>ایسا معلوم ہوتا ہے کہ آپ کا انٹرنیٹ کام نہیں کر رہا۔ براہ کرم اپنا کنکشن چیک کریں اور صفحہ دوبارہ لوڈ کریں۔</p>
         <button class="btn" onclick="window.location.reload()">
-            <i class="fas fa-sync-alt text-sm"></i>
+            <i class="fas fa-redo-alt"></i>
             دوبارہ کوشش کریں
         </button>
     </div>
+
+    <script>
+        // Simple particle generation
+        for(let i=0; i<20; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.opacity = Math.random();
+            document.body.appendChild(p);
+        }
+    </script>
 </body>
 </html>

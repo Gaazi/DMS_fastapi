@@ -1,26 +1,21 @@
-const CACHE_NAME = 'dms-cache-v31'; // Version incremented to v31 (Manifest Share Target Fixes)
+const CACHE_NAME = 'dms-premium-cache-v1';
 const STATIC_ASSETS = [
+  '/',
   '/static/manifest.json',
   '/static/css/fonts.css',
   '/static/css/main.css',
   '/static/offline.html',
-  '/static/fonts/mehr.woff2',
   '/static/icons/logo.webp',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
-  // New Local Vendors
   '/static/js/vendors/tailwindcss.js',
   '/static/js/vendors/htmx.min.js',
   '/static/js/vendors/alpine.min.js',
   '/static/js/vendors/chart.umd.min.js',
   '/static/css/fontawesome.all.min.css',
-  // Webfonts
   '/static/webfonts/fa-solid-900.woff2',
-  '/static/webfonts/fa-regular-400.woff2',
-  '/static/webfonts/fa-brands-400.woff2',
-  '/static/fonts/google/Amiri-Regular.ttf',
-  '/static/fonts/google/Amiri-Bold.ttf',
-  '/static/fonts/google/ReemKufiInk-Regular.ttf'
+  '/static/fonts/mehr.woff2',
+  '/static/fonts/google/Amiri-Regular.ttf'
 ];
 
 // 1. Install Event: High-Priority Cache
