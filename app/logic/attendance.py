@@ -90,6 +90,7 @@ class AttendanceManager:
             # مخصوص کلاس/سیشن حاضری
             class_map = {}
             if session_id:
+                # مخصوص گھنٹے کی حاضری پڑھنا
                 records = self.session.exec(
                     select(Attendance).where(
                         Attendance.inst_id == self.institution.id,
@@ -97,19 +98,17 @@ class AttendanceManager:
                     )
                 ).all()
                 class_map = {r.student_id: r for r in records}
-            elif course_id:
-                records = self.session.exec(
-                    select(Attendance).join(ClassSession).where(
-                        Attendance.inst_id == self.institution.id,
-                        ClassSession.course_id == course_id,
-                        ClassSession.date == target_date
-                    )
-                ).all()
-                class_map = {r.student_id: r for r in records}
             
             for m in members:
-                # ترتیب: کلاس سیشن ریکارڈ > ڈے حاضری > ڈیفالٹ 'حاضر'
-                rec = class_map.get(m.id) or daily_map.get(m.id)
+                if session_id:
+                    # مخصوص گھنٹہ: class_map → daily_map → present
+                    rec = class_map.get(m.id) or daily_map.get(m.id)
+                elif course_id:
+                    # صرف کورس: صرف daily_map پڑھنا (کیونکہ save بھی DailyAttendance میں ہوتا ہے)
+                    rec = daily_map.get(m.id)
+                else:
+                    # ڈے حاضری: سب کی daily_map
+                    rec = daily_map.get(m.id)
                 m.current_status = rec.status if rec else 'present'
                 m.current_remarks = rec.remarks if rec else ''
                 m.is_absent = (m.current_status == 'absent')
@@ -194,7 +193,60 @@ class AttendanceManager:
                 if class_session and not course_id:
                     course_id = class_session.course_id
                     
-            if not course_id and not class_session:
+            if class_session:
+                # ====== مخصوص گھنٹہ کی حاضری (ClassAttendance) ======
+                members = self.session.exec(
+                    select(Student).join(Admission).where(
+                        Admission.course_id == class_session.course_id,
+                        Admission.status == 'active',
+                        Student.inst_id == self.institution.id,
+                        Student.is_active == True
+                    )
+                ).all()
+                
+                for m in members:
+                    status = post_data.get(f"student_{m.id}") or 'present'
+                    remarks = post_data.get(f"remarks_{m.id}", "")
+                    rec = self.session.exec(
+                        select(Attendance).where(
+                            Attendance.student_id == m.id,
+                            Attendance.session_id == class_session.id
+                        )
+                    ).first()
+                    if not rec:
+                        rec = Attendance(student_id=m.id, session_id=class_session.id, inst_id=self.institution.id)
+                    rec.status = status
+                    rec.remarks = remarks
+                    self.session.add(rec)
+
+            elif course_id:
+                # ====== صرف کورس منتخب ہو (کوئی سیشن نہیں): DailyAttendance میں سیو ======
+                # اس سے ملٹی سیشن والی پیچیدکی ختم ہوتی ہے
+                members = self.session.exec(
+                    select(Student).join(Admission).where(
+                        Admission.course_id == course_id,
+                        Admission.status == 'active',
+                        Student.inst_id == self.institution.id,
+                        Student.is_active == True
+                    )
+                ).all()
+                
+                for m in members:
+                    status = post_data.get(f"student_{m.id}") or 'present'
+                    remarks = post_data.get(f"remarks_{m.id}", "")
+                    rec = self.session.exec(
+                        select(DailyAttendance).where(
+                            DailyAttendance.student_id == m.id,
+                            DailyAttendance.date == target_date
+                        )
+                    ).first()
+                    if not rec:
+                        rec = DailyAttendance(student_id=m.id, inst_id=self.institution.id, date=target_date)
+                    rec.status = status
+                    rec.remarks = remarks
+                    self.session.add(rec)
+
+            else:
                 # ====== ڈے حاضری - تمام طلبہ کے لیے ======
                 members = self.session.exec(
                     select(Student).where(
@@ -214,44 +266,6 @@ class AttendanceManager:
                     ).first()
                     if not rec:
                         rec = DailyAttendance(student_id=m.id, inst_id=self.institution.id, date=target_date)
-                    rec.status = status
-                    rec.remarks = remarks
-                    self.session.add(rec)
-                    
-            else:
-                # ====== کلاس سیشن / کورس حاضری ======
-                if not class_session:
-                    if not course_id:
-                        return False, "کورس کا انتخاب ضروری ہے۔"
-                    class_session = self.session.exec(
-                        select(ClassSession).where(
-                            ClassSession.course_id == course_id,
-                            ClassSession.date == target_date
-                        )
-                    ).first()
-                    if not class_session:
-                        class_session = ClassSession(course_id=course_id, date=target_date)
-                        self.session.add(class_session)
-                        self.session.flush()
-
-                members = self.session.exec(
-                    select(Student).join(Admission).where(
-                        Admission.course_id == class_session.course_id,
-                        Admission.status == 'active'
-                    )
-                ).all()
-                
-                for m in members:
-                    status = post_data.get(f"student_{m.id}") or 'present'
-                    remarks = post_data.get(f"remarks_{m.id}", "")
-                    rec = self.session.exec(
-                        select(Attendance).where(
-                            Attendance.student_id == m.id,
-                            Attendance.session_id == class_session.id
-                        )
-                    ).first()
-                    if not rec:
-                        rec = Attendance(student_id=m.id, session_id=class_session.id, inst_id=self.institution.id)
                     rec.status = status
                     rec.remarks = remarks
                     self.session.add(rec)
