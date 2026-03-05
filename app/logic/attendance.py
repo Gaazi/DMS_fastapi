@@ -5,7 +5,7 @@ from datetime import date as dt_date, datetime, timedelta
 import calendar
 
 # Models
-from app.models import Institution, Student, Staff, Attendance, Staff_Attendance, ClassSession, Admission, TimetableItem
+from app.models import Institution, Student, Staff, Attendance, Staff_Attendance, ClassSession, Admission, TimetableItem, DailyAttendance
 from app.logic.audit import AuditManager
 
 class AttendanceManager:
@@ -64,15 +64,17 @@ class AttendanceManager:
             stmt = stmt.distinct()
             members = self.session.exec(stmt.order_by(Student.name)).all()
             
-            # طالب علم کی حاضری سیشن پر مبنی ہوتی ہے
-            records_stmt = select(Attendance).where(Attendance.inst_id == self.institution.id)
-            
+            # طالب علم کی حاضری سیشن یا ڈے پر مبنی ہوتی ہے
             if session_id:
-                records_stmt = records_stmt.where(Attendance.session_id == session_id)
+                records_stmt = select(Attendance).where(Attendance.inst_id == self.institution.id, Attendance.session_id == session_id)
             elif course_id:
-                records_stmt = records_stmt.join(ClassSession).where(ClassSession.course_id == course_id, ClassSession.date == target_date)
+                records_stmt = select(Attendance).join(ClassSession).where(
+                    Attendance.inst_id == self.institution.id, 
+                    ClassSession.course_id == course_id, 
+                    ClassSession.date == target_date
+                )
             else:
-                records_stmt = records_stmt.join(ClassSession).where(ClassSession.date == target_date)
+                records_stmt = select(DailyAttendance).where(DailyAttendance.inst_id == self.institution.id, DailyAttendance.date == target_date)
             
             field_id = 'student_id'
 
@@ -153,40 +155,64 @@ class AttendanceManager:
                 record.remarks = remarks
                 self.session.add(record)
         else:
-            if not course_id: return False, "کورس کا انتخاب ضروری ہے۔"
-            
-            # If session_id is explicitly provided in post_data
-            session_id = post_data.get('session_id')
-            class_session = None
-            if session_id:
-                class_session = self.session.get(ClassSession, int(session_id))
-            
-            if not class_session:
-                session_stmt = select(ClassSession).where(ClassSession.course_id == course_id, ClassSession.date == target_date)
-                class_session = self.session.exec(session_stmt).first()
+            if not course_id and not session_id:
+                # ====== ڈے حاضری (Day Attendance) ======
+                members = self.session.exec(select(Student).where(
+                    Student.inst_id == self.institution.id, 
+                    Student.is_active == True
+                )).all()
+
+                for m in members:
+                    status = post_data.get(f"student_{m.id}") or 'present'
+                    remarks = post_data.get(f"remarks_{m.id}", "")
+                    
+                    stmt = select(DailyAttendance).where(
+                        DailyAttendance.student_id == m.id, 
+                        DailyAttendance.date == target_date
+                    )
+                    record = self.session.exec(stmt).first()
+                    
+                    if not record:
+                        record = DailyAttendance(student_id=m.id, inst_id=self.institution.id, date=target_date)
+                    
+                    record.status = status
+                    record.remarks = remarks
+                    self.session.add(record)
+                    
+            else:
+                # ====== سیشن یا کورس کی حاضری ======
+                # If session_id is explicitly provided in post_data
+                session_id = post_data.get('session_id') or session_id
+                class_session = None
+                if session_id:
+                    class_session = self.session.get(ClassSession, int(session_id))
+                
                 if not class_session:
-                    class_session = ClassSession(course_id=course_id, date=target_date)
-                    self.session.add(class_session)
-                    self.session.flush()
+                    session_stmt = select(ClassSession).where(ClassSession.course_id == course_id, ClassSession.date == target_date)
+                    class_session = self.session.exec(session_stmt).first()
+                    if not class_session:
+                        class_session = ClassSession(course_id=course_id, date=target_date)
+                        self.session.add(class_session)
+                        self.session.flush()
 
-            members = self.session.exec(select(Student).join(Admission).where(
-                Admission.course_id == course_id, 
-                Admission.status == 'active'
-            )).all()
-            
-            for m in members:
-                status = post_data.get(f"student_{m.id}") or 'present'
-                remarks = post_data.get(f"remarks_{m.id}", "")
+                members = self.session.exec(select(Student).join(Admission).where(
+                    Admission.course_id == course_id, 
+                    Admission.status == 'active'
+                )).all()
                 
-                stmt = select(Attendance).where(Attendance.student_id == m.id, Attendance.session_id == class_session.id)
-                record = self.session.exec(stmt).first()
-                if not record:
-                    record = Attendance(student_id=m.id, session_id=class_session.id, inst_id=self.institution.id)
-                
-                record.status = status
-                record.remarks = remarks
-                self.session.add(record)
-
+                for m in members:
+                    status = post_data.get(f"student_{m.id}") or 'present'
+                    remarks = post_data.get(f"remarks_{m.id}", "")
+                    
+                    stmt = select(Attendance).where(Attendance.student_id == m.id, Attendance.session_id == class_session.id)
+                    record = self.session.exec(stmt).first()
+                    if not record:
+                        record = Attendance(student_id=m.id, session_id=class_session.id, inst_id=self.institution.id)
+                    
+                    record.status = status
+                    record.remarks = remarks
+                    self.session.add(record)
+        
         AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'bulk_attendance', type.capitalize(), 0, f"Attendance for {type} on {target_date}", {'course_id': course_id})
         self.session.commit()
         return True, "حاضری کامیابی سے محفوظ کر لی گئی ہے۔"
@@ -200,24 +226,60 @@ class AttendanceManager:
         today = dt_date.today()
         total_students = self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id, Student.is_active == True)).one()
         
-        # آج کے سیشنز میں حاضر، غیر حاضر اور لیٹ طلبہ
-        present_count = self.session.exec(select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
-            Attendance.inst_id == self.institution.id,
-            ClassSession.date == today,
-            Attendance.status == 'present'
-        )).one() or 0
+        # آج کے سیشنز جن میں طالب علم کی حاضری لگی ہے (اکلاس اور ڈے حاضری ملا کر)
+        # To calculate properly with fallback, we fetch all today's sessions,
+        # all today's Attendance and all today's DailyAttendance
+        sessions = self.session.exec(select(ClassSession).where(ClassSession.date == today)).all()
+        session_ids = [s.id for s in sessions]
         
-        absent_count = self.session.exec(select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
-            Attendance.inst_id == self.institution.id,
-            ClassSession.date == today,
-            Attendance.status == 'absent'
-        )).one() or 0
-
-        late_count = self.session.exec(select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
-            Attendance.inst_id == self.institution.id,
-            ClassSession.date == today,
-            Attendance.status == 'late'
-        )).one() or 0
+        explicit_att = self.session.exec(select(Attendance).where(
+            Attendance.inst_id == self.institution.id, Attendance.session_id.in_(session_ids) if session_ids else False
+        )).all()
+        
+        daily_att = self.session.exec(select(DailyAttendance).where(
+            DailyAttendance.inst_id == self.institution.id, DailyAttendance.date == today
+        )).all()
+        
+        # Build maps
+        explicit_map = {(a.student_id, a.session_id): a.status for a in explicit_att}
+        daily_map = {a.student_id: a.status for a in daily_att}
+        
+        present_str, absent_str, late_str = 'present', 'absent', 'late'
+        p_c, a_c, l_c = 0, 0, 0
+        
+        # We need to map which student is in which session based on admissions
+        admissions = self.session.exec(select(Admission).where(Admission.status == 'active', Admission.inst_id == self.institution.id)).all()
+        course_students = {}
+        for adm in admissions:
+            course_students.setdefault(adm.course_id, []).append(adm.student_id)
+            
+        student_counted = set()
+        
+        for s in sessions:
+            stds = course_students.get(s.course_id, [])
+            for sid in stds:
+                if (sid, s.id) in student_counted: continue
+                # We count distinct students for today's live summary
+                status = explicit_map.get((sid, s.id)) or daily_map.get(sid)
+                if status == present_str: p_c += 1
+                elif status == absent_str: a_c += 1
+                elif status == late_str: l_c += 1
+                if status: student_counted.add((sid, s.id))
+                
+        # Count unique students present/absent/late today (overall)
+        # Actually Dashboard usually shows unique students count, so we use max priority status per student today?
+        # Let's adjust simple unique counts like before
+        student_status_today = {}
+        for s in sessions:
+            stds = course_students.get(s.course_id, [])
+            for sid in stds:
+                status = explicit_map.get((sid, s.id)) or daily_map.get(sid)
+                if status and sid not in student_status_today:
+                    student_status_today[sid] = status
+                    
+        present_count = sum(1 for st in student_status_today.values() if st == present_str)
+        absent_count = sum(1 for st in student_status_today.values() if st == absent_str)
+        late_count = sum(1 for st in student_status_today.values() if st == late_str)
         
         return {
             'total': total_students,
@@ -253,15 +315,42 @@ class AttendanceManager:
         start_date = end_date - timedelta(days=days-1)
         
         if isinstance(member, Student):
-            stmt = select(Attendance).where(
-                Attendance.student_id == member.id,
-                Attendance.inst_id == self.institution.id
-            ).join(ClassSession).where(ClassSession.date >= start_date)
+            # Find all sessions for courses the student is enrolled in
+            admissions = self.session.exec(select(Admission).where(Admission.student_id == member.id, Admission.status == 'active')).all()
+            course_ids = [a.course_id for a in admissions]
             
             if course_id:
-                stmt = stmt.where(ClassSession.course_id == course_id)
+                if course_id in course_ids: course_ids = [course_id]
+                else: course_ids = []
                 
-            records = self.session.exec(stmt).all()
+            sessions = self.session.exec(select(ClassSession).where(
+                ClassSession.course_id.in_(course_ids) if course_ids else False,
+                ClassSession.date >= start_date, ClassSession.date <= end_date
+            )).all()
+            
+            session_ids = [s.id for s in sessions]
+            
+            # Get explicit class attendance
+            explicit_att = self.session.exec(select(Attendance).where(
+                Attendance.student_id == member.id,
+                Attendance.session_id.in_(session_ids) if session_ids else False
+            )).all()
+            explicit_map = {a.session_id: a.status for a in explicit_att}
+            
+            # Get daily fallbacks
+            daily_att = self.session.exec(select(DailyAttendance).where(
+                DailyAttendance.student_id == member.id,
+                DailyAttendance.date >= start_date, DailyAttendance.date <= end_date
+            )).all()
+            daily_map = {a.date: a.status for a in daily_att}
+            
+            summary = {'present': 0, 'absent': 0, 'late': 0, 'excused': 0, 'total': 0}
+            for s in sessions:
+                status = explicit_map.get(s.id) or daily_map.get(s.date)
+                if status:
+                    summary['total'] += 1
+                    if status in summary: summary[status] += 1
+                    
         else:
             stmt = select(Staff_Attendance).where(
                 Staff_Attendance.staff_member_id == member.id,
@@ -269,10 +358,10 @@ class AttendanceManager:
             )
             records = self.session.exec(stmt).all()
             
-        summary = {'present': 0, 'absent': 0, 'late': 0, 'excused': 0, 'total': len(records)}
-        for r in records:
-            if r.status in summary:
-                summary[r.status] += 1
+            summary = {'present': 0, 'absent': 0, 'late': 0, 'excused': 0, 'total': len(records)}
+            for r in records:
+                if r.status in summary:
+                    summary[r.status] += 1
         
         summary['percentage'] = round((summary['present'] / summary['total'] * 100), 1) if summary['total'] > 0 else 0
         return summary

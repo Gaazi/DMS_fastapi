@@ -1,5 +1,5 @@
 from typing import List, Optional, Any, Dict
-from sqlmodel import Session, select, func, desc, and_, or_
+from sqlmodel import Session, select, func, desc, and_, or_, extract
 from fastapi import HTTPException
 from datetime import date as dt_date, datetime, time as dt_time
 from decimal import Decimal

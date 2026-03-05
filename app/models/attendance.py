@@ -73,3 +73,22 @@ class Attendance(AuditModel, table=True):
         return self.status.capitalize()
 
     session: ClassSession = Relationship(back_populates="attendance_records")
+
+class DailyAttendance(AuditModel, table=True):
+    __tablename__ = "dms_daily_attendance"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    inst_id: int = Field(sa_column=Column("institution_id", Integer, ForeignKey("dms_institution.id")))
+    student_id: int = Field(foreign_key="dms_student.id")
+    date: dt_date = Field(default_factory=dt_date.today, index=True)
+    status: str = Field(default="present", max_length=20)
+    remarks: str = Field(default="")
+    
+    __table_args__ = (
+        UniqueConstraint("student_id", "date", name="uq_student_daily_attendance"),
+    )
+    recorded_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @property
+    def get_status_display(self) -> str:
+        return self.status.capitalize()

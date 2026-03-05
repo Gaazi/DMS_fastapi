@@ -4,7 +4,7 @@ from app.models.links import CourseStaffLink, StudentParentLink, AnnouncementTar
 from app.models.foundation import Institution, Course, Facility
 from app.models.people import Staff, Parent, Student, Admission, StaffAdvance
 from app.models.finance import Fee, Fee_Payment, WalletTransaction, Donor, Income, Expense
-from app.models.attendance import ClassSession, Staff_Attendance, Attendance
+from app.models.attendance import ClassSession, Staff_Attendance, Attendance, DailyAttendance
 from app.models.exam import Exam, ExamResult
 from app.models.announcement import Announcement
 from app.models.inventory import ItemCategory, InventoryItem, AssetIssue
@@ -17,7 +17,7 @@ __all__ = [
     'Institution', 'Course', 'Facility',
     'Staff', 'Parent', 'Student', 'Admission', 'Enrollment', 'StaffAdvance',
     'Fee', 'Fee_Payment', 'WalletTransaction', 'Donor', 'Income', 'Expense',
-    'ClassSession', 'Staff_Attendance', 'Attendance',
+    'ClassSession', 'Staff_Attendance', 'Attendance', 'DailyAttendance',
     'Exam', 'ExamResult',
     'Announcement',
     'ItemCategory', 'InventoryItem', 'AssetIssue',

@@ -73,7 +73,7 @@
                             hx-include="#filter-date, #filter-search"
                             hx-sync="this:replace"
                             hx-indicator="#loading-indicator">
-                        <option value="" class="bg-[#020617]" {% if not selected_course_id %}selected{% endif %}>تمام کورسز</option>
+                        <option value="" class="bg-[#020617]" {% if not selected_course_id %}selected{% endif %}>ڈے حاضری (تمام کلاسز)</option>
                         {% for prog in all_courses %}
                         <option value="{{ prog.id }}" class="bg-[#020617]" {% if prog.id|stringformat('s') == selected_course_id %}selected{% endif %}>{{ prog.title }}</option>
                         {% endfor %}
