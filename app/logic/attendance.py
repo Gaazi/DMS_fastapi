@@ -90,14 +90,16 @@ class AttendanceManager:
             
         return members, target_date, course_id, session_id
 
-    def get_sessions(self, course_id: int, target_date: dt_date):
+    def get_sessions(self, course_id: Optional[int], target_date: dt_date):
         """کورس اور تاریخ کی بنیاد پر سیشنز کی لسٹ حاصل کرنا۔"""
         self._check_permission()
-        stmt = select(ClassSession).where(
-            ClassSession.course_id == course_id,
-            ClassSession.date == target_date
-        ).order_by(ClassSession.start_time)
+        stmt = select(ClassSession).where(ClassSession.date == target_date)
+        if course_id:
+            stmt = stmt.where(ClassSession.course_id == course_id)
+        
+        stmt = stmt.order_by(ClassSession.start_time)
         return self.session.exec(stmt).all()
+
 
     def save_bulk(self, type: str, post_data: dict, target_date: dt_date, course_id: Optional[int] = None):
         """کئی طلبہ یا ملازمین کی حاضری ایک ساتھ ڈیٹا بیس میں محفوظ کرنا۔"""

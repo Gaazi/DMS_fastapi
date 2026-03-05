@@ -15,10 +15,8 @@
             </thead>
             <tbody class="divide-y divide-white/[0.03]">
                 {% for student in members %}
-                <tr x-data="{ 
-                        status: '{% if student.is_absent %}absent{% elif student.is_late %}late{% elif student.is_excused %}excused{% else %}present{% endif %}' 
-                    }" 
-                    x-show="!searchQuery || '{{ student.full_name|tojson|safe }}'.toLowerCase().includes(searchQuery.toLowerCase())"
+                <tr x-data="{ status: '{% if student.is_absent %}absent{% elif student.is_late %}late{% elif student.is_excused %}excused{% else %}present{% endif %}' }" 
+                    x-show='!searchQuery || {{ student.full_name|tojson|safe }}.toLowerCase().includes(searchQuery.toLowerCase())'
                     class="group transition-all hover:bg-white/[0.01]">
 
                     <!-- Minimized Tactical ID -->

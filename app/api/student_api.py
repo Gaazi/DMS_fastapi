@@ -218,7 +218,7 @@ async def student_attendance(request: Request, institution_slug: str, session: S
 
     members, active_date, active_course_id, active_session_id = am.get_prepared_list(type='student', target_date=target_date, course_id=course_id, session_id=session_id)
     courses = session.exec(select(Course).where(Course.inst_id == institution.id).order_by(Course.title)).all()
-    sessions = am.get_sessions(active_course_id, active_date) if active_course_id else []
+    sessions = am.get_sessions(active_course_id, active_date)
     
     selected_course = next((c for c in courses if c.id == active_course_id), None) if active_course_id else None
 
@@ -235,7 +235,7 @@ async def student_attendance(request: Request, institution_slug: str, session: S
     }
     
     if request.headers.get("HX-Request") and not request.query_params.get("full_page"):
-        return await TemplateResponse.render("dms/partials/student_attendance_table.html", request, session, context)
+        return await TemplateResponse.render("dms/partials/student_attendance_content.html", request, session, context)
     return await TemplateResponse.render("dms/student_attendance.html", request, session, context)
 
 @router.get("/{institution_slug}/students/{student_id}/id-card/", response_class=HTMLResponse, name="student_id_card")

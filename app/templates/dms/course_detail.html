@@ -57,7 +57,7 @@
           </div>
           <div class="mt-2">
             <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-xs border border-blue-500/20">
-              {{ course.get_category_display() }}
+              {{ course.get_category_display }}
             </span>
           </div>
         
@@ -314,7 +314,7 @@
                     </select>
                   </form>
                   {% else %}
-                  <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px]">{{ enrollment.get_status_display() }}</span>
+                  <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px]">{{ enrollment.get_status_display }}</span>
                   {% endif %}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
@@ -369,7 +369,7 @@
                       </div>
                       <div class="flex items-center gap-1.5 mt-1.5 px-1">
                         <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                        <span class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{{ session.get_session_type_display() }}</span>
+                        <span class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{{ session.get_session_type_display }}</span>
                       </div>
                   </div>
                 </td>

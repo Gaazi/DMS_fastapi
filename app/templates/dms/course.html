@@ -92,11 +92,11 @@
                     <div class="flex items-center gap-3 mb-6">
                         <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
                             <i class="fas fa-tags text-[9px] text-blue-400/70"></i>
-                            <span class="text-[10px] text-slate-300 font-bold">{{ course.get_category_display() }}</span>
+                            <span class="text-[10px] text-slate-300 font-bold">{{ course.get_category_display }}</span>
                         </div>
-                        <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
-                            <i class="fas fa-money-bill-wave text-[9px] text-emerald-400/70"></i>
-                            <span class="text-[10px] text-slate-300 font-bold">{{ course.get_fee_type_display() }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Fee Type:</span>
+                            <span class="text-[10px] text-slate-300 font-bold">{{ course.get_fee_type_display }}</span>
                         </div>
                     </div>
 

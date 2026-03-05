@@ -1,0 +1,32 @@
+{% if request.headers.get("HX-Request") %}
+<!-- OOB Update for Session Dropdown -->
+<div id="session-select-container" hx-swap-oob="true">
+    <select name="session_id" class="flex-1 bg-transparent border-none text-white text-xs md:text-sm focus:ring-0 cursor-pointer p-0 pr-6 appearance-none"
+            hx-get="." 
+            hx-target="#student-list-container" 
+            hx-trigger="change" 
+            hx-push-url="true" 
+            hx-include="[name='date'], [name='q'], [name='course_id']"
+            hx-sync="this:replace"
+            hx-indicator="#loading-indicator">
+        <option value="" class="bg-[#020617]">گھنٹی (Period)</option>
+        {% for sess in sessions %}
+        <option value="{{ sess.id }}" class="bg-[#020617]" {% if sess.id|stringformat('s') == selected_session_id %}selected{% endif %}>
+            {{ sess.topic|truncatechars(20) or (sess.start_time|time('%H:%M')) or 'Period' }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- Modal Date and Course sync (OOB) -->
+<div id="modal-hidden-inputs" hx-swap-oob="true">
+    <input type="hidden" name="course_id" value="{{ selected_course_id }}">
+    <input type="hidden" name="date" value="{{ selected_date|date('%Y-%m-%d') }}">
+</div>
+
+<div id="modal-course-title" hx-swap-oob="true">
+    <span class="text-[10px] text-emerald-500 uppercase tracking-widest font-bold mt-1">برائے کورس: {{ selected_course.title|default("کورس منتخب کریں") }}</span>
+</div>
+{% endif %}
+
+{% include 'dms/partials/student_attendance_table.html' %}

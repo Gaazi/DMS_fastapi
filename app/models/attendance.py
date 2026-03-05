@@ -27,6 +27,7 @@ class ClassSession(AuditModel, table=True):
     attendance_records: List["Attendance"] = Relationship(back_populates="session")
     course: Optional["Course"] = Relationship()
 
+    @property
     def get_session_type_display(self) -> str:
         type_map = {
             "Lecture": "لیکچر (Lecture)",

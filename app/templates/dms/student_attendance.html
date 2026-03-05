@@ -88,21 +88,23 @@
                     <div class="w-8 h-8 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
                         <i class="fas fa-clock text-[10px]"></i>
                     </div>
-                    <select name="session_id" class="flex-1 bg-transparent border-none text-white text-xs md:text-sm focus:ring-0 cursor-pointer p-0 pr-6 appearance-none"
-                            hx-get="." 
-                            hx-target="#student-list-container" 
-                            hx-trigger="change" 
-                            hx-push-url="true" 
-                            hx-include="[name='date'], [name='q'], [name='course_id']"
-                            hx-sync="this:replace"
-                            hx-indicator="#loading-indicator">
-                        <option value="" class="bg-[#020617]">گھنٹی (Period)</option>
-                        {% for sess in sessions %}
-                        <option value="{{ sess.id }}" class="bg-[#020617]" {% if sess.id|stringformat('s') == selected_session_id %}selected{% endif %}>
-                            {{ sess.topic|truncatechars(20) or sess.date|date('%H:%M') }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <div id="session-select-container" class="flex-1 flex items-center">
+                        <select name="session_id" class="flex-1 bg-transparent border-none text-white text-xs md:text-sm focus:ring-0 cursor-pointer p-0 pr-6 appearance-none"
+                                hx-get="." 
+                                hx-target="#student-list-container" 
+                                hx-trigger="change" 
+                                hx-push-url="true" 
+                                hx-include="[name='date'], [name='q'], [name='course_id']"
+                                hx-sync="this:replace"
+                                hx-indicator="#loading-indicator">
+                            <option value="" class="bg-[#020617]">گھنٹی (Period)</option>
+                            {% for sess in sessions %}
+                            <option value="{{ sess.id }}" class="bg-[#020617]" {% if sess.id|stringformat('s') == selected_session_id %}selected{% endif %}>
+                                {{ sess.topic|truncatechars(20) or (sess.start_time|time('%H:%M')) or 'Period' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
                         <i class="fas fa-chevron-down text-[8px]"></i>
                     </div>
@@ -113,19 +115,14 @@
                         <i class="fas fa-plus text-[8px]"></i>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Hidden Loading Indicator -->
-            <div id="loading-indicator" class="htmx-indicator absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 rounded-2xl">
-                <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
-            </div>
-        </div>
-            
-            <!-- Hidden Loading Indicator -->
-            <div id="loading-indicator" class="htmx-indicator absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 rounded-xl">
-                <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+
+                <!-- HTMX Loading Indicator (Pinned to Grid) -->
+                <div id="loading-indicator" class="htmx-indicator absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+                    <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+                </div>
             </div>
         </div>
+
 
         <!-- Quick Actions (Single Row) -->
         <div class="px-1 md:px-8 flex flex-row gap-2 mb-8 overflow-x-auto scrollbar-hide py-1">
@@ -179,7 +176,9 @@
             <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
                 <h3 class="text-xl font-bold text-white">
                     <span class="block">نیا سیشن (Period) بنائیں</span>
-                    <span class="text-[10px] text-emerald-500 uppercase tracking-widest font-bold mt-1">برائے کورس: {{ selected_course.title|default("کورس منتخب کریں") }}</span>
+                    <div id="modal-course-title">
+                        <span class="text-[10px] text-emerald-500 uppercase tracking-widest font-bold mt-1">برائے کورس: {{ selected_course.title|default("کورس منتخب کریں") }}</span>
+                    </div>
                 </h3>
                 <button type="button" @click="showSessionModal = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-slate-400 hover:text-white transition-all">
                     <i class="fas fa-times"></i>
@@ -189,8 +188,10 @@
             <form method="post">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="add_session">
-                <input type="hidden" name="course_id" value="{{ selected_course_id }}">
-                <input type="hidden" name="date" value="{{ selected_date|date('%Y-%m-%d') }}">
+                <div id="modal-hidden-inputs">
+                    <input type="hidden" name="course_id" value="{{ selected_course_id }}">
+                    <input type="hidden" name="date" value="{{ selected_date|date('%Y-%m-%d') }}">
+                </div>
 
                 <div class="space-y-4">
                     <div class="space-y-1">

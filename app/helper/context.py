@@ -102,6 +102,8 @@ templates.env.filters["short_id"] = lambda v: str(v).split("-")[-1] if v else ""
 templates.env.filters["upper"] = lambda v: str(v).upper() if v else ""
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 templates.env.filters["translate"] = translate_filter
+import json
+templates.env.filters["tojson"] = lambda v: json.dumps(v)
 templates.env.globals["csrf_token"] = lambda: ""
 templates.env.globals["now"] = lambda: datetime.datetime.now()
 
