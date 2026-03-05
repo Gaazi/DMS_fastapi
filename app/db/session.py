@@ -1,28 +1,5 @@
-from sqlmodel import create_engine, Session, SQLModel
-from app.core.config import settings
+# Compatibility shim — پرانے imports کام کریں
+# اصل file اب app/core/database.py ہے
+from app.core.database import engine, get_session, init_db
 
-
-def _build_engine():
-    url = settings.DATABASE_URL
-
-    if url.startswith("sqlite"):
-        return create_engine(
-            url,
-            connect_args={"check_same_thread": False},
-            echo=settings.DEBUG
-        )
-    else:
-        # MySQL / PostgreSQL
-        return create_engine(url, echo=settings.DEBUG)
-
-
-engine = _build_engine()
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
-
-def init_db():
-    SQLModel.metadata.create_all(engine)
+__all__ = ["engine", "get_session", "init_db"]
