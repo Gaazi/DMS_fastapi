@@ -95,7 +95,7 @@ async def staff_attendance(request: Request, institution_slug: str, session: Ses
         am.save_bulk(type='staff', post_data=dict(form_data), target_date=target_date)
         return RedirectResponse(url=request.url.path + f"?date={target_date}", status_code=303)
         
-    members, active_date, _ = am.get_prepared_list(type='staff', target_date=target_date)
+    members, active_date, _, __ = am.get_prepared_list(type='staff', target_date=target_date)
     context = {
         "request": request, 
         "institution": institution, 

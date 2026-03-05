@@ -8,6 +8,7 @@ import re
 
 # Models
 from app.models import Institution, Student, Course, Attendance, ClassSession, Fee, Admission, User
+from app.models.attendance import DailyAttendance
 from app.logic.audit import AuditManager
 
 class StudentManager:    
@@ -91,12 +92,20 @@ class StudentManager:
         start_of_month = today.replace(day=1)
 
         for s in results:
-            # حاضری (اس مہینے کی - سیشن کی تاریخ کے مطابق)
-            presents = self.session.exec(select(func.count(Attendance.id)).join(ClassSession).where(
-                Attendance.student_id == s.id, 
-                Attendance.status == 'present', 
+            # حاضری (اس مہینے کی - کلاس اور ڈے حاضری ملا کر)
+            class_presents = self.session.exec(select(func.count(Attendance.id)).join(ClassSession).where(
+                Attendance.student_id == s.id,
+                Attendance.status == 'present',
                 ClassSession.date >= start_of_month
-            )).one()
+            )).one() or 0
+            
+            day_presents = self.session.exec(select(func.count(DailyAttendance.id)).where(
+                DailyAttendance.student_id == s.id,
+                DailyAttendance.status == 'present',
+                DailyAttendance.date >= start_of_month
+            )).one() or 0
+            
+            presents = class_presents + day_presents
             
             # بقایاجات (Due Fees)
             due_amount = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
@@ -110,9 +119,15 @@ class StudentManager:
             s.has_pending_fee = (due_amount > 0)
             students_data.append(s)
 
+        base_count_stmt = select(func.count(Student.id)).where(Student.inst_id == self.institution.id)
+        if status == 'active':
+            base_count_stmt = base_count_stmt.where(Student.is_active == True)
+        elif status == 'inactive':
+            base_count_stmt = base_count_stmt.where(Student.is_active == False)
+            
         return {
             "students": students_data,
-            "total": self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id)).one(),
+            "total": self.session.exec(base_count_stmt).one(),
             "stats": self._get_global_stats()
         }
 
@@ -313,6 +328,9 @@ class StudentManager:
             "enrollments": admissions, # Alias for template partials
             "attendance": self.attendance().session.exec(
                 select(Attendance).where(Attendance.student_id == student.id).join(ClassSession).order_by(desc(ClassSession.date)).limit(10)
+            ).all(),
+            "daily_attendance": self.attendance().session.exec(
+                select(DailyAttendance).where(DailyAttendance.student_id == student.id).order_by(desc(DailyAttendance.date)).limit(10)
             ).all(),
             "attendance_percentage": att_summary['percentage'],
             "total_daily_records": att_summary['total'],

@@ -94,13 +94,16 @@ class FinanceManager:
         # target_month logic remains
         count = 0
 
-        admissions = self.session.exec(select(Admission).where(Admission.status == 'active')).all()
+        admissions = self.session.exec(
+            select(Admission).join(Student).where(
+                Admission.status == 'active',
+                Student.inst_id == self.institution.id,
+                Student.is_active == True
+            )
+        ).all()
         
         count = 0
         for ad in admissions:
-            # طالب علم کا انسٹی ٹیوشن چیک کریں
-            student = self.session.get(Student, ad.student_id)
-            if not student or student.inst_id != self.institution.id: continue
 
             # Check if fee already exists for THIS student admission in this month
             exists_stmt = select(func.count(Fee.id)).where(

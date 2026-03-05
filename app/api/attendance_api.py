@@ -50,7 +50,8 @@ async def save_attendance_bulk(request: Request, institution_slug: str, session:
     type = data.get('type', 'student')
     target_date_str = data.get('date')
     target_date = dt_date.fromisoformat(target_date_str) if target_date_str else dt_date.today()
-    course_id = int(data.get('course_id')) if data.get('course_id') else None
+    course_id_raw = data.get('course_id')
+    course_id = int(course_id_raw) if course_id_raw and str(course_id_raw).strip().isdigit() else None
     
     am.save_bulk(type=type, post_data=data, target_date=target_date, course_id=course_id)
     
