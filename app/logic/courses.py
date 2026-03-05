@@ -294,8 +294,12 @@ class CourseManager:
         if not self.course: raise HTTPException(status_code=404, detail="Course not set.")
         
         admissions = self.session.exec(select(Admission).where(Admission.course_id == self.course.id).order_by(desc(Admission.admission_date))).all()
-        sessions = self.session.exec(select(ClassSession).where(ClassSession.course_id == self.course.id).order_by(desc(ClassSession.date), desc(ClassSession.id))).all()
+        sessions = self.session.exec(select(ClassSession).where(ClassSession.course_id == self.course.id).order_by(desc(ClassSession.date), desc(ClassSession.id)).limit(15)).all()
         
+        # Recurring Schedule
+        from app.models.schedule import TimetableItem
+        timetable = self.session.exec(select(TimetableItem).where(TimetableItem.course_id == self.course.id).order_by(TimetableItem.day_of_week, TimetableItem.start_time)).all()
+
         # Available staff to assign
         from app.models import Staff
         all_staff = self.session.exec(select(Staff).where(Staff.inst_id == self.institution.id).order_by(Staff.name)).all()
@@ -305,9 +309,43 @@ class CourseManager:
             "course": self.course,
             "admissions": admissions,
             "sessions": sessions,
+            "timetable": timetable,
             "stats": self.get_stats(),
             "all_staff": all_staff
         }
+
+    def save_timetable_item(self, data: dict):
+        """ٹائم ٹیبل کے کسی آئٹم کو اپڈیٹ کرنا یا نیا بنانا۔"""
+        self._check_access()
+        from app.models.schedule import TimetableItem
+        item_id = data.get('timetable_id') or data.get('id')
+        
+        if item_id:
+            item = self.session.get(TimetableItem, int(item_id))
+            if not item: raise HTTPException(status_code=404, detail="Item not found")
+        else:
+            item = TimetableItem(inst_id=self.institution.id, course_id=self.course.id)
+            self.session.add(item)
+
+        if 'day_of_week' in data: item.day_of_week = str(data.get('day_of_week'))
+        if 'start_time' in data: item.start_time = self._parse_time(data.get('start_time'))
+        if 'end_time' in data: item.end_time = self._parse_time(data.get('end_time'))
+        if 'subject' in data: item.subject = data.get('subject')
+        
+        self.session.commit()
+        return True, "Schedule updated.", item
+
+    def delete_timetable_item(self, item_id: int):
+        """ٹائم ٹیبل سے مخصوص شیڈول حذف کرنا۔"""
+        self._check_access()
+        from app.models.schedule import TimetableItem
+        item = self.session.get(TimetableItem, item_id)
+        if not item or (self.course and item.course_id != self.course.id):
+            raise HTTPException(status_code=404, detail="Schedule item not found.")
+        
+        self.session.delete(item)
+        self.session.commit()
+        return True, "Schedule removed.", None
 
     def assign_instructor(self, staff_id: int):
         """کسی استاد/خادم کو پروگرام کی ذمہ داری سونپنا۔"""

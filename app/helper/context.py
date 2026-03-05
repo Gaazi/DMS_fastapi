@@ -87,6 +87,9 @@ def translate_filter(text):
         "source": "ذریعہ",
         "donor_id": "عطیہ دہندہ",
         "logic": "سسٹم",
+        # Days of the Week
+        "monday": "پیر", "tuesday": "منگل", "wednesday": "بدھ", "thursday": "جمعرات", "friday": "جمعہ", "saturday": "ہفتہ", "sunday": "اتوار",
+        "mon": "پیر", "tue": "منگل", "wed": "بدھ", "thu": "جمعرات", "fri": "جمعہ", "sat": "ہفتہ", "sun": "اتوار"
     }
     return translations.get(str(text).lower(), text)
 
@@ -97,7 +100,13 @@ templates.env.filters["int"] = lambda v: int(v) if v is not None else 0
 templates.env.filters["stringformat"] = stringformat_filter
 templates.env.filters["truncatechars"] = truncatechars_filter
 templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
-templates.env.filters["time"] = lambda v, arg: v.strftime(arg) if hasattr(v, "strftime") else v
+def jinja2_time_filter(time_obj, format_str="%H:%M"):
+    if not time_obj: return ""
+    if hasattr(time_obj, "strftime"):
+        return time_obj.strftime(format_str)
+    return str(time_obj)
+
+templates.env.filters["time"] = jinja2_time_filter
 templates.env.filters["short_id"] = lambda v: str(v).split("-")[-1] if v else ""
 templates.env.filters["upper"] = lambda v: str(v).upper() if v else ""
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None

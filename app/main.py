@@ -170,7 +170,7 @@ templates.env.filters["int"] = lambda v: int(v) if v is not None else 0
 templates.env.filters["stringformat"] = stringformat_filter
 templates.env.filters["truncatechars"] = truncatechars_filter
 templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
-templates.env.filters["time"] = lambda v, arg: v.strftime(arg) if hasattr(v, "strftime") else v
+templates.env.filters["time"] = lambda v, arg="%H:%M": v.strftime(arg) if hasattr(v, "strftime") else v
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 
 # Register Routers

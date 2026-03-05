@@ -93,9 +93,14 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
         elif action == "enrollment_delete":
             success, msg, _ = cm.delete_admission(int(data.get('enrollment_id')))
         elif action in ["session", "schedule"]:
+            data['days'] = form_data_raw.getlist('days')
             success, msg, _ = cm.save_session(data)
         elif action == "session_delete":
             success, msg, _ = cm.delete_session(int(data.get('session_id')))
+        elif action == "timetable_delete":
+            success, msg, _ = cm.delete_timetable_item(int(data.get('timetable_id')))
+        elif action == "timetable_save":
+            success, msg, _ = cm.save_timetable_item(data)
         elif action == "assign_instructor":
             success, msg, _ = cm.assign_instructor(int(data.get('staff_id')))
         elif action == "remove_instructor":

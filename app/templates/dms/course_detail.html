@@ -5,9 +5,14 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6" dir="rtl" 
      x-data="{ 
-         showEditModal: false, 
-         editSession: {id: '', date: '', start_time: '', end_time: '', topic: '', type: ''}
-     }">
+        showEnrollModal: false, 
+        showEditModal: false, 
+        showTimetableModal: false,
+        showPromoteModal: false,
+        editSession: {},
+        editTimetable: {},
+        selectedStudents: []
+    }">
 
   <!-- Error Handling -->
   {% if errors %}
@@ -341,19 +346,104 @@
     </div>
 
     <!-- Sessions Section -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- 1. Permanent Timetable Section -->
+      <div class="bg-indigo-900/20 rounded-3xl shadow-xl border border-indigo-500/20 overflow-hidden backdrop-blur-md">
+        <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+                  <i class="fas fa-clock"></i>
+              </div>
+              <div class="flex flex-col">
+                <h2 class="text-lg font-bold text-white">مستقل شیڈول (Timetable)</h2>
+                <span class="text-[10px] text-indigo-400 uppercase tracking-widest font-bold">ہفتہ وار تعلیمی دورانیہ</span>
+              </div>
+          </div>
+          {% if is_academic_admin %}
+          <button @click="editTimetable = {id: '', day_of_week: '0', start_time: '08:00', end_time: '09:00', subject: ''}; showTimetableModal = true"
+                  class="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20">
+              <i class="fas fa-plus text-sm"></i>
+          </button>
+          {% endif %}
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-white/5">
+            <thead class="bg-black/20 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+              <tr>
+                <th class="px-6 py-4 text-right">دن (Day)</th>
+                <th class="px-6 py-4 text-right">عنوان (Subject)</th>
+                <th class="px-6 py-4 text-right">اوقات</th>
+                <th class="px-6 py-4 text-center print:hidden">عمل</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 bg-transparent">
+              {% set day_names = {'0': 'پیر', '1': 'منگل', '2': 'بدھ', '3': 'جمعرات', '4': 'جمعہ', '5': 'ہفتہ', '6': 'اتوار'} %}
+              {% set day_en = {'0': 'Mon', '1': 'Tue', '2': 'Wed', '3': 'Thu', '4': 'Fri', '5': 'Sat', '6': 'Sun'} %}
+              {% for item in timetable %}
+              <tr class="hover:bg-white/[0.04] transition-colors group">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold text-white">{{ day_names.get(item.day_of_week) }}</span>
+                    <span class="text-[9px] text-slate-500 font-mono tracking-tighter uppercase">{{ day_en.get(item.day_of_week) }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
+                    <div class="text-sm font-bold text-slate-200">{{ item.subject or 'تعلیمی سیشن' }}</div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                   <div class="inline-flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1 gap-2 shadow-inner">
+                      <i class="fas fa-history text-[10px] text-indigo-400/50"></i>
+                      <span class="text-xs font-mono font-bold text-slate-300">{{ item.start_time|time }} - {{ item.end_time|time }}</span>
+                   </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center print:hidden">
+                  <div class="flex items-center justify-center gap-1">
+                    {% if is_academic_admin %}
+                    <button type="button" 
+                            @click="editTimetable = {id: '{{ item.id }}', day_of_week: '{{ item.day_of_week }}', start_time: '{{ item.start_time|time('%H:%M') }}', end_time: '{{ item.end_time|time('%H:%M') }}', subject: '{{ item.subject|default('')|replace('\'','\\\'') }}'}; showTimetableModal = true"
+                            class="text-blue-400 hover:text-blue-300 p-2 transition-colors">
+                      <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    <form method="post" action="" onsubmit="return confirm('شیڈول حذف کریں؟');" class="inline-block">
+                      {{ csrf_token() }}
+                      <input type="hidden" name="action" value="timetable_delete">
+                      <input type="hidden" name="timetable_id" value="{{ item.id }}">
+                      <button type="submit" class="text-slate-600 hover:text-rose-500 p-2 transition-colors">
+                        <i class="fas fa-trash-alt text-xs"></i>
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="px-6 py-12 text-center text-slate-600 italic text-sm">کوئی مستقل شیڈول ترتیب نہیں دیا گیا ہے</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. Session History Section -->
       <div class="bg-slate-900/50 rounded-2xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
         <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
-          <div class="flex flex-col">
-            <h2 class="text-lg font-bold text-white">روزانہ سیشن (Period History)</h2>
-            <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">{{ course.title }}</span>
+          <div class="flex items-center gap-2">
+            <h2 class="text-md font-bold text-white">سیشن ہسٹری (Recent Attendance)</h2>
+            <span class="text-[10px] bg-white/5 text-slate-400 px-2 py-0.5 rounded-full border border-white/10">گزشتہ 15 ریکارڈز</span>
           </div>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-white/5">
-            <thead class="bg-white/[0.02] text-slate-500 text-xs uppercase font-medium">
+            <thead class="bg-white/[0.02] text-slate-500 text-[10px] uppercase font-bold">
               <tr>
                 <th class="px-4 py-3 text-right">تاریخ</th>
-                <th class="px-4 py-3 text-right">اوقات</th>
                 <th class="px-4 py-3 text-right">موضوع</th>
                 <th class="px-4 py-3 text-right print:hidden">عمل</th>
               </tr>
@@ -362,65 +452,43 @@
               {% for session in sessions %}
               <tr class="hover:bg-white/[0.04] transition-colors group">
                 <td class="px-4 py-3 whitespace-nowrap">
-                  <!-- Premium Date Box -->
-                  <div class="inline-flex flex-col">
-                      <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-lg px-3 py-1.5 shadow-inner">
-                          <span class="text-xs font-mono font-bold text-indigo-400 tracking-tight">{{ session.date|date("%d-%m-%y") }}</span>
+                   <div class="flex flex-col">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-mono font-bold text-slate-400">{{ session.date|date("%d-%m-%y") }}</span>
+                        <span class="text-[9px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded">{{ session.date|date("%a")|translate }}</span>
                       </div>
-                      <div class="flex items-center gap-1.5 mt-1.5 px-1">
-                        <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-                        <span class="text-[8px] text-slate-500">{{ session.get_session_type_display }}</span>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="text-[8px] text-slate-600 uppercase">{{ session.get_session_type_display }}</span>
+                        {% if session.start_time %}
+                        <span class="text-[8px] text-slate-700 mx-0.5">•</span>
+                        <span class="text-[8px] text-slate-600 font-mono">{{ session.start_time|time }} - {{ session.end_time|time }}</span>
+                        {% endif %}
                       </div>
-                  </div>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">
-                  {% if session.start_time %}
-                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.start_time|time("%H:%M") }}</span>
-                    {% if session.end_time %}
-                    <span class="text-slate-600 mx-1">-</span>
-                    <span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-300">{{ session.end_time|time("%H:%M") }}</span>
-                    {% endif %}
-                  {% else %}
-                  <span class="text-slate-600">—</span>
-                  {% endif %}
+                   </div>
                 </td>
                 <td class="px-4 py-3">
-                    <div class="bg-white/[0.03] border border-white/5 rounded-xl px-4 py-2 text-slate-200 text-sm leading-relaxed shadow-sm group-hover:border-white/10 transition-colors">
-                        {{ session.topic|default("بغیر عنوان")|truncatechars(40) }}
+                    <div class="text-slate-300 text-xs truncate max-w-[120px]" title="{{ session.topic|default('Daily Class') }}">
+                        {{ session.topic|default("بغیر عنوان") }}
                     </div>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
                   <div class="flex items-center gap-2 justify-end">
-                      <!-- Mark Attendance Button -->
                       <a href="{{ url('dms_session_attendance', institution.slug, session.id) }}"
-                        class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all text-xs font-bold shadow-sm">
+                        class="p-1 px-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all text-[10px] font-bold">
                         <i class="fas fa-clipboard-check"></i>
-                        <span>حاضری لگائیں</span>
                       </a>
-
                       {% if is_academic_admin %}
-                      <!-- Edit Session Button (Always visible for mobile accessibility) -->
                       <button type="button" 
-                              @click="editSession = {
-                                  id: '{{ session.id }}', 
-                                  date: '{{ session.date|time('%Y-%m-%d') }}', 
-                                  start_time: '{{ session.start_time|time('%H:%M') if session.start_time else '' }}', 
-                                  end_time: '{{ session.end_time|time('%H:%M') if session.end_time else '' }}', 
-                                  topic: '{{ session.topic|default('')|replace('\'','\\\'') }}', 
-                                  type: '{{ session.session_type }}'
-                              }; showEditModal = true"
-                              class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-all shadow-sm" 
-                              title="ترمیم کریں">
-                          <i class="fas fa-edit text-[10px]"></i>
+                              @click="editSession = {id: '{{ session.id }}', date: '{{ session.date|time('%Y-%m-%d') }}', start_time: '{{ session.start_time|time('%H:%M') if session.start_time else '' }}', end_time: '{{ session.end_time|time('%H:%M') if session.end_time else '' }}', topic: '{{ session.topic|default('')|replace('\'','\\\'') }}', type: '{{ session.session_type }}'}; showEditModal = true"
+                              class="p-1 px-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-all text-[10px]">
+                          <i class="fas fa-edit"></i>
                       </button>
-
-                      <!-- Delete Session (Always visible for mobile accessibility) -->
-                      <form method="post" onsubmit="return confirm('سیشن حذف کرنا چاہتے ہیں؟');" class="inline-block transition-opacity">
+                      <form method="post" onsubmit="return confirm('حذف کریں؟');" class="inline-block">
                         {{ csrf_token() }}
                         <input type="hidden" name="action" value="session_delete">
                         <input type="hidden" name="session_id" value="{{ session.id }}">
-                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="حذف کریں">
-                            <i class="fas fa-trash-alt text-[10px]"></i>
+                        <button type="submit" class="p-1 px-2 rounded-lg bg-white/5 border border-white/10 text-slate-500 hover:text-rose-400 transition-all text-[10px]">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                       </form>
                       {% endif %}
@@ -429,13 +497,14 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="4" class="px-6 py-12 text-center text-slate-600">کوئی سیشن شیڈول نہیں ہے</td>
+                <td colspan="3" class="px-6 py-12 text-center text-slate-600 text-xs italic">کوئی ریکارڈ موجود نہیں ہے</td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
       </div>
+    </div>
     </div>
 
     {% if is_academic_admin %}
@@ -598,10 +667,31 @@
                 <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-blue-500/50">
                     <i class="fas fa-layer-group text-[11px]"></i>
                 </div>
-                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-600">
-                    <i class="fas fa-chevron-down text-[10px]"></i>
-                </div>
             </div>
+          </div>
+
+          <!-- Repeating Days (Alarm Style) -->
+          <div class="space-y-4 mt-2 p-4 bg-white/[0.02] border border-white/5 rounded-2xl" x-data="{ daily: false }">
+              <div class="flex items-center justify-between">
+                  <label class="block text-[10px] text-slate-500 uppercase font-bold tracking-wider">تکرار (Repeat)</label>
+                  <button type="button" @click="daily = !daily; if(daily) $el.closest('.space-y-4').querySelectorAll('input[type=checkbox]').forEach(i => i.checked = true)" 
+                          class="text-[9px] px-2.5 py-1 rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-all font-bold">
+                      روزانہ
+                  </button>
+              </div>
+              <div class="flex items-center justify-between gap-1">
+                  {% set day_list = [('0', 'پ'), ('1', 'م'), ('2', 'ب'), ('3', 'ج'), ('4', 'ج'), ('5', 'ہ'), ('6', 'ا')] %}
+                  {% for val, name in day_list %}
+                  <label class="relative group cursor-pointer">
+                      <input type="checkbox" name="days" value="{{ val }}" class="sr-only peer" :checked="daily">
+                      <div class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[10px] text-slate-400 bg-black/20 
+                                  peer-checked:bg-blue-600 peer-checked:border-blue-400 peer-checked:text-white peer-checked:shadow-[0_0_15px_rgba(59,130,246,0.3)]
+                                  group-hover:border-blue-500/50 transition-all">
+                          {{ name }}
+                      </div>
+                  </label>
+                  {% endfor %}
+              </div>
           </div>
 
           <button type="submit" class="w-full h-11 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 font-medium active:scale-95 border border-white/10">
@@ -613,6 +703,56 @@
     {% endif %}
     </div>
 
+    <!-- Timetable Edit Modal -->
+    <div x-show="showTimetableModal" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div @click.away="showTimetableModal = false" class="bg-[#0a0f1a] border border-indigo-500/20 rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+            <div class="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                <h2 class="text-lg font-bold text-white">شیڈول میں ترمیم</h2>
+                <button @click="showTimetableModal = false" class="text-slate-400 hover:text-white transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="post" class="space-y-4">
+                {{ csrf_token() }}
+                <input type="hidden" name="action" value="timetable_save">
+                <input type="hidden" name="timetable_id" :value="editTimetable.id">
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-semibold text-slate-400">دن</label>
+                    <select name="day_of_week" :value="editTimetable.day_of_week" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500">
+                        <option value="0">پیر (Mon)</option>
+                        <option value="1">منگل (Tue)</option>
+                        <option value="2">بدھ (Wed)</option>
+                        <option value="3">جمعرات (Thu)</option>
+                        <option value="4">جمعہ (Fri)</option>
+                        <option value="5">ہفتہ (Sat)</option>
+                        <option value="6">اتوار (Sun)</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-semibold text-slate-400">مضمون/عنوان</label>
+                    <input type="text" name="subject" :value="editTimetable.subject" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="block text-[10px] text-slate-400 uppercase">شروع</label>
+                        <input type="time" name="start_time" :value="editTimetable.start_time" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-[10px] text-slate-400 uppercase">ختم</label>
+                        <input type="time" name="end_time" :value="editTimetable.end_time" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full h-11 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all font-bold shadow-lg shadow-indigo-500/20 active:scale-95">
+                    تبدیلی محفوظ کریں
+                </button>
+            </form>
+        </div>
+    </div>
   <!-- Session Edit Modal (Improved showing logic) -->
   <div x-show="showEditModal" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <div @click.away="showEditModal = false" class="bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 w-full max-w-md shadow-2xl overflow-hidden">
