@@ -70,7 +70,7 @@
                             hx-target="#student-list-container" 
                             hx-trigger="change" 
                             hx-push-url="true" 
-                            hx-include="[name='date'], [name='q'], [name='session_id']"
+                            hx-include="[name='date'], [name='q']"
                             hx-sync="this:replace"
                             hx-indicator="#loading-indicator">
                         <option value="" class="bg-[#020617]" {% if not selected_course_id %}selected{% endif %}>تمام کورسز</option>
@@ -97,10 +97,10 @@
                                 hx-include="[name='date'], [name='q'], [name='course_id']"
                                 hx-sync="this:replace"
                                 hx-indicator="#loading-indicator">
-                            <option value="" class="bg-[#020617]">گھنٹی (Period)</option>
+                            <option value="" class="bg-[#020617]">گھنٹہ</option>
                             {% for sess in sessions %}
                             <option value="{{ sess.id }}" class="bg-[#020617]" {% if sess.id|stringformat('s') == selected_session_id %}selected{% endif %}>
-                                {{ sess.topic|truncatechars(20) or (sess.start_time|time('%H:%M')) or 'Period' }}
+                                {{ sess.topic|truncatechars(20) or (sess.start_time|time('%H:%M')) or 'گھنٹہ' }}
                             </option>
                             {% endfor %}
                         </select>
@@ -138,7 +138,7 @@
                        hx-get="." 
                        hx-target="#student-list-container" 
                        hx-push-url="true" 
-                       hx-include="[name='course_id'], [name='q'], [name='session_id']"
+                       hx-include="[name='course_id'], [name='q']"
                        hx-sync="this:replace"
                        hx-indicator="#loading-indicator">
             </div>

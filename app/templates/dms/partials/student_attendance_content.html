@@ -1,18 +1,18 @@
-{% if request.headers.get("HX-Request") %}
+{% if 'HX-Request' in request.headers %}
 <!-- OOB Update for Session Dropdown -->
-<div id="session-select-container" hx-swap-oob="true">
+<div id="session-select-container" hx-swap-oob="true" class="flex-1 flex items-center">
     <select name="session_id" class="flex-1 bg-transparent border-none text-white text-xs md:text-sm focus:ring-0 cursor-pointer p-0 pr-6 appearance-none"
             hx-get="." 
             hx-target="#student-list-container" 
             hx-trigger="change" 
             hx-push-url="true" 
-            hx-include="[name='date'], [name='q'], [name='course_id']"
+            hx-include="[name='date'], [name='q']"
             hx-sync="this:replace"
             hx-indicator="#loading-indicator">
-        <option value="" class="bg-[#020617]">گھنٹی (Period)</option>
+        <option value="" class="bg-[#020617]">گھنٹہ</option>
         {% for sess in sessions %}
         <option value="{{ sess.id }}" class="bg-[#020617]" {% if sess.id|stringformat('s') == selected_session_id %}selected{% endif %}>
-            {{ sess.topic|truncatechars(20) or (sess.start_time|time('%H:%M')) or 'Period' }}
+            {{ sess.topic|truncatechars(20) or (sess.start_time|time('%H:%M')) or 'گھنٹہ' }}
         </option>
         {% endfor %}
     </select>
