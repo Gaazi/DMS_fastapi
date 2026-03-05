@@ -430,7 +430,137 @@
         </div>
       </div>
 
-      <!-- 2. Session History Section -->
+      <!-- 2. Session History Section — با حاضری اعداد و شمار -->
+      <div class="bg-slate-900/50 rounded-2xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
+        <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <div class="flex items-center gap-2">
+            <h2 class="text-md font-bold text-white">سیشن ہسٹری</h2>
+            <span class="text-[10px] bg-white/5 text-slate-400 px-2 py-0.5 rounded-full border border-white/10">اس ماہ</span>
+          </div>
+          <a href="{{ url('student_attendance', institution.slug) }}?course_id={{ course.id }}"
+             class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-all flex items-center gap-1.5">
+            <i class="fas fa-clipboard-check"></i>
+            آج کی حاضری
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-white/5">
+            <thead class="bg-white/[0.02] text-slate-500 text-[10px] uppercase font-bold">
+              <tr>
+                <th class="px-4 py-3 text-right">تاریخ / سیشن</th>
+                <th class="px-4 py-3 text-right">حاضری</th>
+                <th class="px-4 py-3 text-right print:hidden">عمل</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 bg-transparent text-sm">
+              {% for session in sessions %}
+              <tr class="hover:bg-white/[0.04] transition-colors group cursor-pointer" @click="window.location.href='{{ url('dms_session_attendance', institution.slug, session.id) }}'">
+                <td class="px-4 py-3 whitespace-nowrap">
+                   <div class="flex flex-col gap-0.5">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-mono font-bold text-slate-300">{{ session.date|date("%d-%m-%y") }}</span>
+                        <span class="text-[9px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded">{{ session.date|date("%a")|translate }}</span>
+                        {% if session.date == today %}
+                        <span class="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 animate-pulse">آج</span>
+                        {% endif %}
+                      </div>
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-[8px] text-slate-600 uppercase">{{ session.get_session_type_display }}</span>
+                        {% if session.start_time %}
+                        <span class="text-[8px] text-slate-700 mx-0.5">•</span>
+                        <span class="text-[8px] text-slate-600 font-mono">{{ session.start_time|time }}{% if session.end_time %} - {{ session.end_time|time }}{% endif %}</span>
+                        {% endif %}
+                        {% if session.topic %}
+                        <span class="text-[8px] text-slate-700 mx-0.5">•</span>
+                        <span class="text-[8px] text-slate-500 truncate max-w-[80px]">{{ session.topic }}</span>
+                        {% endif %}
+                      </div>
+                   </div>
+                </td>
+                <td class="px-4 py-3">
+                  {% if session._att_marked %}
+                    {% set pct = ((session._att_present / session._att_total) * 100)|int if session._att_total > 0 else 0 %}
+                    <div class="flex flex-col gap-1.5 min-w-[110px]">
+                      <div class="flex items-center gap-2">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                          <i class="fas fa-check text-[8px]"></i>{{ session._att_present }}
+                        </span>
+                        <span class="text-slate-700 text-[8px]">/</span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-rose-400">
+                          <i class="fas fa-times text-[8px]"></i>{{ session._att_absent }}
+                        </span>
+                        <span class="text-slate-700 text-[8px] mr-auto">از {{ session._att_total }}</span>
+                        <span class="text-[9px] font-bold {% if pct >= 75 %}text-emerald-400{% elif pct >= 50 %}text-amber-400{% else %}text-rose-400{% endif %}">{{ pct }}٪</span>
+                      </div>
+                      <!-- Progress Bar -->
+                      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all {% if pct >= 75 %}bg-emerald-500{% elif pct >= 50 %}bg-amber-500{% else %}bg-rose-500{% endif %}"
+                             style="--w:{{ pct }}%;width:var(--w)"></div>
+                      </div>
+                    </div>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 text-[10px] text-amber-400/70 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10">
+                      <i class="fas fa-circle-exclamation text-[8px]"></i> حاضری نہیں لگی
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
+                  <div class="flex items-center gap-1.5 justify-end">
+                      <a href="{{ url('dms_session_attendance', institution.slug, session.id) }}"
+                        onclick="event.stopPropagation()"
+                        class="p-1 px-2.5 rounded-lg {% if session._att_marked %}bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20{% else %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20{% endif %} transition-all text-[10px] font-bold"
+                        title="حاضری لگائیں / دیکھیں">
+                        <i class="fas {% if session._att_marked %}fa-eye{% else %}fa-clipboard-check{% endif %}"></i>
+                      </a>
+                      {% if is_academic_admin %}
+                      <button type="button" 
+                              onclick="event.stopPropagation()"
+                              @click="editSession = {id: '{{ session.id }}', date: '{{ session.date|time('%Y-%m-%d') }}', start_time: '{{ session.start_time|time('%H:%M') if session.start_time else '' }}', end_time: '{{ session.end_time|time('%H:%M') if session.end_time else '' }}', topic: '{{ session.topic|default('')|replace("'","\\'") }}', type: '{{ session.session_type }}'}; showEditModal = true"
+                              class="p-1 px-2 rounded-lg bg-white/5 text-slate-400 border border-white/10 hover:text-blue-400 hover:bg-blue-500/10 transition-all text-[10px]"
+                              title="ترمیم">
+                          <i class="fas fa-edit"></i>
+                      </button>
+                      <form method="post" onsubmit="return confirm('حذف کریں؟');" class="inline-block" onclick="event.stopPropagation()">
+                        {{ csrf_token() }}
+                        <input type="hidden" name="action" value="session_delete">
+                        <input type="hidden" name="session_id" value="{{ session.id }}">
+                        <button type="submit" class="p-1 px-2 rounded-lg bg-white/5 border border-white/10 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all text-[10px]" title="حذف">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </form>
+                      {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="3" class="px-6 py-12 text-center">
+                  <div class="flex flex-col items-center gap-3 text-slate-600">
+                    <i class="fas fa-calendar-times text-3xl opacity-30"></i>
+                    <span class="text-xs italic">اس ماہ کوئی سیشن ریکارڈ نہیں ہے</span>
+                    <a href="{{ url('student_attendance', institution.slug) }}?course_id={{ course.id }}"
+                       class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-all">
+                      <i class="fas fa-plus"></i> آج کی حاضری لگائیں
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if sessions|length >= 15 %}
+        <div class="p-3 bg-white/[0.01] border-t border-white/5 text-center">
+            <a href="{{ url('student_attendance', institution.slug) }}?course_id={{ course.id }}" class="text-[9px] text-slate-500 hover:text-blue-400 transition-all uppercase font-bold tracking-widest flex items-center justify-center gap-1.5">
+                <i class="fas fa-list-ul text-[8px]"></i>
+                مزید ریکارڈ دیکھیں
+            </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    </div>
+
       <div class="bg-slate-900/50 rounded-2xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
         <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div class="flex items-center gap-2">

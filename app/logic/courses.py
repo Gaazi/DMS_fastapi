@@ -294,8 +294,23 @@ class CourseManager:
         if not self.course: raise HTTPException(status_code=404, detail="Course not set.")
         
         from datetime import date
+        from app.models.attendance import Attendance, DailyAttendance
         today = date.today()
-        admissions = self.session.exec(select(Admission).where(Admission.course_id == self.course.id).order_by(desc(Admission.admission_date))).all()
+        
+        # فعال طلبہ کی تعداد
+        enrolled_count = self.session.exec(
+            select(func.count(Admission.id)).where(
+                Admission.course_id == self.course.id,
+                Admission.status == 'active'
+            )
+        ).one()
+        
+        admissions = self.session.exec(
+            select(Admission).where(
+                Admission.course_id == self.course.id
+            ).order_by(desc(Admission.admission_date))
+        ).all()
+        
         sessions = self.session.exec(
             select(ClassSession).where(
                 ClassSession.course_id == self.course.id,
@@ -304,9 +319,57 @@ class CourseManager:
             ).order_by(desc(ClassSession.date), desc(ClassSession.id))
         ).all()
         
+        # ہر سیشن کی حاضری stats لگانا (present, absent, total)
+        for s in sessions:
+            present = self.session.exec(
+                select(func.count(Attendance.id)).where(
+                    Attendance.session_id == s.id,
+                    Attendance.status == 'present'
+                )
+            ).one() or 0
+            absent = self.session.exec(
+                select(func.count(Attendance.id)).where(
+                    Attendance.session_id == s.id,
+                    Attendance.status == 'absent'
+                )
+            ).one() or 0
+            total = self.session.exec(
+                select(func.count(Attendance.id)).where(
+                    Attendance.session_id == s.id
+                )
+            ).one() or 0
+            # آج کی ڈے حاضری بھی چیک کریں (اگر سیشن آج کا ہو)
+            if s.date == today and total == 0:
+                total_day = self.session.exec(
+                    select(func.count(DailyAttendance.id)).where(
+                        DailyAttendance.inst_id == self.institution.id,
+                        DailyAttendance.date == today
+                    )
+                ).one() or 0
+                present_day = self.session.exec(
+                    select(func.count(DailyAttendance.id)).where(
+                        DailyAttendance.inst_id == self.institution.id,
+                        DailyAttendance.date == today,
+                        DailyAttendance.status == 'present'
+                    )
+                ).one() or 0
+                if total_day > 0:
+                    total = total_day
+                    present = present_day
+                    absent = total_day - present_day
+            
+            object.__setattr__(s, '_att_present', present)
+            object.__setattr__(s, '_att_absent', absent)
+            object.__setattr__(s, '_att_total', total)
+            object.__setattr__(s, '_att_marked', total > 0)
+        
         # Recurring Schedule - Grouped by Slot for better UI
         from app.models.schedule import TimetableItem
-        raw_timetable = self.session.exec(select(TimetableItem).where(TimetableItem.course_id == self.course.id).order_by(TimetableItem.day_of_week, TimetableItem.start_time)).all()
+        raw_timetable = self.session.exec(
+            select(TimetableItem).where(
+                TimetableItem.course_id == self.course.id
+            ).order_by(TimetableItem.day_of_week, TimetableItem.start_time)
+        ).all()
         
         grouped_slots = {}
         for item in raw_timetable:
@@ -317,21 +380,23 @@ class CourseManager:
                     'end_time': item.end_time,
                     'subject': item.subject,
                     'days': [],
-                    'records': [] # Keep raw items for IDs
+                    'records': []
                 }
             grouped_slots[key]['days'].append(item.day_of_week)
             grouped_slots[key]['records'].append(item)
             
-        # Sort days: Saturday(5), Sunday(6), Monday(0)...
+        # اسلامی دنوں کی ترتیب: ہفتہ، اتوار، پیر...
         day_order = {'5': 1, '6': 2, '0': 3, '1': 4, '2': 5, '3': 6, '4': 7}
         for slot in grouped_slots.values():
             slot['days'].sort(key=lambda d: day_order.get(str(d), 99))
             
-        timetable = sorted(grouped_slots.values(), key=lambda x: x['start_time'])
+        timetable = sorted(grouped_slots.values(), key=lambda x: x['start_time'] or '00:00')
 
         # Available staff to assign
         from app.models import Staff
-        all_staff = self.session.exec(select(Staff).where(Staff.inst_id == self.institution.id).order_by(Staff.name)).all()
+        all_staff = self.session.exec(
+            select(Staff).where(Staff.inst_id == self.institution.id).order_by(Staff.name)
+        ).all()
 
         return {
             "institution": self.institution,
@@ -340,8 +405,11 @@ class CourseManager:
             "sessions": sessions,
             "timetable": timetable,
             "stats": self.get_stats(),
-            "all_staff": all_staff
+            "all_staff": all_staff,
+            "today": today,
+            "enrolled_count": enrolled_count,
         }
+
 
     def save_timetable_item(self, data: dict):
         """ٹائم ٹیبل کے کسی آئٹم کو اپڈیٹ کرنا یا نیا بنانا (ایک ساتھ کئی دن)۔"""
