@@ -268,7 +268,7 @@ class AttendanceManager:
         p_c, a_c, l_c = 0, 0, 0
         
         # We need to map which student is in which session based on admissions
-        admissions = self.session.exec(select(Admission).where(Admission.status == 'active', Admission.inst_id == self.institution.id)).all()
+        admissions = self.session.exec(select(Admission).where(Admission.status == 'active')).all()
         course_students = {}
         for adm in admissions:
             course_students.setdefault(adm.course_id, []).append(adm.student_id)
