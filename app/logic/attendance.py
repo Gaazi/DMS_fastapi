@@ -5,7 +5,7 @@ from datetime import date as dt_date, datetime, timedelta
 import calendar
 
 # Models
-from app.models import Institution, Student, Staff, Attendance, Staff_Attendance, ClassSession, Admission
+from app.models import Institution, Student, Staff, Attendance, Staff_Attendance, ClassSession, Admission, TimetableItem
 from app.logic.audit import AuditManager
 
 class AttendanceManager:
@@ -91,8 +91,40 @@ class AttendanceManager:
         return members, target_date, course_id, session_id
 
     def get_sessions(self, course_id: Optional[int], target_date: dt_date):
-        """کورس اور تاریخ کی بنیاد پر سیشنز کی لسٹ حاصل کرنا۔"""
+        """کورس اور تاریخ کی بنیاد پر سیشنز کی لسٹ حاصل کرنا (بشمول شیڈول)۔"""
         self._check_permission()
+        
+        # Auto-create sessions from TimetableItem if missing
+        day_of_week = str(target_date.weekday())
+        tt_stmt = select(TimetableItem).where(TimetableItem.day_of_week == day_of_week, TimetableItem.is_active == True)
+        if course_id:
+            tt_stmt = tt_stmt.where(TimetableItem.course_id == course_id)
+            
+        timetable_items = self.session.exec(tt_stmt).all()
+        new_sessions = False
+        
+        for tt in timetable_items:
+            exists_stmt = select(ClassSession).where(
+                ClassSession.course_id == tt.course_id,
+                ClassSession.date == target_date,
+                ClassSession.start_time == tt.start_time,
+                ClassSession.topic == tt.subject
+            )
+            if not self.session.exec(exists_stmt).first():
+                new_session = ClassSession(
+                    course_id=tt.course_id,
+                    date=target_date,
+                    start_time=tt.start_time,
+                    end_time=tt.end_time,
+                    topic=tt.subject,
+                    session_type="class"
+                )
+                self.session.add(new_session)
+                new_sessions = True
+                
+        if new_sessions:
+            self.session.commit()
+
         stmt = select(ClassSession).where(ClassSession.date == target_date)
         if course_id:
             stmt = stmt.where(ClassSession.course_id == course_id)

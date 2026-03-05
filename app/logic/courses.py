@@ -217,16 +217,44 @@ class CourseManager:
             if 'notes' in data: class_session.notes = data.get('notes')
             action = "update_session"
         else:
+            target_date = self._parse_date(data.get('date'), dt_date.today())
+            start_time = self._parse_time(data.get('start_time'))
+            end_time = self._parse_time(data.get('end_time'))
+            topic = data.get('topic', 'Daily')
+            
             class_session = ClassSession(
                 course_id=self.course.id,
-                date=self._parse_date(data.get('date'), dt_date.today()),
-                start_time=self._parse_time(data.get('start_time')),
-                end_time=self._parse_time(data.get('end_time')),
-                topic=data.get('topic', 'Daily'),
+                date=target_date,
+                start_time=start_time,
+                end_time=end_time,
+                topic=topic,
                 session_type=data.get('session_type', 'class'),
                 notes=data.get('notes', '')
             )
             self.session.add(class_session)
+            
+            # Handle TimetableItem integration for recurring days
+            from app.models.schedule import TimetableItem
+            from sqlmodel import select
+            days = data.get('days', [])
+            if days:
+                for d in days:
+                    tt_exists = self.session.exec(select(TimetableItem).where(
+                        TimetableItem.course_id == self.course.id,
+                        TimetableItem.day_of_week == str(d),
+                        TimetableItem.start_time == start_time,
+                        TimetableItem.subject == topic
+                    )).first()
+                    if not tt_exists:
+                        tt = TimetableItem(
+                            inst_id=self.institution.id,
+                            course_id=self.course.id,
+                            day_of_week=str(d),
+                            start_time=start_time,
+                            end_time=end_time,
+                            subject=topic
+                        )
+                        self.session.add(tt)
             action = "schedule_session"
             
         self.session.flush()

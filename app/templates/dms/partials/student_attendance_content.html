@@ -1,12 +1,12 @@
 {% if 'HX-Request' in request.headers %}
 <!-- OOB Update for Session Dropdown -->
 <div id="session-select-container" hx-swap-oob="true" class="flex-1 flex items-center">
-    <select name="session_id" class="flex-1 bg-transparent border-none text-white text-xs md:text-sm focus:ring-0 cursor-pointer p-0 pr-6 appearance-none"
+    <select id="filter-session" name="session_id" class="flex-1 bg-transparent border-none text-white text-xs md:text-sm focus:ring-0 cursor-pointer p-0 pr-6 appearance-none"
             hx-get="." 
             hx-target="#student-list-container" 
             hx-trigger="change" 
             hx-push-url="true" 
-            hx-include="[name='date'], [name='q']"
+            hx-include="#filter-date, #filter-search, #filter-course"
             hx-sync="this:replace"
             hx-indicator="#loading-indicator">
         <option value="" class="bg-[#020617]">گھنٹہ</option>

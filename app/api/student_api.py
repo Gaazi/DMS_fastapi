@@ -189,6 +189,7 @@ async def student_attendance(request: Request, institution_slug: str, session: S
     if request.method == "POST":
         form_data = await request.form()
         data = dict(form_data)
+        data['days'] = form_data.getlist('days')
         
         # Prioritize form data for saving
         post_date_str = data.get('date')
