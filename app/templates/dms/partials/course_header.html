@@ -1,0 +1,113 @@
+{# ── Course Header Card ──────────────────────────────────────────── #}
+<div class="bg-slate-900/50 rounded-xl shadow-sm border border-white/10 overflow-hidden backdrop-blur-sm">
+  <div class="p-4 sm:p-6">
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-2 mb-1">
+          <h1 class="text-xl sm:text-2xl font-bold text-white leading-tight">{{ course.title }}</h1>
+          {% if course.is_active %}
+          <span class="flex h-1.5 w-1.5 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+          </span>
+          {% endif %}
+        </div>
+        {% if course.course_code %}
+        <span class="text-[10px] font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 tracking-wider w-fit">
+          {{ course.course_code }}
+        </span>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-xs border border-blue-500/20">
+          {{ course.get_category_display }}
+        </span>
+        {% if is_academic_admin %}
+        <a href="{{ url('dms_course', institution.slug) }}?edit={{ course.id }}#course_form"
+           class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 hover:border-blue-500/40 transition-all text-sm font-medium">
+          <i class="fas fa-edit text-xs"></i><span>ترمیم</span>
+        </a>
+        <form method="post" action="{{ url('dms_course', institution.slug) }}" onsubmit="return confirm('کیا آپ واقعی حذف کرنا چاہتے ہیں؟');" class="inline">
+          {{ csrf_token() }}
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="course_id" value="{{ course.id }}">
+          <button type="submit" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all" title="حذف کریں">
+            <i class="fas fa-trash-alt text-[10px]"></i>
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if course.description %}
+    <p class="text-slate-400 leading-relaxed text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none">{{ course.description }}</p>
+    {% endif %}
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-500 border-t border-white/5 pt-4">
+      <div class="col-span-2 flex flex-col gap-1">
+        <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">تعلیمی دورانیہ</span>
+        <div class="flex items-center gap-3 text-slate-300">
+          <div class="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+            <span class="text-[9px] text-slate-500 font-bold uppercase">آغاز:</span>
+            <span class="text-xs font-mono">{% if course.start_date %}{{ course.start_date|date("%d-%m-%Y") }}{% else %}--{% endif %}</span>
+          </div>
+          <i class="fas fa-long-arrow-alt-left text-slate-600"></i>
+          <div class="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+            <span class="text-[9px] text-slate-500 font-bold uppercase">اختتام:</span>
+            <span class="text-xs font-mono">{% if course.end_date %}{{ course.end_date|date("%d-%m-%Y") }}{% else %}--{% endif %}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">ماہانہ فیس</span>
+        <div class="flex items-center gap-2 text-emerald-400 font-bold">
+          <i class="fas fa-money-bill-wave text-slate-500"></i>
+          <span>{{ course.course_fee }}</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600">گنجائش</span>
+        <div class="flex items-center gap-2 text-slate-300">
+          <i class="fas fa-users text-slate-500"></i>
+          <span>{{ course.capacity or '--' }} نشستیں</span>
+        </div>
+      </div>
+    </div>
+
+    {# Instructors #}
+    <div class="mt-4 pt-3 border-t border-white/5 flex flex-col sm:flex-row sm:items-center gap-3">
+      <span class="text-[10px] uppercase tracking-wider font-bold text-slate-600 shrink-0">{% if institution.type == 'masjid' %}خدام:{% else %}اساتذہ:{% endif %}</span>
+      <div class="flex flex-wrap items-center gap-2">
+        {% for instructor in course.instructors %}
+        <div class="group/ins flex items-center gap-1.5 p-1 px-2 rounded-lg bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all">
+          <a href="{{ url('dms_staff_detail', institution.slug, instructor.id) }}" class="text-xs text-slate-300 hover:text-blue-400 transition-colors">{{ instructor.full_name }}</a>
+          {% if is_academic_admin %}
+          <form method="post" class="inline">
+            {{ csrf_token() }}
+            <input type="hidden" name="action" value="remove_instructor">
+            <input type="hidden" name="staff_id" value="{{ instructor.id }}">
+            <button type="submit" class="text-[10px] text-slate-600 hover:text-rose-500 transition-colors"><i class="fas fa-times"></i></button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+        {% if is_academic_admin %}
+        <form method="post" class="flex items-center">
+          {{ csrf_token() }}
+          <input type="hidden" name="action" value="assign_instructor">
+          <select name="staff_id" class="text-[10px] bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-slate-400 outline-none focus:border-blue-500/30 min-w-[120px]" onchange="if(this.value) this.form.submit()">
+            <option value="">+ شامل کریں...</option>
+            {% for s in all_staff if s not in course.instructors %}
+            <option value="{{ s.id }}" class="bg-slate-900">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </form>
+        {% endif %}
+        {% if not course.instructors and not is_academic_admin %}
+        <span class="text-[10px] text-slate-600 italic">کوئی نہیں</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

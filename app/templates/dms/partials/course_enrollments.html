@@ -1,0 +1,106 @@
+{# ── Enrollments Table ───────────────────────────────────────────── #}
+{# External promote form — referenced by checkboxes inside table #}
+<form method="POST" id="promote-form">
+  {{ csrf_token() }}
+  <input type="hidden" name="action" value="promote">
+</form>
+
+<div class="glass-card rounded-[2rem] border border-white/10 overflow-hidden backdrop-blur-3xl" x-data="{ selectedStudents: [] }">
+  <div class="px-6 py-4 border-b border-white/10 flex flex-wrap items-center justify-between bg-white/[0.02] gap-4">
+    <div class="flex items-center gap-3">
+      <h2 class="text-lg font-bold text-white">اندراج شدہ طلبہ</h2>
+      <span class="px-2.5 py-0.5 rounded-full bg-white/5 text-slate-400 text-xs font-bold border border-white/10">{{ enrollments|length }}</span>
+    </div>
+
+    {# Promotion toolbar — shown only when students selected #}
+    <div x-show="selectedStudents.length > 0" x-cloak class="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+      <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest" x-text="selectedStudents.length + ' منتخب طلبہ'"></span>
+      <div class="flex items-center gap-1.5 bg-indigo-600/10 border border-indigo-500/20 rounded-xl px-2 py-1">
+        <select name="target_course_id" form="promote-form" required
+                class="bg-transparent text-xs text-indigo-400 outline-none border-none focus:ring-0 py-0.5 pr-8 pl-1">
+          <option value="" class="bg-slate-900">ٹارگٹ کورس منتخب کریں...</option>
+          {% for c in all_courses if c.id != course.id %}
+          <option value="{{ c.id }}" class="bg-slate-900">{{ c.title }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" form="promote-form"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-1">
+          <i class="fas fa-graduation-cap"></i><span>ترقی دیں</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-white/5">
+      <thead class="bg-white/[0.02] text-slate-500 text-xs uppercase font-medium">
+        <tr>
+          <th class="px-4 py-3 text-right w-10">
+            <input type="checkbox"
+                   @change="$el.checked ? selectedStudents = [{% for e in enrollments %}'{{ e.student_id }}',{% endfor %}] : selectedStudents = []"
+                   class="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/30">
+          </th>
+          <th class="px-4 py-3 text-right">طالب علم</th>
+          <th class="px-4 py-3 text-right">رول نمبر</th>
+          <th class="px-4 py-3 text-right">تاریخ</th>
+          <th class="px-4 py-3 text-right">حیثیت</th>
+          <th class="px-4 py-3 text-right print:hidden">عمل</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-white/5 bg-transparent text-sm">
+        {% for enrollment in enrollments %}
+        <tr class="hover:bg-white/[0.04] transition-colors group">
+          <td class="px-4 py-3">
+            <input type="checkbox" name="student_ids" form="promote-form" value="{{ enrollment.student_id }}" x-model="selectedStudents"
+                   class="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/30">
+          </td>
+          <td class="px-4 py-3">
+            <div class="font-bold text-slate-200">{{ enrollment.student.full_name }}</div>
+            <div class="text-[10px] text-indigo-400 font-mono mt-0.5">{{ enrollment.student.reg_id }}</div>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            {% if enrollment.roll_no %}
+            <span class="text-xs font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10">{{ enrollment.roll_no }}</span>
+            {% else %}
+            <span class="text-[10px] text-slate-600 italic">--</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap text-slate-400 font-mono text-xs">{{ enrollment.admission_date|date }}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            {% if is_academic_admin %}
+            <form method="post" class="flex items-center gap-2">
+              {{ csrf_token() }}
+              <input type="hidden" name="action" value="enrollment_update">
+              <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+              <select name="status" class="text-xs border border-white/10 rounded-lg px-2 py-1.5 outline-none bg-white/5 text-slate-300" onchange="this.form.submit()">
+                {% for value, label in enrollment_status_choices %}
+                <option value="{{ value }}" {% if enrollment.status == value %}selected{% endif %} class="bg-slate-800 text-slate-300">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </form>
+            {% else %}
+            <span class="px-2 py-1 rounded bg-white/5 text-slate-400 text-[10px]">{{ enrollment.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-right print:hidden">
+            {% if is_academic_admin %}
+            <form method="post" onsubmit="return confirm('کیا آپ واقعی حذف کرنا چاہتے ہیں؟');" class="inline-block">
+              {{ csrf_token() }}
+              <input type="hidden" name="action" value="enrollment_delete">
+              <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+              <button type="submit" class="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100" title="خارج کریں">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="px-6 py-12 text-center text-slate-600">اس کورس میں ابھی کوئی طالب علم نہیں ہے</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

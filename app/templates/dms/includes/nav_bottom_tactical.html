@@ -1,0 +1,44 @@
+{# Mobile Bottom Navigation Bar — Tactical Style #}
+{% if institution %}
+<nav class="fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-white/10 safe-area-inset-bottom"
+     x-data>
+  <div class="flex items-center justify-around px-2 py-1 max-w-lg mx-auto">
+
+    {# Dashboard #}
+    <a href="{{ url('dashboard', institution.slug) }}"
+       class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl text-slate-500 hover:text-emerald-400 hover:bg-white/5 transition-all group">
+      <i class="fas fa-home text-base group-hover:scale-110 transition-transform"></i>
+      <span class="text-[8px] font-bold uppercase tracking-wider">ہوم</span>
+    </a>
+
+    {# Students #}
+    <a href="{{ url('students', institution.slug) }}"
+       class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl text-slate-500 hover:text-blue-400 hover:bg-white/5 transition-all group">
+      <i class="fas fa-user-graduate text-base group-hover:scale-110 transition-transform"></i>
+      <span class="text-[8px] font-bold uppercase tracking-wider">طلبہ</span>
+    </a>
+
+    {# Finance #}
+    <a href="{{ url('balance', institution.slug) }}"
+       class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl text-slate-500 hover:text-amber-400 hover:bg-white/5 transition-all group">
+      <i class="fas fa-wallet text-base group-hover:scale-110 transition-transform"></i>
+      <span class="text-[8px] font-bold uppercase tracking-wider">مالیات</span>
+    </a>
+
+    {# Staff #}
+    <a href="{{ url('dms_staff', institution.slug) }}"
+       class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl text-slate-500 hover:text-indigo-400 hover:bg-white/5 transition-all group">
+      <i class="fas fa-users text-base group-hover:scale-110 transition-transform"></i>
+      <span class="text-[8px] font-bold uppercase tracking-wider">عملہ</span>
+    </a>
+
+    {# Settings #}
+    <a href="{{ url('institution_settings', institution.slug) }}"
+       class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all group">
+      <i class="fas fa-cog text-base group-hover:scale-110 transition-transform"></i>
+      <span class="text-[8px] font-bold uppercase tracking-wider">ترتیبات</span>
+    </a>
+
+  </div>
+</nav>
+{% endif %}
