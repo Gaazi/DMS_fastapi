@@ -436,7 +436,7 @@ class FinanceManager:
                     
             session.commit()
         except Exception as e:
-            print(f"B-Task Error: {e}")
+            import logging; logging.getLogger("dms_app").error(f"B-Task Error: {e}")
             session.rollback()
     def get_institution_financial_summary(self):
         """پورے ادارے کے مالیاتی اعداد و شمار کا مجموعہ۔"""

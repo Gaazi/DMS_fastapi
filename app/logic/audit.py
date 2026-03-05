@@ -76,7 +76,7 @@ class AuditManager:
         except Exception as e:
             # آڈٹ لاگنگ کی وجہ سے مین آپریشن نہیں رکنا چاہیے
             # Important: NEVER rollback the session here, as it kills the main operation's transaction
-            print(f"Audit log failed (non-fatal): {e}")
+            import logging; logging.getLogger("dms_app").warning(f"Audit log failed (non-fatal): {e}")
 
 
     def get_logs(self, limit: int = 100) -> List[dict]:
