@@ -1,4 +1,4 @@
-﻿"""
+"""
 INDEX / TABLE OF CONTENTS:
 --------------------------
 Variables:

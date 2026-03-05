@@ -10,9 +10,9 @@ from app.models import (
     Institution, Student, Admission, Fee, Fee_Payment, 
     Income, Expense, WalletTransaction, User, Donor
 )
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class FinanceManager:
+class FinanceLogic:
     """ادارے کا مکمل مالیاتی نظام: فیسیں، آمدن، اخراجات اور اینالیٹکس (FastAPI Version)۔"""
     
     def __init__(self, session: Session, institution: Institution, user: Optional[User] = None, student: Optional[Student] = None):
@@ -82,7 +82,7 @@ class FinanceManager:
             )
             self.session.add(first_fee)
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'initial_fees', 'Admission', admission.id, f"Initial fees for admission #{admission.id}", {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'initial_fees', 'Admission', admission.id, f"Initial fees for admission #{admission.id}", {})
         self.session.commit()
 
     def auto_generate_fees(self, year=None, month=None):
@@ -129,7 +129,7 @@ class FinanceManager:
             self.session.add(fee)
             count += 1
             
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'auto_generate', 'Fee', 0, f"Generated {count} monthly fees", {'month': target_month.isoformat()})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'auto_generate', 'Fee', 0, f"Generated {count} monthly fees", {'month': target_month.isoformat()})
         self.session.commit()
         return count
 
@@ -145,7 +145,7 @@ class FinanceManager:
         self.session.add(expense)
         self.session.flush()
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'expense', 'Expense', expense.id, description, {'amount': float(amount)})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'expense', 'Expense', expense.id, description, {'amount': float(amount)})
         self.session.commit()
         self.session.refresh(expense)
         return expense
@@ -162,7 +162,7 @@ class FinanceManager:
         self.session.add(income)
         self.session.flush()
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'income', 'Income', income.id, description, {'amount': float(amount)})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'income', 'Income', income.id, description, {'amount': float(amount)})
         self.session.commit()
         self.session.refresh(income)
         return income
@@ -180,7 +180,7 @@ class FinanceManager:
         
         self.session.add(income)
         self.session.flush()
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'update', 'Income', income.id, income.source, {'old': old_data, 'new': data})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'update', 'Income', income.id, income.source, {'old': old_data, 'new': data})
         self.session.commit()
         return True, "Income updated.", income
 
@@ -197,7 +197,7 @@ class FinanceManager:
             
         self.session.add(expense)
         self.session.flush()
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'update', 'Expense', expense.id, expense.category, {'old': old_data, 'new': data})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'update', 'Expense', expense.id, expense.category, {'old': old_data, 'new': data})
         self.session.commit()
         return True, "Expense updated.", expense
 
@@ -343,7 +343,7 @@ class FinanceManager:
             fee.status = 'Partial'
             
         self.session.add(fee)
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'pay_fee', 'Fee', fee.id, f"Payment for {fee.fee_type}", {'amount': float(amount), 'receipt': receipt_no})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'pay_fee', 'Fee', fee.id, f"Payment for {fee.fee_type}", {'amount': float(amount), 'receipt': receipt_no})
         self.session.commit()
         return True
 
@@ -432,7 +432,7 @@ class FinanceManager:
                         count += 1
                 
                 if count > 0:
-                    AuditManager.log_activity(session, inst.id, 0, 'auto_generate_global', 'System', 0, f"Generated {count} monthly fees", {'month': target_month.isoformat()})
+                    AuditLogic.log_activity(session, inst.id, 0, 'auto_generate_global', 'System', 0, f"Generated {count} monthly fees", {'month': target_month.isoformat()})
                     
             session.commit()
         except Exception as e:

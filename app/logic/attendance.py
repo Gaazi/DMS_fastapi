@@ -6,9 +6,9 @@ import calendar
 
 # Models
 from app.models import Institution, Student, Staff, Attendance, Staff_Attendance, ClassSession, Admission, TimetableItem, DailyAttendance
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class AttendanceManager:
+class AttendanceLogic:
     """
     ادارے کی تمام حاضریوں (اسٹاف اور طلبہ) کا مرکزی مرکز۔ (FastAPI/SQLModel Version)
     """
@@ -270,7 +270,7 @@ class AttendanceManager:
                     rec.remarks = remarks
                     self.session.add(rec)
         
-        AuditManager.log_activity(
+        AuditLogic.log_activity(
             self.session, self.institution.id, self.user.id,
             'bulk_attendance', type.capitalize(), 0,
             f"Attendance for {type} on {target_date}",

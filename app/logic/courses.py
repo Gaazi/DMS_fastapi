@@ -6,9 +6,9 @@ from decimal import Decimal
 
 # Models
 from app.models import Institution, Course, Admission, ClassSession, Student
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class CourseManager:
+class CourseLogic:
     """Business logic for courses, admissions, and class sessions (FastAPI/SQLModel Version)"""
     
     def __init__(self, session: Session, user: Any, target: Any = None, institution: Optional[Institution] = None):
@@ -94,7 +94,7 @@ class CourseManager:
             action = "create"
             
         self.session.flush()
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'Course', course.id or 0, course.title, data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, action, 'Course', course.id or 0, course.title, data)
         self.session.commit()
         self.session.refresh(course)
         return True, "Course information has been saved successfully.", course
@@ -107,7 +107,7 @@ class CourseManager:
             raise HTTPException(status_code=404, detail="Course not found.")
             
         name = course.title
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'delete', 'Course', course_id, name, {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'delete', 'Course', course_id, name, {})
         self.session.delete(course)
         self.session.commit()
         return True, f"Course '{name}' has been deleted.", None
@@ -153,8 +153,8 @@ class CourseManager:
         self.session.flush()
 
         # Generate Fees & Payments
-        from app.logic.finance import FinanceManager
-        fm = FinanceManager(self.session, self.institution, self.user)
+        from app.logic.finance import FinanceLogic
+        fm = FinanceLogic(self.session, self.institution, self.user)
         fm.generate_initial_fees_for_admission(admission)
 
         # Initial Payment
@@ -169,7 +169,7 @@ class CourseManager:
                 method=data.get('payment_method', 'Cash')
             )
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'enroll', 'Admission', admission.id or 0, f"Student {student_id}", data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'enroll', 'Admission', admission.id or 0, f"Student {student_id}", data)
         self.session.commit()
         self.session.refresh(admission)
         return True, "Student admission has been completed.", admission
@@ -184,7 +184,7 @@ class CourseManager:
         old_status = admission.status
         admission.status = status
         self.session.flush()
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'update_admission', 'Admission', admission_id, f"Status: {old_status} -> {status}", {"status": status})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'update_admission', 'Admission', admission_id, f"Status: {old_status} -> {status}", {"status": status})
         self.session.commit()
         return True, f"Admission status updated to {status}.", admission
 
@@ -195,7 +195,7 @@ class CourseManager:
         if not admission: raise HTTPException(status_code=404, detail="Admission not found.")
         
         self.session.delete(admission)
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'delete_admission', 'Admission', admission_id, "Record deleted", {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'delete_admission', 'Admission', admission_id, "Record deleted", {})
         self.session.commit()
         return True, "Admission record deleted.", None
 
@@ -284,7 +284,7 @@ class CourseManager:
             action = "schedule_session"
             
         self.session.flush()
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'ClassSession', class_session.id or 0, class_session.topic or 'Daily', data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, action, 'ClassSession', class_session.id or 0, class_session.topic or 'Daily', data)
         self.session.commit()
         self.session.refresh(class_session)
         return True, "Class session saved successfully.", class_session
@@ -297,7 +297,7 @@ class CourseManager:
         if not class_session: raise HTTPException(status_code=404, detail="Session not found.")
         
         self.session.delete(class_session)
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'delete_session', 'ClassSession', session_id, "Session deleted", {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'delete_session', 'ClassSession', session_id, "Session deleted", {})
         self.session.commit()
         return True, "Session deleted successfully.", None
 
@@ -437,6 +437,93 @@ class CourseManager:
             "enrolled_count": enrolled_count,
         }
 
+    def get_list_context(self) -> dict:
+        """Course list page کے لیے تمام courses اور context۔"""
+        from sqlmodel import select
+        courses = self.session.exec(
+            select(Course)
+            .where(Course.inst_id == self.institution.id)
+            .order_by(Course.title)
+        ).all()
+        return {"courses": courses}
+
+    def get_full_detail_context(self) -> dict:
+        """Course detail page کے لیے مکمل context — students، courses list بھی۔"""
+        from datetime import date
+        from app.models import Admission
+        ctx = self.get_detail_context()
+        all_students = self.session.exec(
+            select(Student)
+            .where(Student.inst_id == self.institution.id)
+            .order_by(Student.name)
+        ).all()
+        all_courses = self.session.exec(
+            select(Course).where(Course.inst_id == self.institution.id)
+        ).all()
+        ctx.update({
+            "all_students": all_students,
+            "all_courses": all_courses,
+            "today": date.today(),
+            "enrollment_status_choices": Admission.get_status_choices(),
+            "enrollments": ctx.get("admissions"),
+        })
+        return ctx
+
+    def handle_post_list(self, action: str, data: dict) -> tuple:
+        """Course list POST actions — True/False + redirect URL or errors۔"""
+        if action == "delete" and data.get("course_id"):
+            self.delete_course(int(data["course_id"]))
+            return True, None
+        from app.schemas.forms import CourseFormSchema
+        from pydantic import ValidationError
+        try:
+            validated = CourseFormSchema(**data)
+            self.save_course(validated.dict())
+            return True, None
+        except ValidationError as e:
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
+            return False, errors
+
+    def handle_post_detail(self, action: str, data: dict, form_data=None) -> tuple:
+        """Course detail POST actions۔ Returns (success, msg, _)۔"""
+        if action == "enroll":
+            return self.enroll_student(int(data.get("student_id")), data)
+        elif action == "enrollment_update":
+            return self.update_admission(int(data.get("enrollment_id")), data.get("status"))
+        elif action == "enrollment_delete":
+            return self.delete_admission(int(data.get("enrollment_id")))
+        elif action in ["session", "schedule"]:
+            if form_data:
+                data["days"] = form_data.getlist("days")
+            return self.save_session(data)
+        elif action == "session_delete":
+            return self.delete_session(int(data.get("session_id")))
+        elif action == "timetable_delete":
+            ids_val = data.get("timetable_ids") or data.get("timetable_id")
+            return self.delete_timetable_item(str(ids_val))
+        elif action == "timetable_save":
+            if form_data:
+                data["days"] = form_data.getlist("days")
+            return self.save_timetable_item(data)
+        elif action == "assign_instructor":
+            return self.assign_instructor(int(data.get("staff_id")))
+        elif action == "remove_instructor":
+            return self.remove_instructor(int(data.get("staff_id")))
+        elif action == "update_course":
+            from app.schemas.forms import CourseFormSchema
+            try:
+                data["id"] = self.course.id
+                validated = CourseFormSchema(**data)
+                return self.save_course(validated.dict())
+            except Exception as e:
+                return False, str(e), None
+        elif action == "promote":
+            student_ids = data.get("student_ids", [])
+            if isinstance(student_ids, str):
+                student_ids = [student_ids]
+            return self.promote_students(student_ids, int(data.get("target_course_id")))
+        return False, "Unknown action", None
+
 
     def save_timetable_item(self, data: dict):
         """ٹائم ٹیبل کے کسی آئٹم کو اپڈیٹ کرنا یا نیا بنانا (ایک ساتھ کئی دن)۔"""
@@ -504,7 +591,7 @@ class CourseManager:
         if staff not in self.course.instructors:
             self.course.instructors.append(staff)
             self.session.flush()
-            AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'assign_instructor', 'Course', self.course.id, f"Assigned {staff.name}", {"staff_id": staff_id})
+            AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'assign_instructor', 'Course', self.course.id, f"Assigned {staff.name}", {"staff_id": staff_id})
             self.session.commit()
             return True, f"Instructor {staff.name} assigned.", staff
         return False, "Already assigned.", staff
@@ -519,7 +606,7 @@ class CourseManager:
         if staff in self.course.instructors:
             self.course.instructors.remove(staff)
             self.session.flush()
-            AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'remove_instructor', 'Course', self.course.id, f"Removed {staff.name}", {"staff_id": staff_id})
+            AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'remove_instructor', 'Course', self.course.id, f"Removed {staff.name}", {"staff_id": staff_id})
             self.session.commit()
             return True, "Instructor removed.", None
         return False, "Instructor not part of this course.", None
@@ -548,7 +635,7 @@ class CourseManager:
                 'agreed_course_fee': agreed_fee or target_course.course_fee,
                 'status': 'active'
             }
-            success, _, _ = CourseManager(self.session, self.user, target=target_course).enroll_student(s_id, enroll_data)
+            success, _, _ = CourseLogic(self.session, self.user, target=target_course).enroll_student(s_id, enroll_data)
             if success: promoted_count += 1
             
         self.session.commit()
@@ -634,7 +721,7 @@ class CourseManager:
             current += timedelta(days=1)
 
         if created > 0:
-            AuditManager.log_activity(
+            AuditLogic.log_activity(
                 self.session, self.institution.id, self.user.id,
                 'auto_generate', 'ClassSession', self.course.id,
                 f"Auto-generated {created} sessions for {self.course.title}",

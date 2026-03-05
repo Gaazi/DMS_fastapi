@@ -9,7 +9,7 @@ from app.models.attendance import DailyAttendance
 from app.models.links import StudentParentLink
 
 
-class GuardianManager:
+class GuardianLogic:
     """Business logic and security for the Guardian/Parent dashboard (FastAPI/SQLModel Version)"""
 
     def __init__(self, session: Session, user: Any, institution: Optional[Institution] = None):

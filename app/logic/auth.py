@@ -40,7 +40,7 @@ async def get_current_user(request: Request, session: Session = Depends(get_sess
     user = session.exec(select(User).where(User.username == username)).first()
     return user
 
-class UserManager:
+class UserLogic:
     """کامیاب یوزر رجسٹریشن اور پاس ورڈ مینیجمنٹ (SQLModel Version)"""
 
     @staticmethod
@@ -98,7 +98,7 @@ class UserManager:
             session.add(obj)
             session.flush()
 
-        username = UserManager.generate_username(obj, prefix, session)
+        username = UserLogic.generate_username(obj, prefix, session)
         password = "P" + get_random_string(8) # Simple random password
         
         hashed_password = pwd_context.hash(password)

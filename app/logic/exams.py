@@ -1,88 +1,145 @@
 from typing import List, Optional, Any, Dict
-from sqlmodel import Session, select, func, delete, and_
-from decimal import Decimal
+from sqlmodel import Session, select, func, delete, desc
+from datetime import date as dt_date
 
-# Models
 from app.models import Exam, ExamResult, Student, Course, Institution
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class ExamManager:
-    """امتحانات، پوزیشنز اور رزلٹ کارڈ مینیج کرنے کی ایڈوانس سروس کلاس (FastAPI/SQLModel Version)"""
-    
-    def __init__(self, session: Session, user: Any, exam: Exam):
-        """امتحان کے مخصوص آبجیکٹ اور سیشن کے ساتھ امتحان مینیجر کو شروع کرنا۔"""
-        self.exam = exam
+
+class ExamLogic:
+    """امتحانات، نمبر اور رزلٹ کارڈ مینیج کرنا (FastAPI/SQLModel)"""
+
+    def __init__(self, session: Session, user: Any,
+                 exam: Optional[Exam] = None,
+                 institution: Optional[Institution] = None):
         self.session = session
         self.user = user
-        self.institution = self.session.get(Institution, exam.inst_id)
+        self.exam = exam
 
-    def record_marks(self, marks_data: List[Dict]):
-        """طلبہ کے حاصل کردہ نمبروں کو بلک میں محفوظ کرنا، پرانے ریکارڈز کو اپڈیٹ کرتے ہوئے۔"""
-        student_ids = [int(entry['student_id']) for entry in marks_data]
-        
-        # 1. پرانے ریکارڈز حذف کریں (اگر اسی امتحان اور طالب علموں کے لیے ہوں)
-        stmt = delete(ExamResult).where(
-            ExamResult.exam_id == self.exam.id,
-            ExamResult.student_id.in_(student_ids)
+        if exam:
+            self.institution = institution or self.session.get(Institution, exam.inst_id)
+        else:
+            self.institution = institution
+
+    # ── Context helpers ──────────────────────────────────────────────────────
+
+    def get_list_context(self) -> dict:
+        """امتحانات کی فہرست کا context۔"""
+        exams = self.session.exec(
+            select(Exam).where(Exam.inst_id == self.institution.id)
+            .order_by(desc(Exam.date), desc(Exam.id))
+        ).all()
+        return {"exams": exams}
+
+    def get_record_marks_context(self, exam_id: int) -> Optional[dict]:
+        """نمبر درج کرنے کے صفحے کا context۔"""
+        exam = self.session.get(Exam, exam_id)
+        if not exam or exam.inst_id != self.institution.id:
+            return None
+        self.exam = exam
+        students = self.session.exec(
+            select(Student).where(Student.inst_id == self.institution.id, Student.is_active == True)
+        ).all()
+        courses = self.session.exec(
+            select(Course).where(Course.inst_id == self.institution.id, Course.is_active == True)
+        ).all()
+        return {"exam": exam, "students": students, "courses": courses}
+
+    def get_report_card_context(self, exam_id: int, student_id: int) -> Optional[dict]:
+        """رزلٹ کارڈ کا context۔"""
+        exam = self.session.get(Exam, exam_id)
+        student = self.session.get(Student, student_id)
+        if not exam or not student:
+            return None
+        self.exam = exam
+        report = self.get_student_report(student_id)
+        return {"exam": exam, "student": student, "report": report}
+
+    # ── CRUD ─────────────────────────────────────────────────────────────────
+
+    def save_exam(self, data: dict):
+        """امتحان محفوظ کریں یا اپڈیٹ کریں۔"""
+        exam_id = data.get("id")
+        if exam_id:
+            exam = self.session.get(Exam, int(exam_id))
+            if not exam or exam.inst_id != self.institution.id:
+                from fastapi import HTTPException
+                raise HTTPException(status_code=404, detail="Exam not found")
+            for k, v in data.items():
+                if hasattr(exam, k): setattr(exam, k, v)
+        else:
+            exam = Exam(
+                inst_id=self.institution.id,
+                title=data.get("title"),
+                date=data.get("date"),
+                is_active=True,
+            )
+            self.session.add(exam)
+        self.session.commit()
+        return True, "Exam saved.", exam
+
+    def record_marks(self, marks_data: List[Dict], exam_id: int = None):
+        """طلبہ کے نمبر بلک میں محفوظ کریں۔"""
+        exam = self.exam or (self.session.get(Exam, exam_id) if exam_id else None)
+        if not exam:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="Exam context required.")
+
+        student_ids = [int(e["student_id"]) for e in marks_data]
+        self.session.exec(
+            delete(ExamResult).where(
+                ExamResult.exam_id == exam.id,
+                ExamResult.student_id.in_(student_ids),
+            )
         )
-        self.session.exec(stmt)
-        
-        # 2. نئے ریکارڈز شامل کریں
         count = 0
         for entry in marks_data:
-            res = ExamResult(
-                exam_id=self.exam.id,
-                student_id=entry['student_id'],
-                course_id=entry['course_id'],
-                obtained_marks=int(entry['obtained']),
-                total_marks=int(entry.get('total', 100)),
-                teacher_remarks=entry.get('remarks', "")
-            )
-            self.session.add(res)
+            self.session.add(ExamResult(
+                exam_id=exam.id,
+                student_id=entry["student_id"],
+                course_id=entry["course_id"],
+                obtained_marks=int(entry["obtained"]),
+                total_marks=int(entry.get("total", 100)),
+                teacher_remarks=entry.get("remarks", ""),
+            ))
             count += 1
-            
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'record_marks', 'Exam', self.exam.id, f"Marks for {count} students", marks_data)
+
+        AuditLogic.log_activity(
+            self.session, self.institution.id, self.user.id,
+            "record_marks", "Exam", exam.id,
+            f"Marks for {count} students", marks_data,
+        )
         self.session.commit()
-        return True, f"{count} records saved successfully.", count
+        return True, f"{count} records saved.", count
 
+    def get_student_report(self, student_id: int) -> dict:
+        """ایک طالب علم کا مکمل رزلٹ کارڈ۔"""
+        results = self.session.exec(
+            select(ExamResult).where(
+                ExamResult.exam_id == self.exam.id,
+                ExamResult.student_id == student_id,
+            )
+        ).all()
 
-    def get_student_report(self, student_id: int):
-        """کسی مخصوص طالب علم کا رزلٹ کارڈ تیار کرنا۔"""
-        stmt = select(ExamResult).where(ExamResult.exam_id == self.exam.id, ExamResult.student_id == student_id)
-        results = self.session.exec(stmt).all()
-        
-        subject_list = []
-        total_obtained = 0
-        total_max = 0
-        has_failed = False
-
+        subjects, total_got, total_max, has_failed = [], 0, 0, False
         for r in results:
-            total_obtained += r.obtained_marks
+            total_got += r.obtained_marks
             total_max += r.total_marks
-            
-            # حاصل کردہ نمبروں کا تناسب
             p = (r.obtained_marks / r.total_marks * 100) if r.total_marks > 0 else 0
-            is_pass = p >= 40
-            if not is_pass: has_failed = True
-            
+            passed = p >= 40
+            if not passed: has_failed = True
             course = self.session.get(Course, r.course_id)
-            course_name = course.title if course else f"Course #{r.course_id}"
-
-            subject_list.append({
-                'name': course_name,
-                'max': r.total_marks,
-                'got': r.obtained_marks,
-                'status': 'Pass' if is_pass else 'Fail',
-                'percentage': round(p, 1)
+            subjects.append({
+                "name": course.title if course else f"Course #{r.course_id}",
+                "max": r.total_marks, "got": r.obtained_marks,
+                "status": "Pass" if passed else "Fail",
+                "percentage": round(p, 1),
             })
 
-        final_p = (total_obtained / total_max * 100) if total_max > 0 else 0
-        status = "Fail" if (has_failed or final_p < 40) else "Pass"
-
+        final_p = (total_got / total_max * 100) if total_max > 0 else 0
         return {
-            'subjects': subject_list,
-            'total_got': total_obtained,
-            'total_max': total_max,
-            'percentage': round(final_p, 2),
-            'status': status
+            "subjects": subjects,
+            "total_got": total_got, "total_max": total_max,
+            "percentage": round(final_p, 2),
+            "status": "Fail" if (has_failed or final_p < 40) else "Pass",
         }

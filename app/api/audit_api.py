@@ -1,18 +1,21 @@
+"""
+Audit API — Thin Routes
+────────────────────────
+Activity Logs اور Recycle Bin کے routes ۔
+تمام logic app/logic/audit.py میں ہے۔
+"""
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
-from typing import Optional
 
-# Internal Imports
 from app.core.database import get_session
 from app.models import User
 from app.logic.auth import get_current_user
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 from app.logic.permissions import get_institution_with_access
+from app.utils.context import TemplateResponse
 
 router = APIRouter()
-from app.utils.context import TemplateResponse
 
 # --- 1. Activity Logs Overview ---
 
@@ -26,7 +29,7 @@ async def audit_logs(
     """ادارے کی تمام سرگرمیوں (Activity Logs) کا مکمل ریکارڈ۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     
-    am = AuditManager(current_user, session, institution=institution)
+    am = AuditLogic(current_user, session, institution=institution)
     logs = am.get_logs()
     
     return await TemplateResponse.render("dms/audit_logs.html", request, session, {
@@ -46,7 +49,7 @@ async def recycle_bin_view(
     """حذف شدہ آئٹمز (Soft Deleted) کی فہرست۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     
-    am = AuditManager(current_user, session, institution=institution)
+    am = AuditLogic(current_user, session, institution=institution)
     trash_items = am.get_trash_items()
     
     return await TemplateResponse.render("dms/recycle_bin.html", request, session, {
@@ -65,7 +68,7 @@ async def recycle_bin_actions(
 ):
     """ری سائیکل بن سے ڈیٹا بحال کرنا یا ہمیشہ کے لیے حذف کرنا۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    am = AuditManager(current_user, session, institution=institution)
+    am = AuditLogic(current_user, session, institution=institution)
     
     if action == "restore":
         success, message = am.restore_item(model_path, object_id)

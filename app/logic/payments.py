@@ -10,7 +10,7 @@ from app.models import (
     Fee, Fee_Payment, WalletTransaction, Income, Expense, 
     Student, Staff, Institution
 )
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
 # ============================================================
 # 1. CASHIER CLASS (Transactions - In/Out) (FastAPI Version)
@@ -66,7 +66,7 @@ class Cashier:
             receipts.append(w_rec.receipt_number)
 
         # آڈٹ لاگنگ
-        AuditManager.log_activity(
+        AuditLogic.log_activity(
             self.session, self.institution.id, self.user.id, 
             'collect_fee', 'Student', student.id, 
             f"Received {amount} from {student.name}", 
@@ -132,8 +132,8 @@ class Cashier:
 
     def pay_salary(self, staff_id: int, amount: float, month_date: Optional[date] = None, notes: str = ""):
         """اسٹاف کو تنخواہ دینا food"""
-        from app.logic.staff import StaffManager
-        sm = StaffManager(self.user, self.session)
+        from app.logic.staff import StaffLogic
+        sm = StaffLogic(self.user, self.session)
         staff = self.session.get(Staff, staff_id)
         if not staff or staff.inst_id != self.institution.id:
             raise HTTPException(status_code=404, detail="Staff not found")
@@ -141,8 +141,8 @@ class Cashier:
         amount_dec = Decimal(str(amount))
         sm.target = staff 
         
-        from app.logic.finance import FinanceManager
-        fm = FinanceManager(self.session, self.institution, self.user)
+        from app.logic.finance import FinanceLogic
+        fm = FinanceLogic(self.session, self.institution, self.user)
         
         desc = f"Salary: {staff.name}" + (f" ({month_date.strftime('%B %Y')})" if month_date else "")
         expense = fm.record_expense(

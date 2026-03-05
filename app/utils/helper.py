@@ -2,25 +2,19 @@ from fastapi.responses import RedirectResponse
 from typing import Optional
 
 def handle_manager_result(request, success: bool, message: str, redirect_url: Optional[str] = None):
-    """
-    مینیجر کے رزلٹ کو ہینڈل کرنا اور ری ڈائریکٹ کرنا۔
-    (FastAPI Version: No messages framework yet, returns RedirectResponse)
-    """
-    # Note: FastAPI doesn't have a built-in 'messages' framework like Django.
-    # We use cookies or query parameters for simple notifications if needed, 
-    # but for now we follow the logic flow.
-    
+    """مینیجر کے نتیجے پر redirect کرنا۔"""
     target = redirect_url or request.headers.get('referer', '/')
     return RedirectResponse(url=target, status_code=303)
 
-def resolve_currency_label(institution):
+def resolve_currency_label(institution) -> str:
     """ادارے کی کرنسی کا نشان حاصل کرنا۔"""
-    try:
-        from app.logic.donations import DonationManager # Updated to logic folder if needed
-        # Simple fallback for now if logic is missing or complex
-        return getattr(institution, 'currency', 'Rs.')
-    except:
-        return "Rs."
+    if institution:
+        for attr in ("currency_label", "currency_code", "currency"):
+            value = getattr(institution, attr, None)
+            if value:
+                return str(value)
+    return "Rs."
+
 
 def number_to_words(n):
     """رقم کو انگلش الفاظ میں تبدیل کرنے کا سادہ فنکشن (Simple Integer Conversion)"""

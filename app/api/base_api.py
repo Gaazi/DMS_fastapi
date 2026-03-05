@@ -1,134 +1,168 @@
-from fastapi import APIRouter, Request, Depends, HTTPException, BackgroundTasks, Form, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, func
+"""
+Base API — Thin Routes
+──────────────────────
+Dashboard, Institution Settings, Admin Tools, PWA, etc.
+تمام business logic app/logic/institution.py میں ہے۔
+"""
+from fastapi import APIRouter, Request, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from sqlmodel import Session
 from typing import Optional
-from datetime import datetime
-import json
 
-# Internal Imports
 from app.core.database import get_session
-from app.models import Institution, Income, Expense, User
-from app.logic.auth import get_current_user, UserManager
-from app.logic.institution import InstitutionManager
+from app.models import User
+from app.logic.auth import get_current_user
+from app.logic.institution import InstitutionLogic
 from app.logic.permissions import get_institution_with_access
 from app.utils.context import TemplateResponse
 
 router = APIRouter()
 
-# --- 1. home (جینگو کا اصل نام) ---
+
+# ── 1. Home (Public Landing) ────────────────────────────────────────────────
 @router.get("/", response_class=HTMLResponse, name="dms")
-async def home(request: Request, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
-    total_inst = session.exec(select(func.count(Institution.id))).one()
-    income_sum = session.exec(select(func.sum(Income.amount))).one() or 0
-    expense_sum = session.exec(select(func.sum(Expense.amount))).one() or 0
-    
-    # گلوبل آٹو میشن (15 تاریخ والا لاجک)
-    now = datetime.now()
-    if now.day >= 15:
-        from app.logic.finance import FinanceManager
-        background_tasks.add_task(FinanceManager.run_global_monthly_generation, session)
+async def home(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    session: Session = Depends(get_session),
+):
+    ctx = InstitutionLogic.get_home_stats(session)
+    # ماہانہ fee auto-generate (15 تاریخ کے بعد)
+    from datetime import datetime
+    if datetime.now().day >= 15:
+        from app.logic.finance import FinanceLogic
+        background_tasks.add_task(FinanceLogic.run_global_monthly_generation, session)
+    return await TemplateResponse.render("dms/dms.html", request, session, ctx)
 
-    return await TemplateResponse.render("dms/dms.html", request, session, {
-        "total_institutions": total_inst,
-        "total_income": income_sum,
-        "total_expense": expense_sum,
-        "total_balance": income_sum - expense_sum,
-        "currency_label": "PKR"
-    })
 
-# --- 2. smart_redirect ---
-@router.get("/go/{institution_slug}")
-async def smart_redirect(institution_slug: str, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    institution = session.exec(select(Institution).where(Institution.slug == institution_slug)).first()
-    if not institution: raise HTTPException(status_code=404)
-    
-    # Guardian/Student Redirection Logic
-    if hasattr(current_user, 'student') and current_user.student and current_user.student.inst_id == institution.id:
-        return RedirectResponse(url=f"/{institution_slug}/student/{current_user.student.id}", status_code=303)
-    if hasattr(current_user, 'parent') and current_user.parent and current_user.parent.inst_id == institution.id:
-        return RedirectResponse(url=f"/{institution_slug}/guardian", status_code=303)
-        
-    return RedirectResponse(url=f"/{institution_slug}/dashboard", status_code=303)
+# ── 2. Smart Redirect ────────────────────────────────────────────────────────
+@router.get("/go/{institution_slug}", name="smart_redirect")
+async def smart_redirect(
+    institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    url = InstitutionLogic.get_smart_redirect(institution_slug, current_user, session)
+    return RedirectResponse(url=url, status_code=303)
 
-# --- 3. dashboard ---
+
+# ── 3. Dashboard ────────────────────────────────────────────────────────────
 @router.get("/{institution_slug}/", response_class=HTMLResponse, name="dashboard")
-async def dashboard(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution = session.exec(select(Institution).where(Institution.slug == institution_slug)).first()
-    if not institution: raise HTTPException(status_code=404)
-    
-    im = InstitutionManager(current_user, session=session, institution=institution)
-    context = im.get_dashboard_data()
-    return await TemplateResponse.render("dms/dashboard.html", request, session, context)
+async def dashboard(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="any")
+    im = InstitutionLogic(current_user, session=session, institution=institution)
+    ctx = im.get_dashboard_data()
+    return await TemplateResponse.render("dms/dashboard.html", request, session, ctx)
 
-# --- 4. overview ---
+
+# ── 4. Institution Overview (تمام ادارے) ────────────────────────────────────
 @router.get("/overview/", response_class=HTMLResponse, name="institution_overview")
-async def institution_overview(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    """Summary of all institutions owned by the user."""
-    insts = session.exec(select(Institution).where(Institution.user_id == current_user.id)).all()
+async def institution_overview(
+    request: Request,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    from app.logic.auth import UserLogic
+    insts = UserLogic.get_user_institutions(current_user, session)
     return await TemplateResponse.render("dms/institution_overview.html", request, session, {"institutions": insts})
 
-# --- 5. institution_detail ---
+
+# ── 5. Institution Detail ────────────────────────────────────────────────────
 @router.get("/{institution_slug}/details/", response_class=HTMLResponse, name="institution_detail")
-async def institution_detail(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+async def institution_detail(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="admin")
     return await TemplateResponse.render("dms/institution_settings.html", request, session, {"institution": institution})
 
-# --- 6. manage_accounts ---
+
+# ── 6. Manage Accounts ───────────────────────────────────────────────────────
 @router.get("/{institution_slug}/accounts-manager/", response_class=HTMLResponse, name="manage_accounts")
-async def manage_accounts(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+async def manage_accounts(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="admin")
     return await TemplateResponse.render("dms/manage_accounts.html", request, session, {"institution": institution})
 
-# --- 7. settings ---
-@router.api_route("/{institution_slug}/settings/", methods=["GET", "POST"], name="institution_settings")
-async def settings(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    from app.schemas.forms import InstitutionSettingsSchema
-    from pydantic import ValidationError
-    
+
+# ── 7. Settings ──────────────────────────────────────────────────────────────
+@router.api_route("/{institution_slug}/settings/", methods=["GET", "POST"],
+                  response_class=HTMLResponse, name="institution_settings")
+async def settings(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="admin")
+    im = InstitutionLogic(current_user, session=session, institution=institution)
+    errors = None
+
     if request.method == "POST":
-        form_data = await request.form()
-        data = dict(form_data)
+        from app.schemas.forms import InstitutionSettingsSchema
+        from pydantic import ValidationError
+        data = dict(await request.form())
         try:
-            validated_data = InstitutionSettingsSchema(**data)
-            InstitutionManager(current_user, session, institution).update_settings(validated_data.dict())
+            validated = InstitutionSettingsSchema(**data)
+            im.update_settings(validated.dict())
             return RedirectResponse(url=request.url.path, status_code=303)
         except ValidationError as e:
-            errors = {err['loc'][0]: err['msg'] for err in e.errors()}
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
             return await TemplateResponse.render("dms/institution_settings.html", request, session, {
                 "institution": institution, "errors": errors, "form_data": data
             })
+
     return await TemplateResponse.render("dms/institution_settings.html", request, session, {"institution": institution})
 
-# --- 8. admin_tools ---
+
+# ── 8. Admin Tools ───────────────────────────────────────────────────────────
 @router.get("/{institution_slug}/admin-tools/", response_class=HTMLResponse, name="institution_admin_tools")
-async def admin_tools_view(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+async def admin_tools_view(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="admin")
     return await TemplateResponse.render("dms/tools.html", request, session, {"institution": institution})
 
+
 @router.post("/{institution_slug}/admin-tools/", name="institution_admin_tools_post")
-async def admin_tools_post(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    form_data = await request.form()
-    action = form_data.get("action")
-    
-    if action == "bulk_update":
-        im = InstitutionManager(current_user, session, institution)
-        im.run_bulk_maintenance()
-        
+async def admin_tools_post(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="admin")
+    data = dict(await request.form())
+    if data.get("action") == "bulk_update":
+        InstitutionLogic(current_user, session, institution).run_bulk_maintenance()
     return RedirectResponse(url=request.url.path, status_code=303)
 
-# --- 9. superadmin_overview ---
 
+# ── 9. Superadmin Overview ───────────────────────────────────────────────────
 @router.get("/superadmin/overview", response_class=HTMLResponse, name="superadmin_overview")
-async def superadmin_overview(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    if not current_user.is_superuser: raise HTTPException(status_code=403)
+async def superadmin_overview(
+    request: Request,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user or not current_user.is_superuser:
+        raise HTTPException(status_code=403)
+    from sqlmodel import select
+    from app.models import Institution
     institutions = session.exec(select(Institution)).all()
     return await TemplateResponse.render("dms/superadmin_overview.html", request, session, {"institutions": institutions})
 
-# --- 10. PWA & Assets ---
-@router.get("/manifest.json", name="manifest")
+
+# ── 10. PWA & Static Assets ──────────────────────────────────────────────────
+@router.get("/manifest.json",     name="manifest")
 async def manifest():
     return FileResponse("static/manifest.json")
 
@@ -136,22 +170,24 @@ async def manifest():
 async def service_worker():
     return FileResponse("static/service-worker.js")
 
-@router.get("/share-target/", name="share_target")
+@router.get("/share-target/",     name="share_target")
 async def share_target():
     return RedirectResponse(url="/", status_code=302)
 
-# --- 11. all_notifications ---
-@router.get("/{institution_slug}/notifications/", response_class=HTMLResponse, name="all_notifications")
-async def all_notifications(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    return await TemplateResponse.render("dms/all_notifications.html", request, session, {"institution_slug": institution_slug})
 
-# --- 12. smart_shortcut ---
+# ── 12. Smart Shortcut ───────────────────────────────────────────────────────
 @router.get("/shortcut/{action}/", name="smart_shortcut")
 async def smart_shortcut(action: str, current_user: User = Depends(get_current_user)):
     return RedirectResponse(url="/", status_code=302)
 
-# --- 13. system_backup_manager ---
+
+# ── 13. System Backup Manager (Superadmin) ───────────────────────────────────
 @router.get("/system/backup/", response_class=HTMLResponse, name="system_backup_manager")
-async def system_backup_manager(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    if not current_user.is_superuser: raise HTTPException(status_code=403)
+async def system_backup_manager(
+    request: Request,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user or not current_user.is_superuser:
+        raise HTTPException(status_code=403)
     return await TemplateResponse.render("dms/backup_manager.html", request, session)

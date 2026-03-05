@@ -13,14 +13,14 @@ from app.logic.permissions import get_institution_with_access
 router = APIRouter()
 
 from app.utils.context import TemplateResponse
-from app.logic.finance import FinanceManager
+from app.logic.finance import FinanceLogic
 
 # --- 1. income_edit ---
 @router.api_route("/{institution_slug}/income/edit/{income_id}", methods=["GET", "POST"], name="income_edit")
 async def income_edit(request: Request, institution_slug: str, income_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """انکم ریکارڈ میں ترمیم۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceManager(session, institution, current_user)
+    fm = FinanceLogic(session, institution, current_user)
     from app.schemas.forms import IncomeFormSchema
     from pydantic import ValidationError
     
@@ -54,7 +54,7 @@ async def income_edit(request: Request, institution_slug: str, income_id: int, s
 async def expense_edit(request: Request, institution_slug: str, expense_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """اخراجات ریکارڈ میں ترمیم۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceManager(session, institution, current_user)
+    fm = FinanceLogic(session, institution, current_user)
     from app.schemas.forms import ExpenseFormSchema
     from pydantic import ValidationError
     

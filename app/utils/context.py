@@ -2,8 +2,8 @@ from typing import Any, Dict, Optional
 from sqlmodel import Session, select
 from fastapi import Request
 from app.models import Institution, User
-from app.logic.auth import UserManager
-from app.logic.institution import InstitutionManager
+from app.logic.auth import UserLogic
+from app.logic.institution import InstitutionLogic
 from fastapi.templating import Jinja2Templates
 from app.core.config import settings
 import datetime
@@ -137,7 +137,7 @@ async def get_global_context(request, session: Session, current_user: Optional[U
     if not institution and current_user and session:
         institution = session.exec(select(Institution).where(Institution.user_id == current_user.id)).first()
 
-    currency_label = InstitutionManager.get_currency_label(institution)
+    currency_label = InstitutionLogic.get_currency_label(institution)
     
     user_payload = {"name": "مہمان", "email": "", "role": "", "initials": ""}
     if current_user:
@@ -164,7 +164,7 @@ async def get_global_context(request, session: Session, current_user: Optional[U
             "unread_count": 0,
             "user": user_payload,
         },
-        "all_institutions": UserManager.get_user_institutions(current_user, session) if current_user and session else [],
+        "all_institutions": UserLogic.get_user_institutions(current_user, session) if current_user and session else [],
         "user": current_user,
         "errors": {},
         "currency_label": currency_label,

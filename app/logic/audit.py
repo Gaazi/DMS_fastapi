@@ -12,7 +12,7 @@ from app.models import (
     Exam, Announcement, InventoryItem, ActivityLog
 )
 
-class AuditManager:
+class AuditLogic:
     """لاگز اور ریسائیکل بن کی مینجمنٹ (Hyper-Refined Version)"""
 
     # 🚀 جینگو کی 'apps.get_model' کا مکمل نعم البدل

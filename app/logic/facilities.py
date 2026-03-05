@@ -4,9 +4,9 @@ from fastapi import HTTPException
 
 # Internal Imports
 from app.models import Facility, Institution, User
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class FacilityManager:
+class FacilityLogic:
     """Business logic for managing institution facilities and assets (SQLModel Version)"""
     
     def __init__(self, session: Session, user: User, institution: Optional[Institution] = None):
@@ -57,7 +57,7 @@ class FacilityManager:
             action = "create"
         
         self.session.flush()
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'Facility', facility.id or 0, facility.name, data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, action, 'Facility', facility.id or 0, facility.name, data)
         self.session.commit()
         self.session.refresh(facility)
         return True, "Facility information saved successfully.", facility
@@ -70,7 +70,7 @@ class FacilityManager:
             return False, "Record not found.", None
             
         name = facility.name
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'delete', 'Facility', facility_id, name, {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'delete', 'Facility', facility_id, name, {})
         self.session.delete(facility)
         self.session.commit()
         return True, f"Facility '{name}' deleted.", None

@@ -9,9 +9,9 @@ import re
 # Models
 from app.models import Institution, Student, Course, Attendance, ClassSession, Fee, Admission, User
 from app.models.attendance import DailyAttendance
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class StudentManager:    
+class StudentLogic:    
     """
     مرکزی کوآرڈینیٹر (Student Pillar Hub) - (FastAPI/SQLModel ورژن)
     """
@@ -55,12 +55,12 @@ class StudentManager:
         return self
 
     def finance(self): 
-        from app.logic.finance import FinanceManager
-        return FinanceManager(self.session, self.institution, self.user, student=self.student)
+        from app.logic.finance import FinanceLogic
+        return FinanceLogic(self.session, self.institution, self.user, student=self.student)
 
     def attendance(self): 
-        from app.logic.attendance import AttendanceManager
-        return AttendanceManager(self.session, self.institution, self.user)
+        from app.logic.attendance import AttendanceLogic
+        return AttendanceLogic(self.session, self.institution, self.user)
 
     def get_student_list(self, q: Optional[str] = None, course_id: Optional[int] = None, status: str = 'active', page: int = 1):
         """طلبہ کی مکمل فہرست مع حاضری اور فیس کے اعداد و شمار۔"""
@@ -228,12 +228,12 @@ class StudentManager:
         self.session.commit()
         self.session.refresh(student)
 
-        # 2. Admission (Enrollment) via CourseManager
+        # 2. Admission (Enrollment) via CourseLogic
         if enrollment_data and enrollment_data.get('course_id'):
-            from app.logic.courses import CourseManager
+            from app.logic.courses import CourseLogic
             course_obj = self.session.get(Course, enrollment_data['course_id'])
             if course_obj:
-                cm = CourseManager(self.session, self.user, target=course_obj)
+                cm = CourseLogic(self.session, self.user, target=course_obj)
                 # Map Student Schema to Course Enrollment Format
                 enroll_params = {
                     'enrollment_date': dt_date.today(),
@@ -245,7 +245,7 @@ class StudentManager:
                 }
                 cm.enroll_student(student.id, enroll_params)
 
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'Student', student.id, student.name, data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, action, 'Student', student.id, student.name, data)
         self.session.commit()
         self.session.refresh(student)
         return student
@@ -269,7 +269,7 @@ class StudentManager:
             ad.deleted_at = datetime.utcnow()
             self.session.add(ad)
 
-        AuditManager.log_activity(
+        AuditLogic.log_activity(
             self.session, self.institution.id, self.user.id,
             'delete', 'Student', student.id, student.name,
             {'reason': 'soft_delete', 'moved_to_trash': True}
@@ -294,7 +294,7 @@ class StudentManager:
             ad.status = status_to_set
             self.session.add(ad)
             
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'update_status', 'Student', student.id, student.name, {'active': is_active})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'update_status', 'Student', student.id, student.name, {'active': is_active})
         self.session.commit()
         return True
 
@@ -313,7 +313,7 @@ class StudentManager:
         new_ad = Admission(student_id=student_id, course_id=new_course_id, status='active', admission_date=dt_date.today())
         self.session.add(new_ad)
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'promote', 'Student', student_id, student.name, {'to_course': new_course_id})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'promote', 'Student', student_id, student.name, {'to_course': new_course_id})
         self.session.commit()
         return True
 
@@ -345,7 +345,7 @@ class StudentManager:
             # Bypass Pydantic's strict __setattr__ by setting _attendance directly
             object.__setattr__(ad, "_attendance", self.attendance().get_member_summary(student, course_id=ad.course_id))
 
-        from app.logic.institution import InstitutionManager
+        from app.logic.institution import InstitutionLogic
         return {
             "student": student,
             "fees": fees,
@@ -364,7 +364,7 @@ class StudentManager:
             ).all(),
             "attendance_percentage": att_summary['percentage'],
             "total_daily_records": att_summary['total'],
-            "currency_label": InstitutionManager.get_currency_label(self.institution),
+            "currency_label": InstitutionLogic.get_currency_label(self.institution),
         }
 
     def get_self_dashboard_context(self, student_id: int, requesting_user_id: int):
@@ -398,7 +398,7 @@ class StudentManager:
             raise HTTPException(status_code=403, detail="آپ کو اس طالب علم کا ڈیش بورڈ دیکھنے کی اجازت نہیں۔")
 
         from app.models.finance import WalletTransaction, Fee
-        from app.logic.institution import InstitutionManager
+        from app.logic.institution import InstitutionLogic
 
         fees = self.finance().student_fee_history()
         fee_totals = self.finance().get_student_fee_totals()
@@ -439,7 +439,88 @@ class StudentManager:
             "attendance": recent_attendance,
             "daily_attendance": daily_attendance,
             "attendance_percentage": att_summary.get('percentage', 0),
-            "currency_label": InstitutionManager.get_currency_label(self.institution),
+            "currency_label": InstitutionLogic.get_currency_label(self.institution),
             "is_self_view": is_self,
         }
 
+    def handle_post_list(self, action: str, data: dict) -> bool:
+        """Student list POST actions۔ Returns True on success (redirect needed)."""
+        if action == "save_student":
+            enroll_data = {
+                "course_id": data.get("course_id"),
+                "agreed_fee": data.get("agreed_fee"),
+                "admission_fee": data.get("admission_fee"),
+                "initial_payment": data.get("initial_payment", 0),
+                "payment_method": data.get("payment_method", "Cash"),
+                "roll_no": data.get("roll_no"),
+            }
+            self.save_student(data, enroll_data if enroll_data["course_id"] else None)
+            return True
+        elif action == "update_status":
+            self.update_status(int(data.get("student_id")), data.get("is_active") == "true")
+            return True
+        return False
+
+    def handle_post_detail(self, action: str, data: dict, student_id: int) -> str:
+        """Student detail POST actions۔ Returns redirect URL or empty string."""
+        if action == "update_student":
+            self.save_student(data)
+        elif action == "promote":
+            self.promote_student(student_id, int(data.get("new_course_id")))
+        elif action == "soft_delete":
+            self.soft_delete(student_id)
+            return "redirect_to_list"
+        return "redirect_to_self"
+
+    def get_admission_context(self, course_id: int = None) -> dict:
+        """Admission form page context — courses list اور pre-selected course۔"""
+        from app.models import Course
+        courses = self.session.exec(
+            select(Course).where(Course.inst_id == self.institution.id)
+        ).all()
+        selected_course = self.session.get(Course, int(course_id)) if course_id else None
+        return {"courses": courses, "selected_course": selected_course}
+
+    def get_public_admission_context(self) -> dict:
+        """عوامی داخلہ فارم کے لیے context (صرف active courses)۔"""
+        from app.models import Course
+        courses = self.session.exec(
+            select(Course).where(Course.inst_id == self.institution.id, Course.is_active == True)
+        ).all()
+        return {"courses": courses, "form": None}
+
+    def handle_public_admission(self, data: dict) -> tuple:
+        """
+        عوامی داخلہ فارم — بغیر لاگ ان طالب علم رجسٹر کریں۔
+        Returns: (success: bool, message: str)
+        """
+        try:
+            with self.session.begin_nested():
+                student = Student(
+                    name=data.get("name"),
+                    father_name=data.get("father_name"),
+                    mobile=data.get("mobile"),
+                    address=data.get("address"),
+                    inst_id=self.institution.id,
+                    is_active=False,
+                    admission_date=dt_date.today(),
+                )
+                self.session.add(student)
+                self.session.flush()
+
+                course_id = data.get("course_id")
+                if course_id:
+                    new_admission = Admission(
+                        student_id=student.id,
+                        course_id=int(course_id),
+                        status="pending",
+                        admission_date=dt_date.today(),
+                        inst_id=self.institution.id,
+                    )
+                    self.session.add(new_admission)
+
+            self.session.commit()
+            return True, "داخلہ درخواست موصول ہوگئی۔"
+        except Exception as e:
+            self.session.rollback()
+            return False, str(e)

@@ -9,8 +9,8 @@ import json
 from app.core.database import get_session
 from app.models import Institution, Donor, Income, Expense, User, Fee, Fee_Payment
 from app.logic.auth import get_current_user
-from app.logic.finance import FinanceManager
-from app.logic.donations import DonationManager
+from app.logic.finance import FinanceLogic
+from app.logic.donations import DonationLogic
 from app.logic.permissions import get_institution_with_access
 from app.utils.context import TemplateResponse
 
@@ -25,7 +25,7 @@ from app.models import Parent, Fee, Institution, Donor, Income, Expense, User, F
 @router.get("/{institution_slug}/balance/", response_class=HTMLResponse, name="balance")
 async def balance(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceManager(session, institution, current_user)
+    fm = FinanceLogic(session, institution, current_user)
     
     start_date = request.query_params.get('start_date')
     end_date = request.query_params.get('end_date')
@@ -68,12 +68,12 @@ async def pay_installment(request: Request, institution_slug: str, fee_id: int, 
         )
         
         from app.utils.helper import number_to_words
-        from app.logic.institution import InstitutionManager
+        from app.logic.institution import InstitutionLogic
         context = {
             "result": result["result"],
             "student": result["student"],
             "amount": result["amount"],
-            "currency_label": InstitutionManager.get_currency_label(institution),
+            "currency_label": InstitutionLogic.get_currency_label(institution),
             "amount_words": number_to_words(result["amount"]),
             "is_advance": fee_id == 0,
             "message": "ادائیگی کامیابی سے مکمل ہو گئی۔",
@@ -114,7 +114,7 @@ async def batch_generate_fees(request: Request, institution_slug: str, session: 
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
     if request.method == "POST":
         form_data = await request.form()
-        fm = FinanceManager(session, institution, current_user)
+        fm = FinanceLogic(session, institution, current_user)
         fm.auto_generate_fees(year=int(form_data.get('year')), month=int(form_data.get('month')))
         return RedirectResponse(url=request.url_for("balance", institution_slug=institution_slug), status_code=303)
     return await TemplateResponse.render("dms/batch_fee_form.html", request, session, {"institution": institution})
@@ -134,7 +134,7 @@ async def record_income(request: Request, institution_slug: str, session: Sessio
             # Validate input data
             validated_data = IncomeFormSchema(**data)
             
-            fm = FinanceManager(session, institution, current_user)
+            fm = FinanceLogic(session, institution, current_user)
             income = fm.record_income(
                 source=validated_data.source,
                 amount=validated_data.amount,
@@ -180,7 +180,7 @@ async def record_expense(request: Request, institution_slug: str, session: Sessi
         try:
             validated_data = ExpenseFormSchema(**data)
             
-            fm = FinanceManager(session, institution, current_user)
+            fm = FinanceLogic(session, institution, current_user)
             fm.record_expense(
                 category=validated_data.category,
                 amount=validated_data.amount,
@@ -211,7 +211,7 @@ async def record_expense(request: Request, institution_slug: str, session: Sessi
 @router.api_route("/{institution_slug}/donor/", methods=["GET", "POST"], name="donor")
 async def donor_list(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    dm = DonationManager(session, current_user, institution=institution)
+    dm = DonationLogic(session, current_user, institution=institution)
     
     from app.schemas.forms import DonorFormSchema
     from pydantic import ValidationError
@@ -247,7 +247,7 @@ async def donor_detail(request: Request, institution_slug: str, donor_id: int, s
     if not donor or donor.inst_id != institution.id:
         raise HTTPException(status_code=404, detail="Donor not found")
         
-    dm = DonationManager(session, current_user, institution=institution)
+    dm = DonationLogic(session, current_user, institution=institution)
     context = dm.get_donor_analytics(donor)
     context.update({"request": request, "institution": institution})
     return await TemplateResponse.render("dms/donor_detail.html", request, session, context)
@@ -256,7 +256,7 @@ async def donor_detail(request: Request, institution_slug: str, donor_id: int, s
 @router.get("/{institution_slug}/fees/{fee_id}/", response_class=HTMLResponse, name="fees")
 async def fees(request: Request, institution_slug: str, fee_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceManager(session, institution, current_user)
+    fm = FinanceLogic(session, institution, current_user)
     context = fm.fee_detail(fee_id)
     context.update({"request": request, "institution": institution})
     return await TemplateResponse.render('dms/student_detail.html', request, session, context)
@@ -269,7 +269,7 @@ async def fees(request: Request, institution_slug: str, fee_id: int, session: Se
 #     session: Session = Depends(get_session), current_user: User = Depends(get_current_user)
 # ):
 #     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-#     fm = FinanceManager(current_user, session=session, institution=institution)
+#     fm = FinanceLogic(current_user, session=session, institution=institution)
 #     form_data = await request.form()
     
 #     result = fm.pay(
@@ -297,7 +297,7 @@ async def fees(request: Request, institution_slug: str, fee_id: int, session: Se
 @router.get("/{institution_slug}/in/", response_class=HTMLResponse, name="income")
 async def donation(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceManager(session, institution, current_user)
+    fm = FinanceLogic(session, institution, current_user)
     context = fm.income_dashboard_context(request) # Assuming this method exists and returns the necessary context
     context.update({"request": request, "institution": institution})
     
@@ -319,7 +319,7 @@ async def income_detail(request: Request, institution_slug: str, income_id: int,
 @router.get("/{institution_slug}/out/", response_class=HTMLResponse, name="expense")
 async def expense(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceManager(session, institution, current_user)
+    fm = FinanceLogic(session, institution, current_user)
     context = fm.expenses_dashboard_context(request) # Assuming this method exists and returns the necessary context
     context.update({"request": request, "institution": institution})
     
@@ -331,7 +331,7 @@ async def expense(request: Request, institution_slug: str, session: Session = De
 @router.get("/{institution_slug}/in/list/", response_class=HTMLResponse, name="donation_in_overview")
 async def donation_in_overview(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    dm = DonationManager(session, current_user, institution=institution)
+    dm = DonationLogic(session, current_user, institution=institution)
     context = dm.get_donation_list_context(page=request.query_params.get("page"))
     context.update({"request": request, "institution": institution})
     
@@ -346,7 +346,7 @@ async def donation_in_overview(request: Request, institution_slug: str, session:
 @router.post("/{institution_slug}/donor/quick-save/")
 async def donor_create_quick(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    dm = DonationManager(session, current_user, institution=institution)
+    dm = DonationLogic(session, current_user, institution=institution)
     form_data = await request.form()
     success, message, donor_obj = dm.get_or_create_donor(dict(form_data))
     if success:
@@ -360,7 +360,7 @@ async def donor_create_quick(request: Request, institution_slug: str, session: S
 @router.api_route("/{institution_slug}/donor/{donor_id}/edit/", methods=["GET", "POST"], name="donor_edit")
 async def donor_create_edit(request: Request, institution_slug: str, donor_id: Optional[int] = None, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    dm = DonationManager(session, current_user, institution=institution)
+    dm = DonationLogic(session, current_user, institution=institution)
     if request.method == "POST":
         form_data = await request.form()
         dm.update_donor(donor_id, dict(form_data)) # Assuming update_donor method exists
@@ -389,7 +389,7 @@ async def public_donation(request: Request, institution_slug: str, session: Sess
     
     from app.schemas.forms import PublicDonationSchema
     from pydantic import ValidationError
-    from app.logic.finance_donation import DonationManager
+    from app.logic.finance_donation import DonationLogic
 
     if request.method == "POST":
         form_data = await request.form()
@@ -397,7 +397,7 @@ async def public_donation(request: Request, institution_slug: str, session: Sess
         
         try:
             validated = PublicDonationSchema(**data)
-            dm = DonationManager(session, None, institution=institution)
+            dm = DonationLogic(session, None, institution=institution)
             success, message, _ = dm.handle_public_donation(validated.dict())
             if success:
                 return await TemplateResponse.render("dms/public_success.html", request, session, {"institution": institution})
@@ -466,7 +466,7 @@ async def family_fee_collection(request: Request, institution_slug: str, session
 @router.get("/{institution_slug}/reports/family-dues/", response_class=HTMLResponse, name="family_financial_report")
 async def family_financial_report(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceManager(session, institution, current_user)
+    fm = FinanceLogic(session, institution, current_user)
     
     report_data = fm.get_family_financial_report()
     

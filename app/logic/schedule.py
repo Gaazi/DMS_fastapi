@@ -5,7 +5,7 @@ from datetime import time
 # Models
 from app.models import TimetableItem, Course, Staff, Facility, Institution
 
-class ScheduleManager:
+class ScheduleLogic:
     """ٹائم ٹیبل اور ہفتہ وار شیڈول مینیج کرنے کی لاجک (FastAPI/SQLModel Version)۔"""
 
     # ہفتے کے ایام کی میپنگ (Django logic transition)

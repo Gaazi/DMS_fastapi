@@ -5,9 +5,9 @@ from fastapi import HTTPException
 
 # Internal Imports
 from app.models import Income, Donor, Institution, User
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class DonationManager:
+class DonationLogic:
     """Business logic for managing institution income and donors (SQLModel Version)"""
     
     def __init__(self, session: Session, user: User, institution: Optional[Institution] = None):
@@ -65,7 +65,7 @@ class DonationManager:
         self.session.add(income)
         self.session.flush()
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'record_donation', 'Income', income.id or 0, f"Donation of {amount}", {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'record_donation', 'Income', income.id or 0, f"Donation of {amount}", {})
         self.session.commit()
         self.session.refresh(income)
         return income
@@ -84,7 +84,7 @@ class DonationManager:
             donor = Donor(inst_id=self.institution.id, **data)
             self.session.add(donor)
             self.session.flush()
-            AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'create', 'Donor', donor.id or 0, donor.name, data)
+            AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'create', 'Donor', donor.id or 0, donor.name, data)
             self.session.commit()
             self.session.refresh(donor)
             return True, "نیا ڈونر رجسٹر کر دیا گیا ہے۔", donor
@@ -102,7 +102,7 @@ class DonationManager:
             if hasattr(donor, k): setattr(donor, k, v)
         
         self.session.add(donor)
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'update', 'Donor', donor.id, donor.name, data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'update', 'Donor', donor.id, donor.name, data)
         self.session.commit()
         return True
 

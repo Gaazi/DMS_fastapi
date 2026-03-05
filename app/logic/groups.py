@@ -1,7 +1,7 @@
 from app.logic.roles import Role
 from typing import Any
 
-class RoleGroupManager:
+class RoleGroupLogic:
     """
     DMS رولز اور گروپس کی مینجمنٹ (FastAPI/SQLModel Placeholder)
     نوٹ: چونکہ فاسٹ اے پی آئی میں ہم براہ راست سٹاف رولز استعمال کر رہے ہیں، 

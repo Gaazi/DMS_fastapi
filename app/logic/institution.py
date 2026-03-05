@@ -8,7 +8,7 @@ import json
 # Import Models
 from app.models import Institution, ClassSession, Income, Expense, Student, Staff, Parent, Course, Facility, Enrollment, Admission
 
-class InstitutionManager:
+class InstitutionLogic:
     """Core logic layer for institution-level operations (Hyper-Complete Version)"""
     
     def __init__(self, user, session: Session, institution: Optional[Institution] = None):
@@ -35,8 +35,8 @@ class InstitutionManager:
     def get_dashboard_data(self):
         """ڈیش بورڈ کے لیے تمام ڈیٹا نکالنا (بشمول باریک سٹیٹسٹکس)۔"""
         self._check_access()
-        from app.logic.finance import FinanceManager
-        from app.logic.attendance import AttendanceManager
+        from app.logic.finance import FinanceLogic
+        from app.logic.attendance import AttendanceLogic
         from app.logic.roles import Role
         
         today = dt_date.today()
@@ -48,7 +48,7 @@ class InstitutionManager:
         
         # 1. مالیاتی خلاصہ
         if is_admin:
-            fm = FinanceManager(self.session, self.institution, self.user)
+            fm = FinanceLogic(self.session, self.institution, self.user)
             finance = fm.institution_summary()
             analytics = fm.analytics()
             chart_data = analytics.get('chart_data', {})
@@ -57,7 +57,7 @@ class InstitutionManager:
             chart_data = {}
         
         # 2. حاضری اور سیشنز
-        am = AttendanceManager(self.session, self.institution, self.user)
+        am = AttendanceLogic(self.session, self.institution, self.user)
         attendance = am.get_todays_live_summary()
         
         recent_sessions = list(self.session.exec(
@@ -230,6 +230,37 @@ class InstitutionManager:
             exists = self.session.exec(select(model).where(model.inst_id == self.institution.id, model.reg_id == candidate)).first()
             if not exists:
                 return candidate
+
+    @staticmethod
+    def get_home_stats(session) -> dict:
+        """Public home page کے لیے global stats۔"""
+        from sqlmodel import select, func
+        from app.models import Income, Expense
+        total_inst   = session.exec(select(func.count(Institution.id))).one()
+        income_sum   = session.exec(select(func.sum(Income.amount))).one() or 0
+        expense_sum  = session.exec(select(func.sum(Expense.amount))).one() or 0
+        return {
+            "total_institutions": total_inst,
+            "total_income":       income_sum,
+            "total_expense":      expense_sum,
+            "total_balance":      income_sum - expense_sum,
+            "currency_label":     "PKR",
+        }
+
+    @staticmethod
+    def get_smart_redirect(institution_slug: str, user, session) -> str:
+        """یوزر کے role کے مطابق صحیح URL واپس کرنا۔"""
+        institution = session.exec(
+            select(Institution).where(Institution.slug == institution_slug)
+        ).first()
+        if not institution:
+            return "/"
+        if user:
+            if hasattr(user, 'student') and user.student and user.student.inst_id == institution.id:
+                return f"/{institution_slug}/students/{user.student.id}/dashboard/"
+            if hasattr(user, 'parent') and user.parent and user.parent.inst_id == institution.id:
+                return f"/{institution_slug}/parent/dashboard/"
+        return f"/{institution_slug}/"
 
     @staticmethod
     def get_currency_label(institution=None):

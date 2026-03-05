@@ -20,7 +20,7 @@ def main(month: int = None, year: int = None):
     from sqlmodel import Session, select
     from app.core.database import engine
     from app.models.foundation import Institution
-    from app.logic.finance import FinanceManager
+    from app.logic.finance import FinanceLogic
 
     now = datetime.datetime.now()
     month = month or now.month
@@ -42,7 +42,7 @@ def main(month: int = None, year: int = None):
 
         for inst in institutions:
             try:
-                fm = FinanceManager(session, inst, current_user=None)
+                fm = FinanceLogic(session, inst, current_user=None)
                 count = fm.auto_generate_fees(year=year, month=month)
                 total_generated += count
                 if count > 0:

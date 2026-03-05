@@ -7,9 +7,9 @@ import calendar
 
 # Models
 from app.models import Institution, Staff, Staff_Attendance, StaffAdvance
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class StaffManager:
+class StaffLogic:
     """Business logic for Staff members, payroll, and recruitment (FastAPI/SQLModel Version)"""
     
     def __init__(self, user, session: Session, target: Any = None, institution: Optional[Institution] = None):
@@ -120,8 +120,8 @@ class StaffManager:
         self._check_access()
         stats = self.calculate_payroll(month, year, bonus)
         
-        from app.logic.finance import FinanceManager
-        fm = FinanceManager(self.session, self.institution, self.user)
+        from app.logic.finance import FinanceLogic
+        fm = FinanceLogic(self.session, self.institution, self.user)
         
         # ریکارڈ ایکسپینس لیول فنکشن استعمال کریں
         desc_text = f"Salary for {self.staff.name} - {month}/{year}"
@@ -141,7 +141,7 @@ class StaffManager:
             adv.is_adjusted = True
             self.session.add(adv)
             
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'process_salary', 'Staff', self.staff.id, self.staff.name, stats)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'process_salary', 'Staff', self.staff.id, self.staff.name, stats)
         self.session.commit()
         return True, "Salary has been processed and recorded.", stats
 
@@ -174,7 +174,7 @@ class StaffManager:
             self.session.add(staff)
             action = "create"
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'Staff', staff.id, staff.name, data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, action, 'Staff', staff.id, staff.name, data)
         self.session.commit()
         self.session.refresh(staff)
         return True, "Staff information has been saved successfully.", staff
@@ -193,7 +193,7 @@ class StaffManager:
         results = []
         for member in members:
             # نئی انسٹی ٹینس یہاں بنائیں
-            mgr = StaffManager(self.user, self.session, target=member)
+            mgr = StaffLogic(self.user, self.session, target=member)
             results.append({
                 'staff': member,
                 'report': mgr.calculate_payroll(month, year)
@@ -209,7 +209,7 @@ class StaffManager:
         
         for res in results:
             if res['report'] and res['report']['final'] > 0:
-                member_manager = StaffManager(self.user, self.session, target=res['staff'])
+                member_manager = StaffLogic(self.user, self.session, target=res['staff'])
                 member_manager.process_salary(month, year)
                 count += 1
                 total += res['report']['final']
@@ -229,7 +229,7 @@ class StaffManager:
         self.session.add(advance)
         self.session.commit()
         self.session.refresh(advance)
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'create_advance', 'StaffAdvance', advance.id, f"Advance for staff #{staff_id}", {'amount': float(amount)})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'create_advance', 'StaffAdvance', advance.id, f"Advance for staff #{staff_id}", {'amount': float(amount)})
         return advance
 
     def get_advances(self, staff_id: Optional[int] = None):
@@ -281,3 +281,51 @@ class StaffManager:
             m.month_due_amount = Decimal("0.00")
             
         return members
+
+    def get_list_context(self, q=None, role=None) -> dict:
+        """Staff list page کا مکمل context — members + stats۔"""
+        members = self.get_staff_list(q=q, role=role)
+        return {
+            "staff_members": members,
+            "total_count": len(members),
+            "active_count": sum(1 for m in members if m.is_active),
+            "query": q,
+            "role": role,
+        }
+
+    def get_payroll_stats(self, month: int, year: int) -> list:
+        """Payroll report page کے لیے تمام staff کی تنخواہوں کا حساب۔"""
+        return self.process_bulk_payroll(month, year)
+
+    def promote_student_to_staff(self, student, institution, request_url_for):
+        """طالب علم کو staff میں promote کریں۔ (redirect URL, is_new) واپس کرتا ہے۔"""
+        from datetime import date as dt
+        # Duplicate check
+        existing = None
+        if student.mobile:
+            existing = self.session.exec(
+                select(Staff).where(Staff.inst_id == institution.id, Staff.mobile == student.mobile)
+            ).first()
+        if not existing:
+            existing = self.session.exec(
+                select(Staff).where(Staff.inst_id == institution.id, Staff.name == student.full_name)
+            ).first()
+
+        if existing:
+            return request_url_for("dms_staff_edit", staff_id=existing.id) + "?msg=already_staff", False
+
+        new_staff = Staff(
+            inst_id=institution.id,
+            name=student.full_name,
+            mobile=student.mobile or "",
+            email=getattr(student, "email", "") or "",
+            address=getattr(student, "address", "") or "",
+            role="volunteer",
+            base_salary=0.0,
+            hire_date=dt.today(),
+            is_active=True,
+        )
+        self.session.add(new_staff)
+        self.session.commit()
+        self.session.refresh(new_staff)
+        return request_url_for("dms_staff_edit", staff_id=new_staff.id) + "?msg=promoted", True

@@ -3,7 +3,7 @@ from decimal import Decimal
 from sqlmodel import Session, select, func
 from fastapi import HTTPException
 from app.models import Institution, Income, Expense, Student, Staff, Course
-from app.logic.auth import UserManager
+from app.logic.auth import UserLogic
 
 # Constants
 try:
@@ -18,7 +18,7 @@ except ImportError:
     }
     VALID_TYPES = list(TYPE_LABELS.keys())
 
-class GlobalManager:
+class GlobalLogic:
     """Central manager for global reporting and multi-institution logic (FastAPI/SQLModel Version)"""
 
     def __init__(self, user, session: Session):
@@ -33,8 +33,8 @@ class GlobalManager:
 
     def get_global_overview(self):
         """تمام اقسام کے اداروں کا مجموعی مالیاتی اور انتظامی خلاصہ تیار کرنا۔"""
-        from app.logic.auth import UserManager
-        user_institutions = UserManager.get_user_institutions(self.user, self.session)
+        from app.logic.auth import UserLogic
+        user_institutions = UserLogic.get_user_institutions(self.user, self.session)
         institution_ids = [inst.id for inst in user_institutions]
         
         summary = {
@@ -96,7 +96,7 @@ class GlobalManager:
 
     def get_institutions_by_type(self, inst_type: str):
         """کسی مخصوص قسم کے تمام متعلقہ اداروں کی فہرست حاصل کرنا۔"""
-        user_institutions = UserManager.get_user_institutions(self.user, self.session)
+        user_institutions = UserLogic.get_user_institutions(self.user, self.session)
         institution_ids = [inst.id for inst in user_institutions]
         
         stmt = select(Institution).where(
@@ -114,7 +114,7 @@ class GlobalManager:
         institutions = self.get_institutions_by_type(inst_type)
         
         # صرف وہ "Types" دکھائیں جن میں یوزر کا کم از کم ایک ادارہ موجود ہے
-        all_user_inst = UserManager.get_user_institutions(self.user, self.session)
+        all_user_inst = UserLogic.get_user_institutions(self.user, self.session)
         user_inst_types = set(inst.type for inst in all_user_inst)
         
         scoped_type_choices = {

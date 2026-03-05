@@ -245,7 +245,7 @@ class SMSService:
 # Notification Manager — business logic
 # ─────────────────────────────────────────────────────────────────────────────
 
-class NotificationManager:
+class NotificationLogic:
     """
     DMS notifications:
     1. غیر حاضری کی اطلاع — والدین کو

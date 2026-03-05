@@ -5,9 +5,9 @@ from fastapi import HTTPException
 
 # Internal Imports
 from app.models import InventoryItem, AssetIssue, ItemCategory, Student, Staff, Institution, User
-from app.logic.audit import AuditManager
+from app.logic.audit import AuditLogic
 
-class InventoryManager:
+class InventoryLogic:
     """انوینٹری، لائبریری اور اثاثہ جات مینیج کرنے کی لاجک (SQLModel Version)۔"""
     
     def __init__(self, session: Session, user: User, institution: Optional[Institution] = None):
@@ -43,7 +43,7 @@ class InventoryManager:
             action = "create"
             
         self.session.flush()
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, action, 'InventoryItem', item.id or 0, item.name, data)
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, action, 'InventoryItem', item.id or 0, item.name, data)
         self.session.commit()
         self.session.refresh(item)
         return True, "Inventory information saved successfully.", item
@@ -71,7 +71,7 @@ class InventoryManager:
         self.session.add(issue)
         self.session.add(item)
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'issue_item', 'InventoryItem', item.id, f"Issued {quantity} of {item.name}", {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'issue_item', 'InventoryItem', item.id, f"Issued {quantity} of {item.name}", {})
         self.session.commit()
         return True, "Item issued successfully.", issue
 
@@ -94,7 +94,7 @@ class InventoryManager:
         self.session.add(issue)
         self.session.add(item)
         
-        AuditManager.log_activity(self.session, self.institution.id, self.user.id, 'return_item', 'InventoryItem', item.id, f"Returned {item.name}", {})
+        AuditLogic.log_activity(self.session, self.institution.id, self.user.id, 'return_item', 'InventoryItem', item.id, f"Returned {item.name}", {})
         self.session.commit()
         return True, "Return recorded successfully.", issue
 

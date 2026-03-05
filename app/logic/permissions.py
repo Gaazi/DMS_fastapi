@@ -107,9 +107,10 @@ def get_institution_with_access(slug: str, session: Session, current_user: User,
         
     access = InstitutionAccess(current_user, inst)
 
-    # 1. Approval Check
-    if not inst.is_approved and not access.is_superuser and not access.is_owner:
-        raise HTTPException(status_code=403, detail="Institution Pending Approval")
+    # 1. Approval Check (skip for 'any' — public/parent pages)
+    if access_type != 'any':
+        if not inst.is_approved and not access.is_superuser and not access.is_owner:
+            raise HTTPException(status_code=403, detail="Institution Pending Approval")
 
     # 2. Permission Routing
     if access_type == 'admin':
@@ -122,5 +123,6 @@ def get_institution_with_access(slug: str, session: Session, current_user: User,
         access.enforce_academic_view()
     elif access_type == 'staff_view':
         if not access.can_view_staff(): raise HTTPException(status_code=403, detail="Staff Access Required.")
+    # 'any' اور 'view' کے لیے صرف institution ملنا کافی ہے
 
     return inst, access
