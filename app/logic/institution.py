@@ -1,4 +1,4 @@
-from sqlmodel import Session, select, func, desc, and_
+from sqlmodel import Session, select, func, desc, and_, or_
 from fastapi import HTTPException
 from datetime import date as dt_date, datetime
 from decimal import Decimal
@@ -6,7 +6,7 @@ from typing import Optional, List, Any
 import json
 
 # Import Models
-from app.models import Institution, ClassSession, Income, Expense, Student, Staff, Course, Facility, Enrollment, Admission
+from app.models import Institution, ClassSession, Income, Expense, Student, Staff, Parent, Course, Facility, Enrollment, Admission
 
 class InstitutionManager:
     """Core logic layer for institution-level operations (Hyper-Complete Version)"""
@@ -147,6 +147,90 @@ class InstitutionManager:
 
         return {'defaulters': defaulters, 'full_classes': full_classes, 'count': len(defaulters) + len(full_classes)}
 
+    def run_bulk_maintenance(self) -> dict:
+        """بلک اپڈیٹ: تمام آئی ڈیز کو 'PREFIX-INST_ID-PERSON_TYPE-PERSON_ID' فارمیٹ (مثلاً MKT-001-S-0064) میں اپ ڈیٹ کرنا۔"""
+        self._check_access()
+        
+        counts = {"students": 0, "staff": 0, "parents": 0, "slugs": 0}
+        from app.logic.utils import generate_slug
+        
+        # 1. Institution Prefix and Padded ID
+        inst_prefix = "GEN"
+        if self.institution.reg_id and "-" in self.institution.reg_id:
+            inst_prefix = self.institution.reg_id.split("-")[0].upper()
+        elif self.institution.reg_id:
+            inst_prefix = str(self.institution.reg_id)[:3].upper()
+        elif self.institution.slug:
+            inst_prefix = "".join([w[0] for w in self.institution.slug.split("-") if w])[:3].upper()
+        
+        inst_id_str = f"{self.institution.id:03d}"
+        
+        # Helper to format: PREFIX-INST_ID-TYPE-ID
+        def format_id(p_prefix, p_id):
+            return f"{inst_prefix}-{inst_id_str}-{p_prefix}-{p_id:04d}"
+
+        # 1. Students
+        students = self.session.exec(select(Student).where(Student.inst_id == self.institution.id)).all()
+        for s in students:
+            new_reg = format_id("S", s.id)
+            if s.reg_id != new_reg:
+                s.reg_id = new_reg
+                self.session.add(s)
+                counts["students"] += 1
+            
+            if not s.slug:
+                s.slug = generate_slug(f"{s.name}-{s.id}")
+                self.session.add(s)
+                counts["slugs"] += 1
+            
+        # 2. Staff
+        staff_members = self.session.exec(select(Staff).where(Staff.inst_id == self.institution.id)).all()
+        for st in staff_members:
+            new_reg = format_id("E", st.id)
+            if st.reg_id != new_reg:
+                st.reg_id = new_reg
+                self.session.add(st)
+                counts["staff"] += 1
+            
+        # 3. Parents
+        parents = self.session.exec(select(Parent).where(Parent.inst_id == self.institution.id)).all()
+        for p in parents:
+            new_reg = format_id("G", p.id)
+            if p.reg_id != new_reg:
+                p.reg_id = new_reg
+                self.session.add(p)
+                counts["parents"] += 1
+            
+        self.session.commit()
+        return counts
+
+
+
+
+
+    def _generate_unique_reg_id(self, model, prefix: str) -> str:
+        """ادارے کے کوڈ اور رینڈم نمبر سے منفرد آئی ڈی بنانا۔"""
+        # Institution Code
+        inst_part = "GEN"
+        if self.institution.reg_id:
+            inst_part = str(self.institution.reg_id)[:3].upper()
+        elif self.institution.slug:
+            inst_part = "".join([w[0] for w in self.institution.slug.split("-") if w])[:3].upper()
+            
+        # Random numeric part
+        from app.logic.utils import get_random_string
+        import random
+        
+        while True:
+            # Format: [INST]-[PREFIX][RANDOM] e.g. MKT-S1234
+            num = random.randint(1000, 9999)
+            candidate = f"{inst_part}-{prefix}{num}"
+            
+            # Check uniqueness
+            exists = self.session.exec(select(model).where(model.inst_id == self.institution.id, model.reg_id == candidate)).first()
+            if not exists:
+                return candidate
+
     @staticmethod
     def get_currency_label(institution=None):
         fallback = "Rs"
@@ -155,3 +239,4 @@ class InstitutionManager:
                 value = getattr(institution, attr, None)
                 if value: return str(value)
         return fallback
+

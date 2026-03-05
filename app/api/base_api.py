@@ -107,7 +107,20 @@ async def admin_tools_view(request: Request, institution_slug: str, session: Ses
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     return await TemplateResponse.render("dms/tools.html", request, session, {"institution": institution})
 
+@router.post("/{institution_slug}/admin-tools/", name="institution_admin_tools_post")
+async def admin_tools_post(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+    form_data = await request.form()
+    action = form_data.get("action")
+    
+    if action == "bulk_update":
+        im = InstitutionManager(current_user, session, institution)
+        im.run_bulk_maintenance()
+        
+    return RedirectResponse(url=request.url.path, status_code=303)
+
 # --- 9. superadmin_overview ---
+
 @router.get("/superadmin/overview", response_class=HTMLResponse, name="superadmin_overview")
 async def superadmin_overview(request: Request, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     if not current_user.is_superuser: raise HTTPException(status_code=403)

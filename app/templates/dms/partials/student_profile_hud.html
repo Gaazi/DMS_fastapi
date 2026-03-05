@@ -139,7 +139,7 @@
                         <span class="text-3xl font-thin text-white/10">{{ student.name|first|upper }}</span>
                     {% endif %}
                 </div>
-                <div class="absolute -bottom-2 -right-2 bg-indigo-600 text-white text-xs font-mono font-bold px-1.5 py-0.5 rounded shadow-lg uppercase">{% if student.reg_id %}{{ student.reg_id }}{% else %}#{{ student.id }}{% endif %}</div>
+                <div class="absolute -bottom-2 -right-2 bg-indigo-600 text-white text-[9px] font-mono px-1.5 py-0.5 rounded shadow-lg uppercase">{{ student.reg_id }}</div>
             </div>
         </div>
 
