@@ -40,14 +40,14 @@
             
             <!-- 2. Role -->
             {% if is_academic_admin and can_edit_staff %}
-            <form method="POST" action="{{ url('promote_to_staff', institution.slug, student.id) }}" onsubmit="return confirm('کیا آپ اس ممبر کا ڈیٹا کاپی کر کے انہیں اسٹاف (عملے) میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
-                {{ csrf_token() }}
+            <form method="POST" action="{{ url('promote_to_staff', institution_slug=institution.slug, student_id=student.id) }}" onsubmit="return confirm('کیا آپ اس ممبر کا ڈیٹا کاپی کر کے انہیں اسٹاف (عملے) میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
                 <button type="submit" 
                         class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-fuchsia-500/20 bg-fuchsia-500/5 text-fuchsia-400 hover:bg-fuchsia-500/20 hover:text-fuchsia-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap cursor-pointer">
                     <i class="fas fa-award opacity-70"></i>Role
                 </button>
             </form>
             {% endif %}
+
 
             <!-- 3. Report -->
             <button onclick="window.print()" 

@@ -153,13 +153,92 @@ class UserManager:
         return list(session.exec(statement))
 
     @staticmethod
-    def get_post_login_redirect(user: User) -> str:
-        """لاگ ان کے بعد صحیح صفحے پر بھیجنا۔"""
+    def get_post_login_redirect(user: User, session: Session = None) -> str:
+        """
+        لاگ ان کے بعد role کے مطابق صحیح صفحے پر بھیجنا۔
+        ترتیب:
+        1. Superuser       → /dms-admin
+        2. Institution owner (default) → /{slug}/
+        3. Staff (role سے) → مختلف صفحات
+        4. Student         → student portal
+        5. Parent          → parent portal
+        6. کچھ نہیں        → /welcome/
+        """
         if getattr(user, 'is_superuser', False):
-            return "/superadmin/overview"
-            
-        # یہ لاجک اب ویو میں ہینڈل ہوگی یا یہاں سے سلگ واپس ہوگا
-        return "/welcome/" # match current route path
+            return "/admin"
+
+        if not session:
+            return "/welcome/"
+
+        # 1. Default institution (owner یا linked)
+        default_inst = session.exec(
+            select(Institution).where(
+                Institution.user_id == user.id,
+                Institution.is_default == True
+            )
+        ).first()
+        if not default_inst:
+            # کوئی بھی approved institution تلاش کریں
+            default_inst = session.exec(
+                select(Institution).where(
+                    Institution.user_id == user.id,
+                    Institution.is_approved == True
+                )
+            ).first()
+        if default_inst:
+            return f"/{default_inst.slug}/"
+
+        # 2. Staff — role کے مطابق redirect
+        staff = session.exec(
+            select(Staff).where(Staff.user_id == user.id)
+        ).first()
+        if staff:
+            from app.models.foundation import Institution as Inst
+            inst = session.get(Inst, staff.inst_id)
+            if inst:
+                slug = inst.slug
+                role = (staff.role or "").lower()
+
+                # Admin/Management roles → full dashboard
+                if role in ('admin', 'president', 'vice_president',
+                            'general_secretary', 'joint_secretary', 'committee_member'):
+                    return f"/{slug}/"
+
+                # Finance roles → finance page
+                elif role in ('accountant',):
+                    return f"/{slug}/balance/"
+
+                # Academic roles → attendance page
+                elif role in ('teacher', 'imam', 'academic_head'):
+                    return f"/{slug}/students/attendance/"
+
+                # Volunteer/other → dashboard
+                else:
+                    return f"/{slug}/"
+
+        # 3. Student → student self-portal
+        student = session.exec(
+            select(Student).where(Student.user_id == user.id)
+        ).first()
+        if student:
+            from app.models.foundation import Institution as Inst
+            inst = session.get(Inst, student.inst_id)
+            if inst:
+                return f"/{inst.slug}/students/{student.id}/dashboard/"
+
+        # 4. Parent → parent portal
+        parent = session.exec(
+            select(Parent).where(Parent.user_id == user.id)
+        ).first()
+        if parent:
+            from app.models.foundation import Institution as Inst
+            inst = session.get(Inst, parent.inst_id)
+            if inst:
+                return f"/{inst.slug}/parent/dashboard/"
+
+        # 5. کوئی link نہیں → welcome
+        return "/welcome/"
+
 
     @staticmethod
     def handle_signup(data: dict, session: Session) -> Tuple[bool, str, Optional[User]]:

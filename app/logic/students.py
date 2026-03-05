@@ -68,7 +68,10 @@ class StudentManager:
         page_size = 20
         
         # بنیادی کوئری
-        statement = select(Student).where(Student.inst_id == self.institution.id)
+        statement = select(Student).where(
+            Student.inst_id == self.institution.id,
+            Student.deleted_at == None  # soft-deleted چھپائیں
+        )
         
         # 1. فلٹرنگ
         if q:
@@ -248,7 +251,34 @@ class StudentManager:
         return student
 
 
+    def soft_delete(self, student_id: int):
+        """طالب علم کو Recycle Bin میں بھیجنا (Soft Delete) — مستقل نہیں، واپس آسکتا ہے۔"""
+        self._check_access()
+        student = self.session.get(Student, student_id)
+        if not student: raise HTTPException(status_code=404, detail="Student not found.")
+
+        # Soft delete — deleted_at set کریں
+        student.deleted_at = datetime.utcnow()
+        self.session.add(student)
+
+        # داخلے بھی soft delete کریں
+        admissions = self.session.exec(
+            select(Admission).where(Admission.student_id == student_id)
+        ).all()
+        for ad in admissions:
+            ad.deleted_at = datetime.utcnow()
+            self.session.add(ad)
+
+        AuditManager.log_activity(
+            self.session, self.institution.id, self.user.id,
+            'delete', 'Student', student.id, student.name,
+            {'reason': 'soft_delete', 'moved_to_trash': True}
+        )
+        self.session.commit()
+        return True, f"'{student.name}' کو Recycle Bin میں منتقل کر دیا گیا۔"
+
     def update_status(self, student_id: int, is_active: bool):
+
         """طالب علم اور اس کے داخلوں (Admissions) کا اسٹیٹس بدلنا۔"""
         self._check_access()
         student = self.session.get(Student, student_id)
@@ -335,5 +365,81 @@ class StudentManager:
             "attendance_percentage": att_summary['percentage'],
             "total_daily_records": att_summary['total'],
             "currency_label": InstitutionManager.get_currency_label(self.institution),
+        }
+
+    def get_self_dashboard_context(self, student_id: int, requesting_user_id: int):
+        """طالب علم کا اپنا ڈیش بورڈ — صرف وہ خود یا ان کے والدین یا اسٹاف دیکھ سکتے ہیں۔"""
+        student = self.session.get(Student, student_id)
+        if not student:
+            raise HTTPException(status_code=404, detail="Student not found.")
+
+        self.set_student(student)
+
+        # رسائی کی تصدیق: طالب علم خود، institution owner، یا staff
+        is_self = (student.user_id == requesting_user_id) if student.user_id else False
+        is_owner = self.institution and (requesting_user_id == self.institution.user_id)
+        is_staff_member = hasattr(self.user, 'staff') and self.user.staff and (self.user.staff.inst_id == (self.institution.id if self.institution else -1))
+        is_superuser = getattr(self.user, 'is_superuser', False)
+
+        # والدین سے رشتہ چیک
+        from app.models import Parent
+        from app.models.links import StudentParentLink
+        parent_link = self.session.exec(
+            select(StudentParentLink).where(
+                StudentParentLink.student_id == student.id,
+                StudentParentLink.parent_id.in_(
+                    select(Parent.id).where(Parent.user_id == requesting_user_id)
+                )
+            )
+        ).first()
+        is_parent_of_student = parent_link is not None
+
+        if not any([is_self, is_owner, is_staff_member, is_superuser, is_parent_of_student]):
+            raise HTTPException(status_code=403, detail="آپ کو اس طالب علم کا ڈیش بورڈ دیکھنے کی اجازت نہیں۔")
+
+        from app.models.finance import WalletTransaction, Fee
+        from app.logic.institution import InstitutionManager
+
+        fees = self.finance().student_fee_history()
+        fee_totals = self.finance().get_student_fee_totals()
+        att_summary = self.attendance().get_member_summary(student)
+
+        wallet_history = self.session.exec(
+            select(WalletTransaction).where(WalletTransaction.student_id == student.id)
+            .order_by(desc(WalletTransaction.date)).limit(15)
+        ).all()
+
+        admissions = self.session.exec(
+            select(Admission).where(Admission.student_id == student.id)
+        ).all()
+
+        # ہر admission کی حاضری stats
+        for ad in admissions:
+            object.__setattr__(ad, "_attendance", self.attendance().get_member_summary(student, course_id=ad.course_id))
+
+        recent_attendance = self.session.exec(
+            select(Attendance).where(Attendance.student_id == student.id)
+            .join(ClassSession).order_by(desc(ClassSession.date)).limit(15)
+        ).all()
+
+        daily_attendance = self.session.exec(
+            select(DailyAttendance).where(DailyAttendance.student_id == student.id)
+            .order_by(desc(DailyAttendance.date)).limit(10)
+        ).all()
+
+        return {
+            "student": student,
+            "institution": self.institution,
+            "fees": fees,
+            "fee_totals": fee_totals,
+            "fee_balance": fee_totals.get('balance', 0),
+            "wallet_balance": getattr(student, 'wallet_balance', 0),
+            "wallet_history": wallet_history,
+            "admissions": admissions,
+            "attendance": recent_attendance,
+            "daily_attendance": daily_attendance,
+            "attendance_percentage": att_summary.get('percentage', 0),
+            "currency_label": InstitutionManager.get_currency_label(self.institution),
+            "is_self_view": is_self,
         }
 

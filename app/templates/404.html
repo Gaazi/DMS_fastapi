@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — صفحہ نہیں ملا | DMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0f1e;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        /* Animated background */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: grid-move 20s linear infinite;
+        }
+        @keyframes grid-move { from { transform: translateY(0); } to { transform: translateY(60px); } }
+
+        .glow {
+            position: fixed;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1);} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.1);} }
+
+        .container {
+            position: relative;
+            text-align: center;
+            padding: 3rem 2rem;
+            max-width: 560px;
+        }
+        .error-code {
+            font-size: clamp(7rem, 20vw, 12rem);
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px rgba(99,102,241,0.4));
+        }
+        @keyframes shimmer { 0%,100%{filter:drop-shadow(0 0 40px rgba(99,102,241,0.4));} 50%{filter:drop-shadow(0 0 80px rgba(139,92,246,0.6));} }
+
+        .icon-wrap {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 24px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 1.5rem auto;
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+
+        h1 { font-size: 1.8rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.75rem; }
+        p { color: #94a3b8; font-size: 1rem; line-height: 1.7; margin-bottom: 2rem; }
+
+        .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.75rem 1.75rem;
+            border-radius: 12px;
+            font-weight: 600; font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 8px 24px rgba(99,102,241,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(99,102,241,0.5); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+
+        .divider { width: 60px; height: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 2px; margin: 1.5rem auto; }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="glow"></div>
+    <div class="container">
+        <div class="error-code">404</div>
+        <div class="icon-wrap"><i class="fas fa-map-signs" style="color:#6366f1;"></i></div>
+        <div class="divider"></div>
+        <h1>صفحہ نہیں ملا</h1>
+        <p>آپ جس صفحے کو ڈھونڈ رہے ہیں وہ یہاں موجود نہیں۔<br>شاید URL غلط ہو یا صفحہ منتقل کر دیا گیا ہو۔</p>
+        <div class="btn-group">
+            <a href="/" class="btn btn-primary"><i class="fas fa-home"></i> ہوم پیج</a>
+            <a href="javascript:history.back()" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> واپس جائیں</a>
+        </div>
+    </div>
+</body>
+</html>

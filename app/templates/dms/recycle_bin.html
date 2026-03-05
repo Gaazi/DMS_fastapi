@@ -1,73 +1,165 @@
 {% extends 'base.html' %}
-
-{% block title %}آرکائیو - {{ institution.name }}{% endblock %}
+{% block title %}ریسائیکل بن — {{ institution.name }}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-6">
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl text-amber-600">
-            <i class="fas fa-archive ml-2"></i> آرکائیو (Archive)
-        </h1>
-        <a href="{{ url('dashboard', institution.slug) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition">
-            <i class="fas fa-arrow-right ml-2"></i> واپسی ڈیش بورڈ
-        </a>
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5" dir="rtl">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+        <i class="fas fa-trash-alt"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold text-white">ریسائیکل بن</h1>
+        <p class="text-xs text-slate-500">حذف شدہ ریکارڈز — بحال یا مکمل حذف کریں</p>
+      </div>
+    </div>
+    <a href="{{ url('dashboard', institution.slug) }}"
+       class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-all text-xs">
+      <i class="fas fa-arrow-right text-[10px]"></i> ڈیش بورڈ
+    </a>
+  </div>
+
+  <!-- Info Banner -->
+  <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3 flex items-center gap-3">
+    <i class="fas fa-exclamation-triangle text-amber-400 shrink-0"></i>
+    <p class="text-amber-300 text-xs leading-relaxed">
+      یہاں وہ ریکارڈز ہیں جو حذف کیے گئے ہیں۔ <strong>بحال کریں</strong> سے واپس آجائیں گے یا
+      <strong>مکمل حذف</strong> سے ہمیشہ کے لیے ختم ہو جائیں گے۔
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-3 gap-3">
+    <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
+      <div class="text-2xl font-bold text-rose-400">{{ trash_items|length }}</div>
+      <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">کل ریکارڈز</div>
+    </div>
+    <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
+      <div class="text-2xl font-bold text-amber-400">
+        {{ trash_items|selectattr('name', 'equalto', 'Student')|list|length }}
+      </div>
+      <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">طلبہ</div>
+    </div>
+    <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
+      <div class="text-2xl font-bold text-blue-400">
+        {{ trash_items|selectattr('name', 'equalto', 'Staff')|list|length }}
+      </div>
+      <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">اسٹاف</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
+      <h2 class="text-sm font-bold text-white flex items-center gap-2">
+        <i class="fas fa-list text-slate-400"></i> تفصیلی فہرست
+      </h2>
+      <span class="text-[10px] text-slate-500 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+        {{ trash_items|length }} آئٹم
+      </span>
     </div>
 
-    <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl text-amber-800 text-sm">
-        <i class="fas fa-info-circle ml-2"></i> یہاں وہ ریکارڈز موجود ہیں جو حذف کیے گئے ہیں۔ آپ انہیں دوبارہ فعال (Restore) کر سکتے ہیں یا ہمیشہ کے لیے ختم کر سکتے ہیں۔
+    {% if trash_items %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-white/5">
+        <thead class="text-[10px] text-slate-500 uppercase font-bold bg-white/[0.01]">
+          <tr>
+            <th class="px-5 py-3 text-right">ریکارڈ</th>
+            <th class="px-5 py-3 text-right">قسم</th>
+            <th class="px-5 py-3 text-right">حذف کا وقت</th>
+            <th class="px-5 py-3 text-center">ایکشن</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          {% for item in trash_items %}
+          <tr class="hover:bg-white/[0.02] transition-colors group">
+
+            <!-- Name -->
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0 text-xs">
+                  {% if item.name == 'Student' %}<i class="fas fa-user-graduate"></i>
+                  {% elif item.name == 'Staff' %}<i class="fas fa-chalkboard-teacher"></i>
+                  {% elif item.name == 'Fee' %}<i class="fas fa-file-invoice-dollar"></i>
+                  {% elif item.name == 'Course' %}<i class="fas fa-book"></i>
+                  {% else %}<i class="fas fa-file"></i>{% endif %}
+                </div>
+                <span class="text-sm text-slate-200 font-medium">{{ item.repr }}</span>
+              </div>
+            </td>
+
+            <!-- Type Badge -->
+            <td class="px-5 py-3">
+              <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border
+                {% if item.name == 'Student' %}text-blue-400 bg-blue-500/10 border-blue-500/20
+                {% elif item.name == 'Staff' %}text-purple-400 bg-purple-500/10 border-purple-500/20
+                {% elif item.name == 'Fee' %}text-amber-400 bg-amber-500/10 border-amber-500/20
+                {% else %}text-slate-400 bg-white/5 border-white/10{% endif %}">
+                {{ item.name }}
+              </span>
+            </td>
+
+            <!-- Deleted At -->
+            <td class="px-5 py-3">
+              <span class="text-xs text-slate-500 font-mono">
+                {% if item.deleted_at %}
+                  {{ item.deleted_at.strftime('%d/%m/%Y %H:%M') }}
+                {% else %}
+                  —
+                {% endif %}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="px-5 py-3">
+              <div class="flex items-center justify-center gap-2">
+
+                <!-- Restore -->
+                <form method="post" action="{{ url('recycle_bin_actions', institution_slug=institution.slug) }}">
+                  <input type="hidden" name="action" value="restore">
+                  <input type="hidden" name="model_path" value="{{ item.model_path }}">
+                  <input type="hidden" name="object_id" value="{{ item.id }}">
+                  <button type="submit"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all text-xs font-bold"
+                    title="بحال کریں">
+                    <i class="fas fa-undo text-[9px]"></i> بحال
+                  </button>
+                </form>
+
+                <!-- Permanent Delete -->
+                <form method="post" action="{{ url('recycle_bin_actions', institution_slug=institution.slug) }}"
+                      onsubmit="return confirm('کیا آپ واقعی اسے ہمیشہ کے لیے ختم کرنا چاہتے ہیں؟ یہ ناقابلِ واپسی ہے!')">
+                  <input type="hidden" name="action" value="delete_permanent">
+                  <input type="hidden" name="model_path" value="{{ item.model_path }}">
+                  <input type="hidden" name="object_id" value="{{ item.id }}">
+                  <button type="submit"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all text-xs font-bold"
+                    title="مکمل حذف">
+                    <i class="fas fa-times text-[9px]"></i> حذف
+                  </button>
+                </form>
+
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-right">
-                <thead class="bg-gray-50 border-b border-gray-100">
-                    <tr>
-                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">حذف کرنے کا وقت</th>
-                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">ریکارڈ</th>
-                        <th class="px-6 py-4 text-sm font-semibold text-gray-600">قسم (Model)</th>
-                        <th class="px-6 py-4 text-sm font-semibold text-gray-600 text-center">ایکشن</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for item in trash_items %}
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 text-sm text-gray-500 font-sans">{{ item.deleted_at|date("d M Y, h:i A") }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ item.repr }}</td>
-                        <td class="px-6 py-4 text-xs text-gray-500 font-sans uppercase">{{ item.model }}</td>
-                        <td class="px-6 py-4 flex justify-center space-x-2 space-x-reverse">
-                            <form method="post">
-                                {{ csrf_token() }}
-                                <input type="hidden" name="action" value="restore">
-                                <input type="hidden" name="model_path" value="{{ item.model_path }}">
-                                <input type="hidden" name="object_id" value="{{ item.id }}">
-                                <button type="submit" class="bg-green-50 text-green-700 hover:bg-green-100 px-3 py-1.5 rounded-lg text-sm transition">
-                                    <i class="fas fa-undo ml-1"></i> بحال کریں
-                                </button>
-                            </form>
-                            <form method="post" onsubmit="return confirm('کیا آپ واقعی اسے ہمیشہ کے لیے ختم کرنا چاہتے ہیں؟');">
-                                {{ csrf_token() }}
-                                <input type="hidden" name="action" value="delete_permanent">
-                                <input type="hidden" name="model_path" value="{{ item.model_path }}">
-                                <input type="hidden" name="object_id" value="{{ item.id }}">
-                                <button type="submit" class="bg-red-50 text-red-700 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm transition">
-                                    <i class="fas fa-times ml-1"></i> مکمل حذف
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" class="px-6 py-20 text-center">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-archive text-gray-200 text-5xl mb-4"></i>
-                                <span class="text-gray-400">آرکائیو خالی ہے۔</span>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="py-20 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl mx-auto mb-4">
+        <i class="fas fa-check-double"></i>
+      </div>
+      <h3 class="text-slate-400 font-bold mb-1">ریسائیکل بن خالی ہے!</h3>
+      <p class="text-slate-600 text-xs">تمام ڈیٹا محفوظ ہے — کوئی حذف شدہ ریکارڈ نہیں۔</p>
     </div>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}

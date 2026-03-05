@@ -146,3 +146,211 @@ async def download_all_institutions_export_route(session: Session = Depends(get_
     archive = export_all_institutions_bundle(session)
     return Response(content=archive, media_type="application/zip", headers={"Content-Disposition": 'attachment; filename="system-full-backup.zip"'})
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. Attendance Export — Excel & CSV
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _build_attendance_excel(institution, session_db, course_id: Optional[int] = None,
+                             month: Optional[int] = None, year: Optional[int] = None) -> bytes:
+    """
+    ماہانہ حاضری رپورٹ Excel میں بنانا۔
+    rows = طلبہ،  columns = دنوں کی تاریخیں
+    """
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    from datetime import date as dt
+    from sqlmodel import select
+    from app.models import Student, Admission, Attendance, ClassSession, Course, DailyAttendance
+    import calendar
+
+    today = dt.today()
+    yr = year or today.year
+    mn = month or today.month
+    start_date = dt(yr, mn, 1)
+    _, last_day = calendar.monthrange(yr, mn)
+    end_date = dt(yr, mn, last_day)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f"{calendar.month_name[mn][:3]} {yr}"
+    ws.sheet_view.rightToLeft = True
+
+    hdr_fill   = PatternFill("solid", fgColor="1E293B")
+    present_fill = PatternFill("solid", fgColor="166534")
+    absent_fill  = PatternFill("solid", fgColor="991B1B")
+    late_fill    = PatternFill("solid", fgColor="92400E")
+    hdr_font   = Font(bold=True, color="F1F5F9", size=9)
+    thin       = Side(style='thin', color="334155")
+    brd        = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    if course_id:
+        courses = [c for c in [session_db.get(Course, course_id)] if c]
+    else:
+        courses = session_db.exec(
+            select(Course).where(Course.inst_id == institution.id, Course.is_active == True)
+        ).all()
+
+    row_idx = 1
+    for course in courses:
+        # Course heading
+        cell = ws.cell(row=row_idx, column=1, value=f"کورس: {course.title}  |  {calendar.month_name[mn]} {yr}")
+        cell.font = Font(bold=True, size=11, color="60A5FA")
+        cell.fill = PatternFill("solid", fgColor="0F172A")
+        ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=last_day + 4)
+        row_idx += 1
+
+        students_q = session_db.exec(
+            select(Student).join(Admission).where(
+                Admission.course_id == course.id,
+                Student.inst_id == institution.id,
+                Student.deleted_at == None
+            ).distinct()
+        ).all()
+
+        if not students_q:
+            ws.cell(row=row_idx, column=1, value="(کوئی طالب علم نہیں)").font = Font(italic=True, color="64748B")
+            row_idx += 2
+            continue
+
+        # Header
+        headers = ["نام", "رول نمبر"] + [str(d) for d in range(1, last_day + 1)] + ["حاضر", "%"]
+        for col, h in enumerate(headers, 1):
+            c = ws.cell(row=row_idx, column=col, value=h)
+            c.font = hdr_font; c.fill = hdr_fill
+            c.alignment = Alignment(horizontal='center'); c.border = brd
+        row_idx += 1
+
+        for student in students_q:
+            att_records = session_db.exec(
+                select(Attendance, ClassSession).join(
+                    ClassSession, Attendance.session_id == ClassSession.id
+                ).where(
+                    Attendance.student_id == student.id,
+                    ClassSession.course_id == course.id,
+                    ClassSession.date >= start_date, ClassSession.date <= end_date
+                )
+            ).all()
+            day_map = {cs.date.day: att.status for att, cs in att_records}
+
+            daily_records = session_db.exec(
+                select(DailyAttendance).where(
+                    DailyAttendance.student_id == student.id,
+                    DailyAttendance.date >= start_date, DailyAttendance.date <= end_date
+                )
+            ).all()
+            for da in daily_records:
+                if da.date.day not in day_map: day_map[da.date.day] = da.status
+
+            present_count = sum(1 for s in day_map.values() if s == 'present')
+            total_days    = len(day_map)
+            pct = f"{round(present_count/total_days*100, 1)}%" if total_days else "—"
+
+            row_vals = [student.full_name, student.reg_id or "—"]
+            row_vals += [day_map.get(d) for d in range(1, last_day + 1)]
+            row_vals += [present_count, pct]
+
+            for col, val in enumerate(row_vals, 1):
+                c = ws.cell(row=row_idx, column=col, value=val)
+                c.alignment = Alignment(horizontal='center'); c.border = brd
+                if col > 2 and col <= last_day + 2 and val:
+                    if   val == 'present': c.fill = present_fill; c.font = Font(color="FFFFFF", bold=True); c.value = "✓"
+                    elif val == 'absent':  c.fill = absent_fill;  c.font = Font(color="FFFFFF", bold=True); c.value = "✗"
+                    elif val == 'late':    c.fill = late_fill;    c.font = Font(color="FFFFFF", bold=True); c.value = "L"
+                    else: c.value = ""
+            row_idx += 1
+        row_idx += 2
+
+    ws.column_dimensions['A'].width = 22
+    ws.column_dimensions['B'].width = 12
+    for col in range(3, last_day + 5):
+        ws.column_dimensions[get_column_letter(col)].width = 4 if col < last_day + 3 else 8
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def _build_attendance_csv(institution, session_db, course_id=None, month=None, year=None) -> str:
+    import csv as _csv, io as _io
+    from datetime import date as dt
+    from sqlmodel import select
+    from app.models import Student, Admission, Attendance, ClassSession, DailyAttendance, Course
+    import calendar
+
+    today = dt.today()
+    yr = year or today.year; mn = month or today.month
+    start_date = dt(yr, mn, 1)
+    _, last_day = calendar.monthrange(yr, mn)
+    end_date = dt(yr, mn, last_day)
+
+    buf = _io.StringIO()
+    w = _csv.writer(buf)
+
+    if course_id:
+        courses = [c for c in [session_db.get(Course, course_id)] if c]
+    else:
+        courses = session_db.exec(select(Course).where(Course.inst_id == institution.id, Course.is_active == True)).all()
+
+    for course in courses:
+        w.writerow([f"Course: {course.title}", f"Month: {mn}/{yr}"])
+        w.writerow(["Name", "Reg ID"] + list(range(1, last_day+1)) + ["Present", "Percent"])
+        students_q = session_db.exec(
+            select(Student).join(Admission).where(
+                Admission.course_id == course.id, Student.inst_id == institution.id, Student.deleted_at == None
+            ).distinct()
+        ).all()
+        for s in students_q:
+            atts = session_db.exec(
+                select(Attendance, ClassSession).join(ClassSession, Attendance.session_id == ClassSession.id).where(
+                    Attendance.student_id == s.id, ClassSession.course_id == course.id,
+                    ClassSession.date >= start_date, ClassSession.date <= end_date)
+            ).all()
+            dm = {cs.date.day: att.status for att, cs in atts}
+            for da in session_db.exec(select(DailyAttendance).where(DailyAttendance.student_id == s.id, DailyAttendance.date >= start_date, DailyAttendance.date <= end_date)).all():
+                if da.date.day not in dm: dm[da.date.day] = da.status
+            pc = sum(1 for v in dm.values() if v == 'present')
+            pct = f"{round(pc/len(dm)*100,1)}%" if dm else "0%"
+            w.writerow([s.full_name, s.reg_id or ""] + [dm.get(d, "") for d in range(1, last_day+1)] + [pc, pct])
+        w.writerow([])
+    return buf.getvalue()
+
+
+@router.get("/{institution_slug}/export/attendance/", name="export_attendance")
+async def export_attendance(
+    institution_slug: str,
+    fmt: str = "xlsx",
+    course_id: Optional[int] = None,
+    month: Optional[int] = None,
+    year: Optional[int] = None,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    ماہانہ حاضری رپورٹ Download کریں۔
+    ?fmt=xlsx  (default)  یا  ?fmt=csv
+    ?course_id=5  (اختیاری)
+    ?month=3&year=2026
+    """
+    from fastapi import Response as R
+    import calendar
+    from datetime import date
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
+
+    today = date.today()
+    mn = month or today.month; yr = year or today.year
+    sfx = f"_c{course_id}" if course_id else "_all"
+    fname = f"{institution.slug}_attendance_{yr}_{mn:02d}{sfx}"
+
+    if fmt == "csv":
+        data = _build_attendance_csv(institution, session, course_id=course_id, month=mn, year=yr)
+        return R(content=data.encode('utf-8-sig'), media_type="text/csv",
+                 headers={"Content-Disposition": f'attachment; filename="{fname}.csv"'})
+
+    data = _build_attendance_excel(institution, session, course_id=course_id, month=mn, year=yr)
+    return R(content=data,
+             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+             headers={"Content-Disposition": f'attachment; filename="{fname}.xlsx"'})
+
+

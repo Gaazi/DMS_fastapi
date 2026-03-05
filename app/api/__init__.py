@@ -16,3 +16,4 @@ from app.api.public_admission_api import router as public_admission_router
 from app.api.exams_api import router as exams_router
 from app.api.guardian_api import router as guardian_router
 from app.api.global_api import router as global_router
+from app.api.notification_api import router as notification_router

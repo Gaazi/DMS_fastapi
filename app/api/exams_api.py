@@ -53,35 +53,40 @@ async def add_exam(request: Request, institution_slug: str, session: Session = D
         })
 
 # --- 3. record_marks_view ---
-@router.api_route("/{institution_slug}/exams/{exam_id}/record/", methods=["GET", "POST"], response_class=HTMLResponse, name="record_marks")
-async def record_marks_view(request: Request, institution_slug: str, exam_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    """نمبر درج کرنےکا طریقہ۔"""
+@router.get("/{institution_slug}/exams/{exam_id}/record/", response_class=HTMLResponse, name="record_marks", operation_id="record_marks_get")
+async def record_marks_view_get(request: Request, institution_slug: str, exam_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    """نمبر درج کرنے کا فارم۔"""
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
+    exam_obj = session.get(Exam, exam_id)
+    if not exam_obj or exam_obj.inst_id != institution.id:
+        raise HTTPException(status_code=404)
+
+    students = session.exec(select(Student).where(Student.inst_id == institution.id, Student.is_active == True)).all()
+    courses  = session.exec(select(Course).where(Course.inst_id == institution.id, Course.is_active == True)).all()
+
+    return await TemplateResponse.render("dms/record_marks.html", request, session, {
+        "institution": institution,
+        "exam": exam_obj,
+        "students": students,
+        "courses": courses
+    })
+
+@router.post("/{institution_slug}/exams/{exam_id}/record/", name="record_marks_post", operation_id="record_marks_post")
+async def record_marks_view_post(request: Request, institution_slug: str, exam_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    """نمبر save کریں۔"""
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='academic_view')
     exam_obj = session.get(Exam, exam_id)
     if not exam_obj or exam_obj.inst_id != institution.id:
         raise HTTPException(status_code=404)
 
     em = ExamManager(session, current_user, exam_obj)
-    
-    if request.method == "POST":
-        form_data = await request.form()
-        # یہاں بلک ڈیٹا ہینڈلنگ کی لاجک (DMS سٹائل)
-        marks_raw = form_data.get('marks_json')
-        if marks_raw:
-            marks_data = json.loads(marks_raw)
-            em.record_marks(marks_data)
-        return RedirectResponse(url=f"/{institution_slug}/exams/", status_code=303)
+    form_data = await request.form()
+    marks_raw = form_data.get('marks_json')
+    if marks_raw:
+        marks_data = json.loads(marks_raw)
+        em.record_marks(marks_data)
+    return RedirectResponse(url=f"/{institution_slug}/exams/", status_code=303)
 
-    # طلبہ کی فہرست حاصل کریں جو اس کورس میں داخل ہیں (اگر امتحان کسی کورس کے لیے ہو)
-    students = session.exec(select(Student).where(Student.inst_id == institution.id, Student.is_active == True)).all()
-    courses = session.exec(select(Course).where(Course.inst_id == institution.id, Course.is_active == True)).all()
-
-    return await TemplateResponse.render("dms/record_marks.html", request, session, {
-        "institution": institution, 
-        "exam": exam_obj,
-        "students": students,
-        "courses": courses
-    })
 
 # --- 4. report_card ---
 @router.get("/{institution_slug}/exams/{exam_id}/report/{student_id}/", response_class=HTMLResponse, name="report_card")

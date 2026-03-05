@@ -156,3 +156,87 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
 @router.get("/{institution_slug}/programs/{course_id}/", response_class=HTMLResponse, name="program_detail")
 async def program_detail(request: Request, institution_slug: str, course_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     return await course_detail(request, institution_slug, course_id, session, current_user)
+
+
+# --- 3. Auto Generate Sessions from Timetable (single course) ---
+@router.post("/{institution_slug}/course/{course_id}/generate-sessions/", name="course_generate_sessions")
+async def generate_course_sessions(
+    request: Request,
+    institution_slug: str,
+    course_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """نظام الاوقات کی بنیاد پر کسی ایک کورس کے سیشن خودکار بنانا۔"""
+    import json
+    from datetime import date
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+    course = session.get(Course, course_id)
+    if not course or course.inst_id != institution.id:
+        raise HTTPException(status_code=404, detail="Course not found.")
+
+    form_data = await request.form() if request.method == "POST" else {}
+    data = dict(form_data)
+
+    cm = CourseManager(session, current_user, target=course)
+
+    from_date_str = data.get('from_date')
+    to_date_str = data.get('to_date')
+
+    try:
+        from_date = date.fromisoformat(from_date_str) if from_date_str else None
+        to_date = date.fromisoformat(to_date_str) if to_date_str else None
+    except ValueError:
+        from_date = to_date = None
+
+    result = cm.generate_sessions_from_timetable(from_date=from_date, to_date=to_date)
+
+    from fastapi.responses import HTMLResponse as HR
+    from fastapi.responses import RedirectResponse
+
+    if request.headers.get("HX-Request"):
+        color = "emerald" if result["created"] > 0 else "amber"
+        html = f"""<div class='p-3 rounded-xl bg-{color}-500/10 border border-{color}-500/20 text-{color}-400 text-sm font-bold'>
+            <i class='fas fa-check-circle ml-1'></i> {result['message']}
+            <span class='block text-xs opacity-70 mt-1'>{result.get('date_range','')}</span>
+        </div>"""
+        response = HR(content=html)
+        response.headers['HX-Trigger'] = json.dumps({"sessionsGenerated": None, "refreshSessions": None})
+        return response
+
+    return RedirectResponse(
+        url=request.url_for('dms_course_detail', institution_slug=institution_slug, course_id=course_id),
+        status_code=303
+    )
+
+
+# --- 4. Auto Generate Sessions for ALL courses today ---
+@router.post("/{institution_slug}/generate-sessions/today/", name="generate_all_sessions_today")
+async def generate_all_sessions_today(
+    request: Request,
+    institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """تمام کورسز کے لیے آج کے سیشن ایک کلک میں بنانا۔"""
+    import json
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+
+    result = CourseManager.generate_today_sessions_for_institution(session, institution, current_user)
+
+    if request.headers.get("HX-Request"):
+        color = "emerald" if result["total_created"] > 0 else "amber"
+        details_html = "".join(f"<div class='text-xs opacity-70'>{d}</div>" for d in result.get("details", []))
+        html = f"""<div class='p-4 rounded-xl bg-{color}-500/10 border border-{color}-500/20 text-{color}-400'>
+            <div class='font-bold text-sm mb-1'><i class='fas fa-magic ml-1'></i> {result['message']}</div>
+            {details_html}
+        </div>"""
+        response = HTMLResponse(content=html)
+        response.headers['HX-Trigger'] = json.dumps({"allSessionsGenerated": None})
+        return response
+
+    return RedirectResponse(
+        url=request.url_for('dashboard', institution_slug=institution_slug),
+        status_code=303
+    )
+

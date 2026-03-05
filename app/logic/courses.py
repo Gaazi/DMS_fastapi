@@ -222,6 +222,32 @@ class CourseManager:
             end_time = self._parse_time(data.get('end_time'))
             topic = data.get('topic', 'Daily')
             
+            # ─── Conflict Check ───────────────────────────────────────────
+            # اگر اسی کورس میں اسی تاریخ اور وقت پر پہلے سے سیشن موجود ہو
+            if start_time:
+                conflict_q = select(ClassSession).where(
+                    ClassSession.course_id == self.course.id,
+                    ClassSession.date == target_date,
+                )
+                if end_time:
+                    # وقت overlap چیک کریں
+                    conflict_q = conflict_q.where(
+                        ClassSession.start_time < end_time,
+                        ClassSession.end_time > start_time
+                    )
+                else:
+                    # صرف start_time match
+                    conflict_q = conflict_q.where(
+                        ClassSession.start_time == start_time
+                    )
+                existing = self.session.exec(conflict_q).first()
+                if existing:
+                    raise HTTPException(
+                        status_code=409,
+                        detail=f"اس تاریخ ({target_date}) اور وقت ({start_time}) پر پہلے سے سیشن موجود ہے: '{existing.topic or 'بغیر عنوان'}'"
+                    )
+            # ─────────────────────────────────────────────────────────────
+            
             class_session = ClassSession(
                 course_id=self.course.id,
                 date=target_date,
@@ -264,6 +290,7 @@ class CourseManager:
         return True, "Class session saved successfully.", class_session
 
     def delete_session(self, session_id: int):
+
         """سیشن حذف کرنا۔"""
         self._check_access()
         class_session = self.session.get(ClassSession, session_id)
@@ -526,3 +553,133 @@ class CourseManager:
             
         self.session.commit()
         return True, f"{promoted_count} students have been promoted to {target_course.title}.", promoted_count
+
+    def generate_sessions_from_timetable(
+        self,
+        from_date: Optional[dt_date] = None,
+        to_date: Optional[dt_date] = None
+    ) -> dict:
+        """
+        نظام الاوقات (Timetable) کی بنیاد پر خودکار کلاس سیشن بنانا۔
+        
+        day_of_week: 0=پیر، 1=منگل، 2=بدھ، 3=جمعرات، 4=جمعہ، 5=ہفتہ، 6=اتوار
+        Python weekday(): 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+        یعنی day_of_week == Python weekday() — بالکل ایک جیسا۔
+        """
+        self._check_access()
+        if not self.course:
+            raise HTTPException(status_code=400, detail="Course context required.")
+
+        from app.models.schedule import TimetableItem
+
+        today = dt_date.today()
+        start_date = from_date or today
+        end_date = to_date or today
+
+        # اس کورس کے تمام فعال timetable آئٹمز
+        timetable_items = self.session.exec(
+            select(TimetableItem).where(
+                TimetableItem.course_id == self.course.id,
+                TimetableItem.is_active == True
+            )
+        ).all()
+
+        if not timetable_items:
+            return {"created": 0, "skipped": 0, "message": "اس کورس کا نظام الاوقات خالی ہے۔"}
+
+        created = 0
+        skipped = 0
+
+        # start_date سے end_date تک ہر تاریخ کے لیے
+        current = start_date
+        while current <= end_date:
+            weekday = current.weekday()  # 0=Mon ... 6=Sun
+
+            for item in timetable_items:
+                try:
+                    item_day = int(item.day_of_week)
+                except (ValueError, TypeError):
+                    continue
+
+                if item_day != weekday:
+                    continue
+
+                # Duplicate check — کیا اسی date & time پر پہلے سے session ہے؟
+                existing = self.session.exec(
+                    select(ClassSession).where(
+                        ClassSession.course_id == self.course.id,
+                        ClassSession.date == current,
+                        ClassSession.start_time == item.start_time,
+                    )
+                ).first()
+
+                if existing:
+                    skipped += 1
+                    continue
+
+                # نیا سیشن بنائیں
+                new_session = ClassSession(
+                    course_id=self.course.id,
+                    date=current,
+                    start_time=item.start_time,
+                    end_time=item.end_time,
+                    topic=item.subject or "روزانہ کلاس",
+                    session_type="class",
+                    notes=f"خودکار — نظام الاوقات سے ({current})"
+                )
+                self.session.add(new_session)
+                created += 1
+
+            from datetime import timedelta
+            current += timedelta(days=1)
+
+        if created > 0:
+            AuditManager.log_activity(
+                self.session, self.institution.id, self.user.id,
+                'auto_generate', 'ClassSession', self.course.id,
+                f"Auto-generated {created} sessions for {self.course.title}",
+                {"from": str(start_date), "to": str(end_date), "created": created}
+            )
+            self.session.commit()
+
+        day_names = {0: 'پیر', 1: 'منگل', 2: 'بدھ', 3: 'جمعرات', 4: 'جمعہ', 5: 'ہفتہ', 6: 'اتوار'}
+        return {
+            "created": created,
+            "skipped": skipped,
+            "message": f"✅ {created} سیشن بنائے گئے، {skipped} پہلے سے موجود تھے۔",
+            "course": self.course.title,
+            "date_range": f"{start_date} تا {end_date}"
+        }
+
+    @classmethod
+    def generate_today_sessions_for_institution(cls, session, institution, user) -> dict:
+        """
+        ایک ادارے کے تمام کورسز کے لیے آج کے سیشن خودکار بنانا۔
+        یہ روزانہ صبح ایک بار چلانا ہوگا (cron job یا startup event)۔
+        """
+        from app.models.foundation import Course
+        today = dt_date.today()
+
+        courses = session.exec(
+            select(Course).where(Course.inst_id == institution.id, Course.is_active == True)
+        ).all()
+
+        total_created = 0
+        total_skipped = 0
+        results = []
+
+        for course in courses:
+            cm = cls(session, user, target=course)
+            result = cm.generate_sessions_from_timetable(from_date=today, to_date=today)
+            total_created += result["created"]
+            total_skipped += result["skipped"]
+            if result["created"] > 0:
+                results.append(f"• {course.title}: {result['created']} سیشن")
+
+        return {
+            "total_created": total_created,
+            "total_skipped": total_skipped,
+            "details": results,
+            "message": f"✅ آج کے لیے کل {total_created} سیشن بنائے گئے۔"
+        }
+

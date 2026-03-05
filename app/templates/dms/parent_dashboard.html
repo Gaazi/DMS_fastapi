@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block title %}والدین ڈیش بورڈ — {{ institution.name if institution else '' }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6" dir="rtl">
+
+  <!-- Header -->
+  <div class="relative bg-gradient-to-l from-emerald-900/40 to-slate-900/60 rounded-3xl border border-white/10 p-6 sm:p-8 overflow-hidden backdrop-blur-xl">
+    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none"></div>
+    <div class="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold text-white">
+              خوش آمدید، {{ parent.full_name if parent else current_user.full_name }}
+            </h1>
+            <p class="text-sm text-emerald-400/80 mt-0.5">
+              {% if institution %}{{ institution.name }} — {% endif %}والدین ڈیش بورڈ
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
+          <i class="fas fa-calendar-day ml-1"></i>{{ today|date("%d %b %Y") if today else "" }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {% if not students %}
+  <!-- No children linked -->
+  <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-12 text-center">
+    <i class="fas fa-user-slash text-4xl text-slate-600 mb-4 block"></i>
+    <h2 class="text-slate-400 font-bold mb-2">کوئی طالب علم منسلک نہیں</h2>
+    <p class="text-slate-600 text-sm">آپ کے اکاؤنٹ سے ابھی کوئی طالب علم نہیں جوڑا گیا۔ ادارے کے ایڈمن سے رابطہ کریں۔</p>
+  </div>
+  {% else %}
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white/[0.03] border border-white/5 p-4 rounded-2xl group hover:border-emerald-500/30 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">بچے</span>
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+          <i class="fas fa-users text-xs"></i>
+        </div>
+      </div>
+      <span class="text-2xl font-bold text-white">{{ students|length }}</span>
+    </div>
+
+    <div class="bg-white/[0.03] border border-white/5 p-4 rounded-2xl group hover:border-rose-500/30 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">بقایا فیس</span>
+        <div class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
+          <i class="fas fa-money-bill-wave text-xs"></i>
+        </div>
+      </div>
+      <span class="text-2xl font-bold text-rose-400">{{ total_balance|int }}</span>
+      <span class="text-[10px] text-slate-600 block mt-0.5">واجب الادا</span>
+    </div>
+
+    <div class="bg-white/[0.03] border border-white/5 p-4 rounded-2xl group hover:border-emerald-500/30 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">کل ادا</span>
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+          <i class="fas fa-check-circle text-xs"></i>
+        </div>
+      </div>
+      <span class="text-2xl font-bold text-emerald-400">{{ total_paid|int }}</span>
+    </div>
+
+    <div class="bg-white/[0.03] border border-white/5 p-4 rounded-2xl group hover:border-amber-500/30 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">زیر التواء فیسیں</span>
+        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+          <i class="fas fa-exclamation-circle text-xs"></i>
+        </div>
+      </div>
+      <span class="text-2xl font-bold {% if total_pending_fees > 0 %}text-amber-400{% else %}text-white{% endif %}">{{ total_pending_fees }}</span>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Children Cards -->
+    <div class="lg:col-span-1 space-y-4">
+      <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+        <i class="fas fa-child text-emerald-500"></i> میرے بچے
+      </h2>
+      {% for student in students %}
+      <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-4 hover:border-emerald-500/20 transition-all">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-sm shrink-0">
+            {{ student.full_name[:1] }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-white text-sm truncate">{{ student.full_name }}</div>
+            <div class="text-[10px] text-slate-500 font-mono">{{ student.reg_id }}</div>
+          </div>
+          {% if student._pending_due > 0 %}
+          <span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+            {{ student._pending_due|int }} بقایا
+          </span>
+          {% else %}
+          <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+            <i class="fas fa-check"></i>
+          </span>
+          {% endif %}
+        </div>
+        <!-- ماہ کی حاضری -->
+        <div class="flex items-center justify-between text-xs mt-2 pt-2 border-t border-white/5">
+          <span class="text-slate-500">اس ماہ حاضری</span>
+          <span class="font-bold text-emerald-400">{{ student._month_present }} دن</span>
+        </div>
+        <!-- Detail Link -->
+        <a href="{{ url('dms_student_detail', institution.slug, student.id) if institution else '#' }}"
+           class="mt-3 flex items-center justify-center gap-2 w-full py-1.5 rounded-xl bg-white/5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/20 transition-all text-xs font-medium">
+          <i class="fas fa-external-link-alt text-[10px]"></i> پروفائل دیکھیں
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Fees & Attendance -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Recent Fees -->
+      <div class="bg-slate-900/50 rounded-2xl border border-white/10 overflow-hidden">
+        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fas fa-file-invoice-dollar text-amber-400"></i> فیس کا خلاصہ
+          </h2>
+          <span class="text-[10px] bg-white/5 text-slate-400 px-2 py-0.5 rounded-full border border-white/10">حالیہ {{ fees|length }} ریکارڈ</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-white/5">
+            <thead class="text-slate-500 text-[10px] uppercase font-bold bg-white/[0.01]">
+              <tr>
+                <th class="px-4 py-3 text-right">طالب علم</th>
+                <th class="px-4 py-3 text-right">قسم</th>
+                <th class="px-4 py-3 text-right">مقدار</th>
+                <th class="px-4 py-3 text-right">حیثیت</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-sm">
+              {% for fee in fees %}
+              <tr class="hover:bg-white/[0.03] transition-colors">
+                <td class="px-4 py-3 text-slate-300 text-xs">{{ fee.student.full_name if fee.student else '--' }}</td>
+                <td class="px-4 py-3">
+                  <span class="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded">{{ fee.fee_type }}</span>
+                </td>
+                <td class="px-4 py-3 font-mono text-xs font-bold text-white">
+                  {{ fee.amount_due|int }}
+                  {% if fee.late_fee > 0 %}
+                  <span class="text-rose-400 text-[9px]">+{{ fee.late_fee|int }}</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                  {% if fee.status == 'Paid' %}
+                  <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20"><i class="fas fa-check"></i> ادا</span>
+                  {% elif fee.status == 'Partial' %}
+                  <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20"><i class="fas fa-adjust"></i> جزوی</span>
+                  {% else %}
+                  <span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20"><i class="fas fa-clock"></i> باقی</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="px-4 py-8 text-center text-slate-600 text-xs italic">کوئی فیس ریکارڈ نہیں</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Attendance -->
+      <div class="bg-slate-900/50 rounded-2xl border border-white/10 overflow-hidden">
+        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fas fa-clipboard-check text-blue-400"></i> حالیہ حاضری
+          </h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-white/5">
+            <thead class="text-slate-500 text-[10px] uppercase font-bold bg-white/[0.01]">
+              <tr>
+                <th class="px-4 py-3 text-right">طالب علم</th>
+                <th class="px-4 py-3 text-right">تاریخ</th>
+                <th class="px-4 py-3 text-right">حاضری</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-sm">
+              {% for record in attendance %}
+              <tr class="hover:bg-white/[0.03] transition-colors">
+                <td class="px-4 py-3 text-slate-300 text-xs">{{ record.student.full_name if record.student else '--' }}</td>
+                <td class="px-4 py-3 font-mono text-xs text-slate-400">
+                  {% if record.session %}{{ record.session.date|date("%d-%m-%y") }}{% else %}--{% endif %}
+                </td>
+                <td class="px-4 py-3">
+                  {% if record.status == 'present' %}
+                  <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20"><i class="fas fa-check"></i> حاضر</span>
+                  {% elif record.status == 'absent' %}
+                  <span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20"><i class="fas fa-times"></i> غیر حاضر</span>
+                  {% elif record.status == 'late' %}
+                  <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20"><i class="fas fa-clock"></i> دیر سے</span>
+                  {% else %}
+                  <span class="text-[10px] text-slate-500 bg-white/5 px-2 py-0.5 rounded">{{ record.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="px-4 py-8 text-center text-slate-600 text-xs italic">کوئی حاضری ریکارڈ نہیں</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

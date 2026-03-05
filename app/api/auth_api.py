@@ -76,27 +76,35 @@ async def dms_login(request: Request, session: Session = Depends(get_session)):
     from app.schemas.forms import LoginFormSchema
     from pydantic import ValidationError
 
+    # ?next= support: login ke baad original page par wapas
+    next_url = request.query_params.get("next", "")
+
     if request.method == 'POST':
         form_data = await request.form()
         data = dict(form_data)
+        next_url = data.get("next") or next_url
         try:
             validated_data = LoginFormSchema(**data)
             user = UserManager.authenticate(validated_data.username, validated_data.password, session)
             if user:
                 token = create_access_token({"sub": user.username})
-                default_inst = session.exec(select(Institution).where(Institution.user_id == user.id, Institution.is_default == True)).first()
-                redirect_url = f"/{default_inst.slug}/" if default_inst else UserManager.get_post_login_redirect(user)
-                
+                # Priority: ?next= > default_inst > role-based redirect
+                if next_url and next_url.startswith("/"):
+                    redirect_url = next_url
+                else:
+                    default_inst = session.exec(select(Institution).where(Institution.user_id == user.id, Institution.is_default == True)).first()
+                    redirect_url = f"/{default_inst.slug}/" if default_inst else UserManager.get_post_login_redirect(user, session)
+
                 response = RedirectResponse(url=redirect_url, status_code=303)
                 response.set_cookie(key="session_token", value=token, httponly=True, max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
                 return response
             else:
-                return await TemplateResponse.render('login.html', request, session, {"error": "غلط صارف نام یا پاس ورڈ۔", "form_data": data, "errors": {}})
+                return await TemplateResponse.render('login.html', request, session, {"error": "غلط صارف نام یا پاس ورڈ۔", "form_data": data, "errors": {}, "next": next_url})
         except ValidationError as e:
             errors = {err['loc'][0]: err['msg'] for err in e.errors()}
-            return await TemplateResponse.render('login.html', request, session, {"errors": errors, "form_data": data, "error": None})
+            return await TemplateResponse.render('login.html', request, session, {"errors": errors, "form_data": data, "error": None, "next": next_url})
 
-    return await TemplateResponse.render('login.html', request, session, {"form": None, "errors": {}, "error": None, "form_data": None})
+    return await TemplateResponse.render('login.html', request, session, {"form": None, "errors": {}, "error": None, "form_data": None, "next": next_url})
 
 @router.api_route("/{institution_slug}/login/", methods=["GET", "POST"], name="institution_login")
 async def institution_login(request: Request, institution_slug: str, session: Session = Depends(get_session)):

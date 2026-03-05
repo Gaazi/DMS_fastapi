@@ -90,12 +90,19 @@ async def student_detail(request: Request, institution_slug: str, student_id: in
             sm.save_student(data)
         elif action == "promote":
             sm.promote_student(student_id, int(data.get("new_course_id")))
+        elif action == "soft_delete":
+            sm.soft_delete(student_id)
+            return RedirectResponse(
+                url=request.url_for("students", institution_slug=institution_slug),
+                status_code=303
+            )
             
         return RedirectResponse(url=request.url.path, status_code=303)
 
     context = sm.get_student_detail_context(student_id)
     context.update({"request": request, "institution": institution})
     return await TemplateResponse.render("dms/student_detail.html", request, session, context)
+
 
 # --- 2.1 student_dashboard ---
 @router.api_route("/{institution_slug}/students/dashboard/{student_id}/", methods=["GET"], response_class=HTMLResponse, name="student_dashboard")
@@ -107,6 +114,7 @@ async def student_dashboard(request: Request, institution_slug: str, student_id:
     context = sm.get_student_detail_context(student_id)
     context.update({"request": request, "institution": institution})
     return await TemplateResponse.render("dms/student_dashboard.html", request, session, context)
+
 
 # --- 3. admission ---
 @router.api_route("/{institution_slug}/students/admission/", methods=["GET", "POST"], response_class=HTMLResponse, name="admission")
@@ -255,6 +263,7 @@ async def student_id_card(request: Request, institution_slug: str, student_id: i
         raise HTTPException(status_code=404, detail="Student not found")
     
     # Get admissions with courses
+    from app.models import Admission
     admissions = session.exec(select(Admission).where(Admission.student_id == student.id)).all()
     
     context = {
@@ -264,3 +273,26 @@ async def student_id_card(request: Request, institution_slug: str, student_id: i
         "admissions": admissions
     }
     return await TemplateResponse.render("dms/id_card.html", request, session, context)
+
+
+# --- Student Self-Portal (Dashboard) ---
+@router.get("/{institution_slug}/students/{student_id}/dashboard/", response_class=HTMLResponse, name="student_dashboard_scoped")
+async def student_self_dashboard(
+    request: Request,
+    institution_slug: str,
+    student_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """طالب علم کا اپنا ڈیش بورڈ — فیس، حاضری، اور کورس کی معلومات ایک جگہ۔"""
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='any')
+    sm = StudentManager(session, current_user, institution=institution)
+
+    context = sm.get_self_dashboard_context(
+        student_id=student_id,
+        requesting_user_id=current_user.id
+    )
+    context["institution"] = institution
+
+    return await TemplateResponse.render("dms/student_dashboard.html", request, session, context)
+

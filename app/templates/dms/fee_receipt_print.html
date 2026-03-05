@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فیس رسید — {% if student %}{{ student.full_name }}{% endif %}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
+  * { font-family: 'Noto Nastaliq Urdu', serif; }
+
+  @media print {
+    .no-print { display: none !important; }
+    body { background: white !important; }
+    .print-page {
+      width: 100%;
+      max-width: 100%;
+      box-shadow: none !important;
+      border: 1px solid #ddd !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+    }
+    @page { margin: 1cm; size: A5; }
+  }
+</style>
+</head>
+<body class="bg-slate-950 min-h-screen flex items-center justify-center p-4">
+
+<!-- Action Buttons -->
+<div class="no-print fixed top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-50">
+  <button onclick="window.print()"
+    class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-lg">
+    <i class="fas fa-print"></i> پرنٹ
+  </button>
+  <button onclick="shareWhatsApp()"
+    class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm transition-all shadow-lg">
+    <i class="fab fa-whatsapp"></i> WhatsApp
+  </button>
+  <a href="javascript:history.back()"
+    class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm transition-all">
+    <i class="fas fa-arrow-right"></i> واپس
+  </a>
+</div>
+
+<!-- Receipt Card -->
+<div class="print-page w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden mt-16 mb-6">
+
+  <!-- Header -->
+  <div class="bg-slate-900 text-white px-6 py-5 flex items-start justify-between">
+    <div>
+      <div class="text-xs text-slate-400 uppercase tracking-widest mb-1">Fee Receipt / فیس رسید</div>
+      <div class="text-xl font-bold">{{ institution.name }}</div>
+      {% if institution.address %}
+      <div class="text-xs text-slate-400 mt-0.5">{{ institution.address }}</div>
+      {% endif %}
+      {% if institution.mobile %}
+      <div class="text-xs text-slate-400">📞 {{ institution.mobile }}</div>
+      {% endif %}
+    </div>
+    <div class="text-right">
+      {% if institution.logo %}
+      <img src="{{ institution.logo }}" class="w-14 h-14 object-contain rounded-lg" alt="Logo">
+      {% else %}
+      <div class="w-14 h-14 rounded-lg bg-emerald-600 flex items-center justify-center text-2xl font-bold">
+        {{ institution.name[:1] }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Student Info -->
+  {% if student %}
+  <div class="bg-emerald-50 border-b border-emerald-100 px-6 py-4 flex items-center justify-between">
+    <div>
+      <div class="text-xs text-slate-500 uppercase mb-0.5">طالب علم</div>
+      <div class="font-bold text-slate-800 text-base">{{ student.full_name }}</div>
+      {% if student.reg_id %}
+      <div class="text-xs text-slate-500 font-mono">رول نمبر: {{ student.reg_id }}</div>
+      {% endif %}
+    </div>
+    <div class="text-emerald-600 text-3xl"><i class="fas fa-user-graduate"></i></div>
+  </div>
+  {% endif %}
+
+  <!-- Fee Details (single fee) -->
+  {% if fee %}
+  <div class="px-6 py-5 space-y-3">
+    <div class="flex justify-between items-center border-b border-dashed border-slate-200 pb-3">
+      <span class="text-xs text-slate-500 uppercase">فیس قسم</span>
+      <span class="font-bold text-slate-700">{{ fee.fee_type or fee.title or 'فیس' }}</span>
+    </div>
+    <div class="flex justify-between items-center border-b border-dashed border-slate-200 pb-3">
+      <span class="text-xs text-slate-500 uppercase">واجب الادا</span>
+      <span class="font-bold text-slate-800 text-lg">{{ (fee.amount_due or 0)|int }}</span>
+    </div>
+    {% if fee.due_date %}
+    <div class="flex justify-between items-center border-b border-dashed border-slate-200 pb-3">
+      <span class="text-xs text-slate-500 uppercase">آخری تاریخ</span>
+      <span class="text-sm text-slate-600 font-mono">{{ fee.due_date }}</span>
+    </div>
+    {% endif %}
+    <div class="flex justify-between items-center border-b border-dashed border-slate-200 pb-3">
+      <span class="text-xs text-slate-500 uppercase">ادا شدہ</span>
+      <span class="font-bold text-emerald-600 text-lg">{{ total_paid|int }}</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-xs font-bold text-slate-500 uppercase">بقیہ بیلنس</span>
+      <span class="font-bold text-{% if balance > 0 %}rose{% else %}emerald{% endif %}-600 text-xl">
+        {{ balance|int }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Payment History -->
+  {% if payments %}
+  <div class="px-6 pb-4">
+    <div class="text-xs font-bold text-slate-500 uppercase mb-2">ادائیگی کی تاریخ</div>
+    <table class="w-full text-xs text-right">
+      <thead>
+        <tr class="bg-slate-100">
+          <th class="px-2 py-1.5 text-slate-500">تاریخ</th>
+          <th class="px-2 py-1.5 text-slate-500">رقم</th>
+          <th class="px-2 py-1.5 text-slate-500">طریقہ</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for p in payments %}
+        <tr>
+          <td class="px-2 py-1.5 font-mono text-slate-600">{{ p.date if p.date else '—' }}</td>
+          <td class="px-2 py-1.5 font-bold text-emerald-600">{{ p.amount_paid|int }}</td>
+          <td class="px-2 py-1.5 text-slate-500">{{ p.method or 'نقد' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Account Statement mode (all fees) -->
+  {% elif fees %}
+  <div class="px-6 py-5">
+    <div class="text-xs font-bold text-slate-500 uppercase mb-3">مکمل فیس اکاؤنٹ</div>
+    <table class="w-full text-xs text-right">
+      <thead>
+        <tr class="bg-slate-100">
+          <th class="px-2 py-2 text-slate-500">فیس قسم</th>
+          <th class="px-2 py-2 text-slate-500">واجب</th>
+          <th class="px-2 py-2 text-slate-500">ادا</th>
+          <th class="px-2 py-2 text-slate-500">بقیہ</th>
+          <th class="px-2 py-2 text-slate-500">حیثیت</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for f in fees %}
+        <tr>
+          <td class="px-2 py-2 text-slate-700 font-medium">{{ f.fee_type or f.title or '—' }}</td>
+          <td class="px-2 py-2 font-mono text-slate-600">{{ (f.amount_due or 0)|int }}</td>
+          <td class="px-2 py-2 font-mono text-emerald-600">{{ f._paid|int }}</td>
+          <td class="px-2 py-2 font-mono {% if f._balance > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+            {{ f._balance|int }}
+          </td>
+          <td class="px-2 py-2">
+            {% if f.status == 'Paid' %}
+            <span class="text-emerald-600 font-bold">✓</span>
+            {% elif f.status == 'Partial' %}
+            <span class="text-amber-500 font-bold">~</span>
+            {% else %}
+            <span class="text-rose-500 font-bold">!</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Summary -->
+    <div class="mt-4 bg-slate-50 rounded-xl p-3 space-y-2">
+      <div class="flex justify-between text-xs">
+        <span class="text-slate-500">کل واجب الادا</span>
+        <span class="font-bold text-slate-700">{{ total_due|int }}</span>
+      </div>
+      <div class="flex justify-between text-xs">
+        <span class="text-slate-500">کل ادا شدہ</span>
+        <span class="font-bold text-emerald-600">{{ total_paid|int }}</span>
+      </div>
+      <div class="h-px bg-slate-200"></div>
+      <div class="flex justify-between text-sm font-bold">
+        <span class="text-slate-700">بقیہ بیلنس</span>
+        <span class="{% if balance > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+          {{ balance|int }}
+        </span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Footer -->
+  <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+    <div class="text-xs text-slate-400">
+      تاریخ اجراء: <span class="font-mono">{{ now('%d/%m/%Y') if now else '' }}</span>
+    </div>
+    <div class="text-xs text-slate-400 flex items-center gap-1">
+      <i class="fas fa-shield-alt text-emerald-500"></i> DMS سسٹم
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Auto-print on load (optional — uncomment if needed)
+  // window.addEventListener('load', () => setTimeout(() => window.print(), 500));
+
+  function shareWhatsApp() {
+    const student = "{{ student.full_name if student else 'N/A' }}";
+    const inst    = "{{ institution.name }}";
+    {% if fee %}
+    const due     = {{ (fee.amount_due or 0)|int }};
+    const paid    = {{ total_paid|int }};
+    const balance = {{ balance|int }};
+    const text = `*فیس رسید — ${inst}*\nطالب علم: ${student}\nواجب: ${due}\nادا: ${paid}\nبقیہ: ${balance}\n——\nDMS System`;
+    {% else %}
+    const due     = {{ total_due|int }};
+    const paid    = {{ total_paid|int }};
+    const balance = {{ balance|int }};
+    const text = `*فیس اکاؤنٹ — ${inst}*\nطالب علم: ${student}\nکل واجب: ${due}\nکل ادا: ${paid}\nبقیہ: ${balance}\n——\nDMS System`;
+    {% endif %}
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  }
+</script>
+</body>
+</html>

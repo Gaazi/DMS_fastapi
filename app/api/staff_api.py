@@ -168,55 +168,12 @@ async def staff_advances_manage(request: Request, institution_slug: str, session
         "institution": institution, "staff_members": staff_members, "advances": advances
     })
 
-# --- 6. promote_to_staff ---
-@router.post("/{institution_slug}/staff/promote/{student_id}/", name="promote_to_staff")
-async def promote_to_staff(request: Request, institution_slug: str, student_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
-    
-    student = session.get(Student, student_id)
-    if not student or student.inst_id != institution.id:
-        raise HTTPException(status_code=404)
-        
-    from app.logic.roles import Role
-    from datetime import date
-    
-    # Check if existing staff (by mobile or name)
-    existing_staff = None
-    if student.mobile:
-        existing_staff = session.exec(select(Staff).where(Staff.inst_id == institution.id, Staff.mobile == student.mobile)).first()
-    if not existing_staff:
-        existing_staff = session.exec(select(Staff).where(Staff.inst_id == institution.id, Staff.name == student.name)).first()
-        
-    if existing_staff:
-        # User is warned in frontend, redirecting with a query param
-        return RedirectResponse(
-            url=request.url_for("dms_staff_edit", institution_slug=institution_slug, staff_id=existing_staff.id) + "?msg=already_exists", 
-            status_code=303
-        )
-        
-    # Copy profile to staff
-    new_staff = Staff(
-        inst_id=institution.id,
-        name=student.name,
-        mobile=student.mobile,
-        email=student.email,
-        address=student.address,
-        role=Role.VOLUNTEER.value,
-        base_salary=0,
-        hire_date=date.today(),
-        is_active=True
-    )
-    session.add(new_staff)
-    session.commit()
-    session.refresh(new_staff)
-    
-    return RedirectResponse(url=request.url_for("dms_staff_edit", institution_slug=institution_slug, staff_id=new_staff.id), status_code=303)
+
 
 # --- 7. staff_detail ---
 @router.get("/{institution_slug}/staff/{staff_id}/", response_class=HTMLResponse, name="dms_staff_detail")
 async def staff_detail(request: Request, institution_slug: str, staff_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='staff_view')
-    sm = StaffManager(current_user, session, institution=institution)
     staff = session.get(Staff, staff_id)
     if not staff or staff.inst_id != institution.id:
         raise HTTPException(status_code=404)
@@ -225,4 +182,67 @@ async def staff_detail(request: Request, institution_slug: str, staff_id: int, s
         "institution": institution,
         "member": staff
     })
+
+
+# --- 8. Promote Student → Staff (one-click) ---
+@router.post("/{institution_slug}/staff/promote/{student_id}/", name="promote_to_staff")
+async def promote_to_staff(
+    request: Request,
+    institution_slug: str,
+    student_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    طالب علم کو ایک کلک سے عملے (Staff) میں شامل کریں۔
+    - Django کی promote_to_staff view کا عین مثل
+    - پہلے duplicate موبائل/نام چیک
+    - نیا Staff record بنانا (role=volunteer, salary=0)
+    - پھر staff edit page پر redirect
+    """
+    from datetime import date as dt
+    from sqlmodel import or_
+
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+
+    student = session.get(Student, student_id)
+    if not student or student.inst_id != institution.id:
+        raise HTTPException(status_code=404, detail="طالب علم نہیں ملا۔")
+
+    # Duplicate check — mobile یا name سے
+    existing_staff = None
+    if student.mobile:
+        existing_staff = session.exec(
+            select(Staff).where(Staff.inst_id == institution.id, Staff.mobile == student.mobile)
+        ).first()
+    if not existing_staff:
+        existing_staff = session.exec(
+            select(Staff).where(Staff.inst_id == institution.id, Staff.name == student.full_name)
+        ).first()
+
+    if existing_staff:
+        # پہلے سے موجود — edit page پر بھیجیں
+        edit_url = str(request.url_for("dms_staff_edit", institution_slug=institution_slug, staff_id=existing_staff.id))
+        return RedirectResponse(url=edit_url + "?msg=already_staff", status_code=303)
+
+    # نیا Staff record بنائیں — student کا data copy کریں
+    new_staff = Staff(
+        inst_id=institution.id,
+        name=student.full_name,
+        mobile=student.mobile or "",
+        email=getattr(student, 'email', "") or "",
+        address=getattr(student, 'address', "") or "",
+        role="volunteer",       # بائی ڈیفالٹ رضاکار
+        base_salary=0.0,
+        hire_date=dt.today(),
+        is_active=True,
+    )
+    session.add(new_staff)
+    session.commit()
+    session.refresh(new_staff)
+
+    # Role مکمل کرنے کے لیے edit page پر بھیجیں
+    edit_url = str(request.url_for("dms_staff_edit", institution_slug=institution_slug, staff_id=new_staff.id))
+    return RedirectResponse(url=edit_url + "?msg=promoted", status_code=303)
+
 

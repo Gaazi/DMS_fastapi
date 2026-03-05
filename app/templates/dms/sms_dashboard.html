@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block title %}SMS اطلاعات — {{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5" dir="rtl">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+        <i class="fas fa-sms"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold text-white">SMS اطلاعات</h1>
+        <p class="text-xs text-slate-500">غیر حاضری، فیس یاد دہانی، ماہانہ خلاصہ</p>
+      </div>
+    </div>
+    <a href="{{ url('dashboard', institution.slug) }}"
+       class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-all text-xs">
+      <i class="fas fa-arrow-right text-[10px]"></i> ڈیش بورڈ
+    </a>
+  </div>
+
+  <!-- Provider Status -->
+  <div class="rounded-2xl border px-5 py-4 flex items-center justify-between
+    {% if sms_configured %}bg-emerald-500/5 border-emerald-500/20{% else %}bg-amber-500/5 border-amber-500/20{% endif %}">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-{% if sms_configured %}check-circle text-emerald-400{% else %}exclamation-triangle text-amber-400{% endif %} text-lg"></i>
+      <div>
+        <div class="font-bold text-sm {% if sms_configured %}text-emerald-400{% else %}text-amber-400{% endif %}">
+          {% if sms_configured %}SMS Provider فعال ہے — {{ sms_provider|upper }}{% else %}SMS ابھی Console Mode میں ہے{% endif %}
+        </div>
+        <div class="text-xs text-slate-500 mt-0.5">
+          {% if not sms_configured %}
+          .env میں <code class="text-amber-400">SMS_PROVIDER=msg91</code> اور <code class="text-amber-400">SMS_API_KEY=...</code> سیٹ کریں
+          {% else %}
+          Provider: <span class="font-mono text-emerald-400">{{ sms_provider }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% if not sms_configured %}
+    <a href="#setup-guide" class="text-xs text-amber-400 hover:underline">Setup دیکھیں ↓</a>
+    {% endif %}
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <!-- 1. غیر حاضری اطلاع -->
+    <div class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/5 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-xs">
+          <i class="fas fa-user-times"></i>
+        </div>
+        <div>
+          <div class="font-bold text-white text-sm">غیر حاضری اطلاع</div>
+          <div class="text-[10px] text-slate-500">غیر حاضر طلبہ کے والدین کو SMS</div>
+        </div>
+      </div>
+      <form hx-post="{{ url('notify_absences', institution_slug=institution.slug) }}"
+            hx-target="#result-absent" hx-swap="innerHTML"
+            class="p-5 space-y-3">
+        <div>
+          <label class="text-xs text-slate-400 block mb-1.5">تاریخ (خالی رہے تو آج)</label>
+          <input type="date" name="target_date"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-rose-500/50 transition">
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-rose-600/20 border border-rose-500/30 text-rose-400 hover:bg-rose-600/30 transition-all text-sm font-bold flex items-center justify-center gap-2">
+          <i class="fas fa-paper-plane text-xs"></i> اطلاع بھیجیں
+        </button>
+        <div id="result-absent"></div>
+      </form>
+    </div>
+
+    <!-- 2. فیس یاد دہانی -->
+    <div class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/5 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs">
+          <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+        <div>
+          <div class="font-bold text-white text-sm">فیس یاد دہانی</div>
+          <div class="text-[10px] text-slate-500">واجب الادا فیس والوں کو یاد دہانی</div>
+        </div>
+      </div>
+      <form hx-post="{{ url('notify_fees', institution_slug=institution.slug) }}"
+            hx-target="#result-fees" hx-swap="innerHTML"
+            class="p-5 space-y-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="overdue_only"
+            class="w-4 h-4 rounded border-white/20 bg-white/5 text-amber-500 focus:ring-amber-500">
+          <span class="text-xs text-slate-400">صرف وہ جن کی تاریخ گزر چکی ہے</span>
+        </label>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-600/20 border border-amber-500/30 text-amber-400 hover:bg-amber-600/30 transition-all text-sm font-bold flex items-center justify-center gap-2 mt-4">
+          <i class="fas fa-paper-plane text-xs"></i> یاد دہانی بھیجیں
+        </button>
+        <div id="result-fees"></div>
+      </form>
+    </div>
+
+    <!-- 3. ماہانہ خلاصہ -->
+    <div class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/5 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div>
+          <div class="font-bold text-white text-sm">ماہانہ حاضری خلاصہ</div>
+          <div class="text-[10px] text-slate-500">مہینے کا حاضری report والدین کو</div>
+        </div>
+      </div>
+      <form hx-post="{{ url('notify_monthly_summary', institution_slug=institution.slug) }}"
+            hx-target="#result-monthly" hx-swap="innerHTML"
+            class="p-5 space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">مہینہ</label>
+            <select name="month" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50">
+              {% for m in range(1,13) %}
+              <option value="{{ m }}">{{ m }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">سال</label>
+            <input type="number" name="year" value="{{ now('%Y') }}" min="2020" max="2030"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50">
+          </div>
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:bg-blue-600/30 transition-all text-sm font-bold flex items-center justify-center gap-2">
+          <i class="fas fa-paper-plane text-xs"></i> خلاصہ بھیجیں
+        </button>
+        <div id="result-monthly"></div>
+      </form>
+    </div>
+
+    <!-- 4. Custom SMS -->
+    <div class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/5 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-xs">
+          <i class="fas fa-edit"></i>
+        </div>
+        <div>
+          <div class="font-bold text-white text-sm">Custom SMS</div>
+          <div class="text-[10px] text-slate-500">کسی بھی نمبر پر اپنا پیغام</div>
+        </div>
+      </div>
+      <form hx-post="{{ url('notify_custom', institution_slug=institution.slug) }}"
+            hx-target="#result-custom" hx-swap="innerHTML"
+            class="p-5 space-y-3">
+        <div>
+          <label class="text-xs text-slate-400 block mb-1.5">موبائل نمبر</label>
+          <input type="tel" name="phone" placeholder="91XXXXXXXXXX یا 10 ہندسے"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-purple-500/50 transition">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1.5">پیغام</label>
+          <textarea name="message" rows="3" placeholder="آپ کا پیغام یہاں لکھیں..."
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-purple-500/50 transition resize-none"></textarea>
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-purple-600/20 border border-purple-500/30 text-purple-400 hover:bg-purple-600/30 transition-all text-sm font-bold flex items-center justify-center gap-2">
+          <i class="fas fa-paper-plane text-xs"></i> بھیجیں
+        </button>
+        <div id="result-custom"></div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Setup Guide -->
+  <div id="setup-guide" class="bg-slate-900/50 border border-white/10 rounded-2xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-white/5">
+      <h2 class="font-bold text-white text-sm flex items-center gap-2">
+        <i class="fas fa-cog text-slate-400"></i> India SMS Setup Guide
+      </h2>
+    </div>
+    <div class="p-5 space-y-4 text-xs text-slate-400">
+
+      <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
+        <div class="font-bold text-emerald-400 mb-2">✅ آسان طریقہ — Fast2SMS (مفت 200 SMS)</div>
+        <ol class="space-y-1 list-decimal list-inside text-slate-400">
+          <li><a href="https://www.fast2sms.com" target="_blank" class="text-blue-400 hover:underline">fast2sms.com</a> پر account بنائیں</li>
+          <li>Dashboard سے API Key لیں</li>
+          <li><code class="text-amber-400">.env</code> فائل میں لکھیں:</li>
+        </ol>
+        <pre class="mt-2 bg-black/30 rounded-lg p-3 font-mono text-emerald-400 text-[10px] leading-relaxed">SMS_PROVIDER=fast2sms
+SMS_API_KEY=your_api_key_here
+SMS_SENDER_ID=FSTSMS</pre>
+      </div>
+
+      <div class="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+        <div class="font-bold text-blue-400 mb-2">🚀 Professional — MSG91 (paid، زیادہ reliable)</div>
+        <ol class="space-y-1 list-decimal list-inside text-slate-400">
+          <li><a href="https://msg91.com" target="_blank" class="text-blue-400 hover:underline">msg91.com</a> پر account بنائیں</li>
+          <li>Sender ID approve کروائیں (6 حروف)</li>
+          <li><code class="text-amber-400">.env</code> فائل میں لکھیں:</li>
+        </ol>
+        <pre class="mt-2 bg-black/30 rounded-lg p-3 font-mono text-blue-400 text-[10px] leading-relaxed">SMS_PROVIDER=msg91
+SMS_API_KEY=your_authkey_here
+SMS_SENDER_ID=DMSSYS
+SMS_ROUTE=4</pre>
+        <div class="text-[10px] text-slate-500 mt-2">Route 4 = Transactional (OTP/alerts)، Route 1 = Promotional</div>
+      </div>
+
+      <div class="text-slate-500 text-[10px] text-center pt-2">
+        <i class="fas fa-info-circle ml-1"></i>
+        .env فائل تبدیل کرنے کے بعد server restart کریں
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -476,3 +476,91 @@ async def family_financial_report(request: Request, institution_slug: str, sessi
         "report_data": report_data
     }
     return await TemplateResponse.render("dms/family_report.html", request, session, context)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fee Receipt — Printable standalone page
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/{institution_slug}/fees/{fee_id}/receipt/", response_class=HTMLResponse, name="fee_receipt_print")
+async def fee_receipt_print(
+    request: Request,
+    institution_slug: str,
+    fee_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """فیس کی پرنٹ ایبل رسید — خودکار print dialog کے ساتھ کھلتی ہے۔"""
+    from app.models import Student
+    from app.models.finance import Fee_Payment
+
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
+
+    fee = session.get(Fee, fee_id)
+    if not fee:
+        raise HTTPException(status_code=404, detail="Fee record not found.")
+
+    student = session.get(Student, fee.student_id) if fee.student_id else None
+
+    # ادائیگیوں کی فہرست
+    payments = session.exec(
+        select(Fee_Payment).where(Fee_Payment.fee_id == fee_id).order_by(Fee_Payment.date)
+    ).all()
+
+    total_paid = sum(p.amount_paid for p in payments)
+    balance    = max(0, (fee.amount_due or 0) - total_paid)
+
+    context = {
+        "request":     request,
+        "institution": institution,
+        "fee":         fee,
+        "student":     student,
+        "payments":    payments,
+        "total_paid":  total_paid,
+        "balance":     balance,
+    }
+    return await TemplateResponse.render("dms/fee_receipt_print.html", request, session, context)
+
+
+@router.get("/{institution_slug}/fees/student/{student_id}/receipt/", response_class=HTMLResponse, name="student_fees_receipt_print")
+async def student_fees_receipt_print(
+    request: Request,
+    institution_slug: str,
+    student_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """طالب علم کی تمام فیسوں کی مکمل رسید (Account Statement)۔"""
+    from app.models import Student
+    from app.models.finance import Fee_Payment
+
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
+
+    student = session.get(Student, student_id)
+    if not student or student.inst_id != institution.id:
+        raise HTTPException(status_code=404, detail="Student not found.")
+
+    fees = session.exec(
+        select(Fee).where(Fee.student_id == student_id).order_by(Fee.due_date)
+    ).all()
+
+    total_due  = sum(f.amount_due or 0 for f in fees)
+    total_paid_all = 0
+    for f in fees:
+        pmts = session.exec(select(Fee_Payment).where(Fee_Payment.fee_id == f.id)).all()
+        paid = sum(p.amount_paid for p in pmts)
+        object.__setattr__(f, '_paid', paid)
+        object.__setattr__(f, '_balance', max(0, (f.amount_due or 0) - paid))
+        total_paid_all += paid
+
+    context = {
+        "request":     request,
+        "institution": institution,
+        "student":     student,
+        "fees":        fees,
+        "total_due":   total_due,
+        "total_paid":  total_paid_all,
+        "balance":     max(0, total_due - total_paid_all),
+    }
+    return await TemplateResponse.render("dms/fee_receipt_print.html", request, session, context)
+

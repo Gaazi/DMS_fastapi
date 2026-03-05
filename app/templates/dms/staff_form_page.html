@@ -38,10 +38,30 @@
         </a>
     </div>
 
+    <!-- Promote Messages -->
+    {% if request.query_params.get('msg') == 'promoted' %}
+    <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-3" dir="rtl">
+        <i class="fas fa-check-circle text-emerald-500 text-xl mt-0.5"></i>
+        <div>
+            <div class="font-bold text-emerald-800">🎉 کامیابی سے شامل کر دیا گیا!</div>
+            <div class="text-xs text-emerald-700 mt-0.5">طالب علم کا ڈیٹا اسٹاف میں کاپی کر دیا گیا ہے۔ اب ان کا عہدہ (Role) اور تنخواہ سیٹ کریں۔</div>
+        </div>
+    </div>
+    {% elif request.query_params.get('msg') == 'already_staff' %}
+    <div class="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3" dir="rtl">
+        <i class="fas fa-exclamation-triangle text-amber-500 text-xl mt-0.5"></i>
+        <div>
+            <div class="font-bold text-amber-800">یہ شخص پہلے ہی اسٹاف میں موجود ہے</div>
+            <div class="text-xs text-amber-700 mt-0.5">آپ یہاں سے ان کا ریکارڈ اپڈیٹ کر سکتے ہیں۔</div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Form Container -->
     <div class="rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-2xl">
         {% include 'dms/partials/staff_form_partial.html' %}
     </div>
+
 
     <!-- Help / Info Box -->
     <div class="mt-8 bg-indigo-50 rounded-2xl p-6 border border-indigo-100 flex gap-4 items-start">

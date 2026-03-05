@@ -9,7 +9,9 @@
         this.late = document.querySelectorAll('input[value=late]:checked').length;
         this.excused = document.querySelectorAll('input[value=excused]:checked').length;
     }
-}" x-init="setTimeout(() => updateStats(), 300)" class="relative z-10 text-slate-200">
+}" x-init="setTimeout(() => updateStats(), 300)" 
+   @attendance-refresh.window="updateStats()"
+   class="relative z-10 text-slate-200">
     
     <form method="post" id="attendanceForm" class="max-w-7xl mx-auto py-8 md:py-12">
         {{ csrf_token() }}
@@ -164,7 +166,7 @@
 
         <!-- Interactive Student List Container (True Edge-to-Edge on Mobile) -->
         <div id="student-list-container" class="-mx-4 md:mx-0 overflow-x-hidden"
-             hx-on::after-settle="updateStats()">
+             hx-on::after-settle="window.dispatchEvent(new Event('attendance-refresh'))">
             {% include 'dms/partials/student_attendance_table.html' %}
         </div>
 

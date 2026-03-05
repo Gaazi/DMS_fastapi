@@ -19,7 +19,7 @@ from app.api import (
     finance_router, audit_router, attendance_router, export_router,
     course_router, facility_router, inventory_router, schedule_router,
     finance_extra_router, public_admission_router, exams_router,
-    guardian_router, global_router
+    guardian_router, global_router, notification_router
 )
 from app.admin import setup_admin
 
@@ -37,9 +37,10 @@ app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, lifespan=li
 
 # --- Enhanced Logging Configuration ---
 LOG_FILE = "debug.log"
+UVICORN_LOG_FILE = "uvicorn.log"
 log_formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
 
-# Rotating file handler (10MB per file, keep 5 backups)
+# Rotating file handler — App errors → debug.log (10MB, 5 backups)
 file_handler = RotatingFileHandler(LOG_FILE, maxBytes=10*1024*1024, backupCount=5, encoding='utf-8')
 file_handler.setFormatter(log_formatter)
 file_handler.setLevel(logging.INFO)
@@ -49,11 +50,25 @@ stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(log_formatter)
 stream_handler.setLevel(logging.INFO)
 
+# App logger → debug.log
 app_logger = logging.getLogger("dms_app")
 app_logger.setLevel(logging.INFO)
 app_logger.addHandler(file_handler)
 app_logger.addHandler(stream_handler)
-app_logger.propagate = False # Prevent double logging since uvicorn also logs
+app_logger.propagate = False
+
+# ── Uvicorn errors → uvicorn.log (الگ file) ───────────────
+# startup fail, port busy, worker crash — uvicorn.log میں
+uvicorn_file_handler = RotatingFileHandler(
+    UVICORN_LOG_FILE, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8'
+)
+uvicorn_file_handler.setFormatter(log_formatter)
+uvicorn_file_handler.setLevel(logging.WARNING)  # صرف warnings اور errors
+
+for _name in ("uvicorn", "uvicorn.error"):
+    _logger = logging.getLogger(_name)
+    _logger.addHandler(uvicorn_file_handler)
+    _logger.propagate = True  # terminal پر بھی دکھائیں
 
 # --- Error & Request Logging ---
 @app.middleware("http")
@@ -173,6 +188,10 @@ templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
 templates.env.filters["time"] = lambda v, arg="%H:%M": v.strftime(arg) if hasattr(v, "strftime") else v
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 
+# Setup SQLAdmin — routers سے پہلے mount کریں
+# (تاکہ /{slug}/ route /dms-admin/ کو نہ پکڑے)
+admin = setup_admin(app)
+
 # Register Routers
 app.include_router(auth_router, tags=["Authentication"])
 app.include_router(base_router, tags=["General"])
@@ -191,20 +210,24 @@ app.include_router(public_admission_router, tags=["Public Admission"])
 app.include_router(exams_router, tags=["Exams"])
 app.include_router(guardian_router, tags=["Parent Portal"])
 app.include_router(global_router, tags=["Global Overview"])
+app.include_router(notification_router, tags=["Notifications"])
 
-# Setup SQLAdmin
-admin = setup_admin(app)
-
-# Global Exception Handler
+# Global Exception Handlers
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     return await TemplateResponse.render("404.html", request, None, status_code=404)
+
+@app.exception_handler(403)
+async def forbidden_handler(request: Request, exc: HTTPException):
+    detail = getattr(exc, "detail", "آپ کو اس صفحے تک رسائی کی اجازت نہیں۔")
+    return await TemplateResponse.render("403.html", request, None, status_code=403, context={"detail": detail})
 
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exc: HTTPException):
     """صارف لاگ ان نہیں ہے، لاگ ان پیج پر ری ڈائریکٹ کریں۔"""
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/login/", status_code=303)
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
