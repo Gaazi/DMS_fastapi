@@ -77,14 +77,30 @@ class AttendanceManager:
                 records_stmt = select(DailyAttendance).where(DailyAttendance.inst_id == self.institution.id, DailyAttendance.date == target_date)
             
             field_id = 'student_id'
-
+            
+            # If we are looking at session/course, also fetch DailyAttendance as fallback for UI
+            daily_fallback_map = {}
+            if session_id or course_id:
+                daily_records = self.session.exec(
+                    select(DailyAttendance).where(
+                        DailyAttendance.inst_id == self.institution.id, 
+                        DailyAttendance.date == target_date
+                    )
+                ).all()
+                daily_fallback_map = {r.student_id: r for r in daily_records}
+            
         records = self.session.exec(records_stmt).all()
         attendance_map = {getattr(r, field_id): r for r in records}
         
         for m in members:
             rec = attendance_map.get(m.id)
+            if not rec and type != 'staff':
+                # Use daily fallback if specifically for students and no class record exists
+                rec = daily_fallback_map.get(m.id)
+                
             m.current_status = rec.status if rec else 'present'
             m.current_remarks = rec.remarks if rec else ''
+            
             # Helper flags for UI
             m.is_absent = (m.current_status == 'absent')
             m.is_late = (m.current_status == 'late' or getattr(rec, 'is_late', False))
