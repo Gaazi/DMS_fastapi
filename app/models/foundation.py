@@ -48,6 +48,7 @@ class Course(AuditModel, table=True):
     course_code: Optional[str] = Field(default=None, max_length=25, index=True)
     is_active: bool = Field(default=True)
 
+    @property
     def get_category_display(self) -> str:
         cat_map = {
             "academic": "تعلیمی (Academic)",
@@ -61,6 +62,7 @@ class Course(AuditModel, table=True):
         }
         return cat_map.get(self.category.lower(), self.category.capitalize())
 
+    @property
     def get_fee_type_display(self) -> str:
         type_map = {
             "monthly": "ماہانہ",

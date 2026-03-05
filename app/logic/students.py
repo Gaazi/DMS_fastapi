@@ -297,7 +297,8 @@ class StudentManager:
         
         # Attach course-specific attendance to each admission
         for ad in admissions:
-            ad.attendance = self.attendance().get_member_summary(student, course_id=ad.course_id)
+            # Bypass Pydantic's strict __setattr__ by setting _attendance directly
+            object.__setattr__(ad, "_attendance", self.attendance().get_member_summary(student, course_id=ad.course_id))
 
         from app.logic.institution import InstitutionManager
         return {

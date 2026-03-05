@@ -265,9 +265,19 @@ class Admission(AuditModel, table=True):
             ("suspended", "معطل (Suspended)")
         ]
 
+    @property
     def get_status_display(self) -> str:
         status_map = dict(self.get_status_choices())
         return status_map.get(self.status, self.status.capitalize())
+
+    # Extra properties for template compatibility
+    @property
+    def attendance(self) -> dict:
+        return getattr(self, "_attendance", {'present': 0, 'absent': 0, 'late': 0, 'excused': 0, 'total': 0, 'percentage': 0})
+    
+    @attendance.setter
+    def attendance(self, value):
+        self._attendance = value
 
 class StaffAdvance(SQLModel, table=True):
     __tablename__ = "dms_staffadvance"
