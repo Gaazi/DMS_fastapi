@@ -155,7 +155,15 @@ class AttendanceManager:
                 record.remarks = remarks
                 self.session.add(record)
         else:
-            if not course_id and not session_id:
+            session_id = post_data.get('session_id')
+            class_session = None
+            
+            if session_id:
+                class_session = self.session.get(ClassSession, int(session_id))
+                if class_session and not course_id:
+                    course_id = class_session.course_id
+                    
+            if not course_id and not class_session:
                 # ====== ڈے حاضری (Day Attendance) ======
                 members = self.session.exec(select(Student).where(
                     Student.inst_id == self.institution.id, 
@@ -181,13 +189,9 @@ class AttendanceManager:
                     
             else:
                 # ====== سیشن یا کورس کی حاضری ======
-                # If session_id is explicitly provided in post_data
-                session_id = post_data.get('session_id') or session_id
-                class_session = None
-                if session_id:
-                    class_session = self.session.get(ClassSession, int(session_id))
-                
                 if not class_session:
+                    if not course_id:
+                        return False, "کورس کا انتخاب ضروری ہے۔"
                     session_stmt = select(ClassSession).where(ClassSession.course_id == course_id, ClassSession.date == target_date)
                     class_session = self.session.exec(session_stmt).first()
                     if not class_session:
@@ -196,7 +200,7 @@ class AttendanceManager:
                         self.session.flush()
 
                 members = self.session.exec(select(Student).join(Admission).where(
-                    Admission.course_id == course_id, 
+                    Admission.course_id == class_session.course_id, 
                     Admission.status == 'active'
                 )).all()
                 

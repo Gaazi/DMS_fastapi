@@ -200,7 +200,10 @@ async def student_attendance(request: Request, institution_slug: str, session: S
         except:
             effective_date = target_date
             
-        effective_course_id = int(post_course_id) if post_course_id and post_course_id.isdigit() else course_id
+        if 'course_id' in data:
+            effective_course_id = int(post_course_id) if post_course_id and post_course_id.isdigit() else None
+        else:
+            effective_course_id = course_id
         
         # Action handling
         action = data.get('action')
@@ -210,12 +213,17 @@ async def student_attendance(request: Request, institution_slug: str, session: S
             if success:
                 return RedirectResponse(url=request.url.path + f"?date={effective_date}&course_id={effective_course_id}&session_id={new_session.id}", status_code=303)
 
+        
+        am.save_bulk(type='student', post_data=data, target_date=effective_date, course_id=effective_course_id)
+        
+        # Build redirect URL correctly
+        query = f"?date={effective_date}"
         if effective_course_id:
-            am.save_bulk(type='student', post_data=data, target_date=effective_date, course_id=effective_course_id)
-            return RedirectResponse(url=request.url.path + f"?date={effective_date}&course_id={effective_course_id}&session_id={data.get('session_id', '')}", status_code=303)
-        else:
-            # Handle case where no course is selected during POST
-            pass
+            query += f"&course_id={effective_course_id}"
+        if data.get('session_id'):
+            query += f"&session_id={data.get('session_id')}"
+            
+        return RedirectResponse(url=request.url.path + query, status_code=303)
 
     members, active_date, active_course_id, active_session_id = am.get_prepared_list(type='student', target_date=target_date, course_id=course_id, session_id=session_id)
     courses = session.exec(select(Course).where(Course.inst_id == institution.id).order_by(Course.title)).all()
