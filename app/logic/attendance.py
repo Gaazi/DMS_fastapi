@@ -166,18 +166,31 @@ class AttendanceManager:
         today = dt_date.today()
         total_students = self.session.exec(select(func.count(Student.id)).where(Student.inst_id == self.institution.id, Student.is_active == True)).one()
         
-        # آج کے سیشنز میں حاضر طلبہ
-        stmt = select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
+        # آج کے سیشنز میں حاضر، غیر حاضر اور لیٹ طلبہ
+        present_count = self.session.exec(select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
             Attendance.inst_id == self.institution.id,
             ClassSession.date == today,
             Attendance.status == 'present'
-        )
-        present_count = self.session.exec(stmt).one() or 0
+        )).one() or 0
+        
+        absent_count = self.session.exec(select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
+            Attendance.inst_id == self.institution.id,
+            ClassSession.date == today,
+            Attendance.status == 'absent'
+        )).one() or 0
+
+        late_count = self.session.exec(select(func.count(func.distinct(Attendance.student_id))).join(ClassSession).where(
+            Attendance.inst_id == self.institution.id,
+            ClassSession.date == today,
+            Attendance.status == 'late'
+        )).one() or 0
         
         return {
             'total': total_students,
             'present_count': present_count,
-            'absent': max(0, total_students - present_count),
+            'absent': absent_count,
+            'late': late_count,
+            'not_marked': max(0, total_students - (present_count + absent_count + late_count)),
             'percentage': round((present_count / total_students * 100), 1) if total_students > 0 else 0
         }
 

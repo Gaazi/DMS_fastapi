@@ -86,7 +86,7 @@ class Cashier:
     def collect_family_fee(self, family_id: str, amount: float, method: str = "Cash"):
         """خاندان (Family) کی بنیاد پر تمام طلبہ کی فیس وصول کرنا اور تقسیم کرنا۔"""
         from app.models import Parent
-        parent = self.session.exec(select(Parent).where(Parent.family_id == family_id, Parent.inst_id == self.institution.id)).first()
+        parent = self.session.exec(select(Parent).where(func.lower(Parent.family_id) == family_id.lower(), Parent.inst_id == self.institution.id)).first()
         if not parent:
             raise HTTPException(status_code=404, detail="Family record not found")
             
@@ -168,7 +168,7 @@ class Cashier:
         stmt = select(Fee).where(
             Fee.student_id == student.id,
             Fee.inst_id == self.institution.id,
-            Fee.status != "Paid"
+            Fee.status.in_(['Pending', 'Partial'])
         )
         all_pending = self.session.exec(stmt).all()
         

@@ -35,13 +35,13 @@ class FinanceManager:
         if not sid: return {'total_due': 0, 'total_paid': 0, 'balance': 0}
 
         fees = self.student_fee_history(sid)
-        total_due = sum((f.amount_due + (f.late_fee or 0) - (f.discount or 0)) for f in fees)
+        total_due = sum((f.amount_due + (f.late_fee or 0) - (f.discount or 0)) for f in fees if f.status != 'Cancelled')
         total_paid = sum(f.amount_paid for f in fees)
-        
+        balance = sum((f.amount_due + (f.late_fee or 0) - (f.discount or 0) - f.amount_paid) for f in fees if f.status in ['Pending', 'Partial'])
         return {
             'total_due': total_due,
             'total_paid': total_paid,
-            'balance': total_due - total_paid
+            'balance': balance
         }
 
     def currency(self):
@@ -50,6 +50,7 @@ class FinanceManager:
     def generate_initial_fees_for_admission(self, admission: Admission):
         """داخلہ ہوتے ہی ایڈمیشن اور پہلی فیس کا ریکارڈ بنانا۔"""
         # 1. ایڈمیشن فیس
+        base_date = admission.admission_date or dt_date.today()
         if admission.agreed_admission_fee and admission.agreed_admission_fee > 0:
             adm_fee = Fee(
                 inst_id=admission.inst_id,
@@ -59,8 +60,8 @@ class FinanceManager:
                 fee_type='admission',
                 amount_due=admission.agreed_admission_fee,
                 title="Admission Fee",
-                due_date=dt_date.today(),
-                month=dt_date.today().replace(day=1),
+                due_date=base_date,
+                month=base_date.replace(day=1),
                 status='Pending'
             )
             self.session.add(adm_fee)
@@ -74,9 +75,9 @@ class FinanceManager:
                 course_id=admission.course_id,
                 fee_type='monthly',
                 amount_due=admission.agreed_course_fee,
-                title=f"Monthly Fee ({dt_date.today().strftime('%B')})",
-                due_date=dt_date.today(),
-                month=dt_date.today().replace(day=1),
+                title=f"Monthly Fee ({base_date.strftime('%B')})",
+                due_date=base_date,
+                month=base_date.replace(day=1),
                 status='Pending'
             )
             self.session.add(first_fee)
@@ -389,30 +390,47 @@ class FinanceManager:
         """تمام اداروں کے لیے خودکار طور پر ماہانہ فیسیں جنریٹ کرنے کا گلوبل ہینڈلر۔"""
         try:
             now = dt_date.today()
+            target_month = now.replace(day=1)
             # Loop for all active institutions
             institutions = session.exec(select(Institution)).all()
             for inst in institutions:
-                # fm = FinanceManager(session, institution, user)
-                # Note: user might be None for automated tasks
-                fm = FinanceManager(session, inst, None)
-                # we bypass fm._check_access for global tasks by not calling methods that check it,
-                # or updating those methods to accept system-level calls.
-                # Here we just iterate and call auto_generate_fees
+                # Bypass access check for system task
+                from app.models import Admission, Fee, Student
                 
-                # Check for student admissions and create fees
-                from app.models import Admission, Fee
-                stmt = select(func.count(Fee.id)).where(Fee.inst_id == inst.id, Fee.month == now.replace(day=1), Fee.fee_type == 'monthly')
-                if session.exec(stmt).one() == 0:
-                    admissions = session.exec(select(Admission).where(Admission.status == 'active')).all()
-                    for ad in admissions:
-                        student = session.get(Student, ad.student_id)
-                        if student and student.inst_id == inst.id:
-                            session.add(Fee(
-                                inst_id=inst.id, student_id=ad.student_id, admission_id=ad.id, course_id=ad.course_id,
-                                fee_type='monthly', amount_due=ad.agreed_course_fee or 0,
-                                title=f"Monthly Fee ({now.strftime('%B %Y')})",
-                                due_date=now.replace(day=10), month=now.replace(day=1), status='Pending'
-                            ))
+                # Get all active admissions for this institution
+                admissions_stmt = select(Admission).join(Student).where(
+                    Student.inst_id == inst.id,
+                    Admission.status == 'active'
+                )
+                active_admissions = session.exec(admissions_stmt).all()
+                
+                count = 0
+                for ad in active_admissions:
+                    # Check if fee already exists for this admission this month
+                    exists = session.exec(select(Fee).where(
+                        Fee.admission_id == ad.id,
+                        Fee.month == target_month,
+                        Fee.fee_type == 'monthly'
+                    )).first()
+                    
+                    if not exists:
+                        session.add(Fee(
+                            inst_id=inst.id,
+                            student_id=ad.student_id,
+                            admission_id=ad.id,
+                            course_id=ad.course_id,
+                            fee_type='monthly',
+                            amount_due=ad.agreed_course_fee or 0,
+                            title=f"Monthly Fee ({now.strftime('%B %Y')})",
+                            due_date=now.replace(day=10),
+                            month=target_month,
+                            status='Pending'
+                        ))
+                        count += 1
+                
+                if count > 0:
+                    AuditManager.log_activity(session, inst.id, 0, 'auto_generate_global', 'System', 0, f"Generated {count} monthly fees", {'month': target_month.isoformat()})
+                    
             session.commit()
         except Exception as e:
             print(f"B-Task Error: {e}")
@@ -432,7 +450,7 @@ class FinanceManager:
         
         # 2. Receivables (Pending Fees)
         total_pending = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
-            Fee.inst_id == self.institution.id, Fee.status != 'Paid'
+            Fee.inst_id == self.institution.id, Fee.status.in_(['Pending', 'Partial'])
         )).one() or 0
         
         # 3. Income per Course (Breakdown)
@@ -441,7 +459,7 @@ class FinanceManager:
         for c in courses:
             c_income = self.session.exec(select(func.sum(Fee.amount_paid)).where(Fee.course_id == c.id, Fee.month >= start_of_month)).one() or 0
             c_pending = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
-                Fee.course_id == c.id, Fee.status != 'Paid'
+                Fee.course_id == c.id, Fee.status.in_(['Pending', 'Partial'])
             )).one() or 0
             course_stats.append({
                 "id": c.id,
@@ -470,9 +488,9 @@ class FinanceManager:
             student_ids = [s.id for s in p.students]
             if not student_ids: continue
             
-            pending_dues = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
+            total_pending = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
                 Fee.student_id.in_(student_ids),
-                Fee.status != 'Paid'
+                Fee.status.in_(['Pending', 'Partial'])
             )).one() or 0
             
             family_report.append({
@@ -480,7 +498,7 @@ class FinanceManager:
                 "parent_name": p.name,
                 "mobile": p.mobile,
                 "student_count": len(student_ids),
-                "total_pending": float(pending_dues)
+                "total_pending": float(total_pending)
             })
             
         # Sort by pending dues (highest first)

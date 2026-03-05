@@ -443,13 +443,13 @@ async def family_fee_collection(request: Request, institution_slug: str, session
             })
 
     if family_id:
-        parent = session.exec(select(Parent).where(Parent.family_id == family_id, Parent.inst_id == institution.id)).first()
+        parent = session.exec(select(Parent).where(func.lower(Parent.family_id) == family_id.lower(), Parent.inst_id == institution.id)).first()
         if parent:
             # Aggregate dues for display
             total_family_dues = 0
             for student in parent.students:
                 dues = session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
-                    Fee.student_id == student.id, Fee.status != 'Paid'
+                    Fee.student_id == student.id, Fee.status.in_(['Pending', 'Partial'])
                 )).one() or 0
                 student.total_dues = float(dues)
                 total_family_dues += student.total_dues

@@ -91,14 +91,16 @@ class StudentManager:
         start_of_month = today.replace(day=1)
 
         for s in results:
-            # حاضری (اس مہینے کی)
-            presents = self.session.exec(select(func.count(Attendance.id)).where(
-                Attendance.student_id == s.id, Attendance.status == 'present', Attendance.recorded_at >= start_of_month
+            # حاضری (اس مہینے کی - سیشن کی تاریخ کے مطابق)
+            presents = self.session.exec(select(func.count(Attendance.id)).join(ClassSession).where(
+                Attendance.student_id == s.id, 
+                Attendance.status == 'present', 
+                ClassSession.date >= start_of_month
             )).one()
             
             # بقایاجات (Due Fees)
             due_amount = self.session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
-                Fee.student_id == s.id, Fee.status != 'Paid'
+                Fee.student_id == s.id, Fee.status.in_(['Pending', 'Partial'])
             )).one() or 0
 
             # Attach extra data to the object for template compatibility
@@ -185,6 +187,11 @@ class StudentManager:
                 serial = parent_count + 1
                 family_id = f"{inst_prefix}-F-{serial:04d}"
                 
+                # Uniqueness check for family_id
+                while self.session.exec(select(Parent).where(Parent.inst_id == self.institution.id, Parent.family_id == family_id)).first():
+                    serial += 1
+                    family_id = f"{inst_prefix}-F-{serial:04d}"
+
                 parent = Parent(
                     name=guardian_name,
                     mobile=guardian_mobile,

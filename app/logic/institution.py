@@ -127,8 +127,15 @@ class InstitutionManager:
     def get_quick_alerts(self):
         """خودکار الرٹس۔"""
         from app.models import Fee
-        overdue_subquery = select(func.count(Fee.id)).where(Fee.student_id == Student.id, Fee.status == 'overdue').scalar_subquery()
-        defaulters = self.session.exec(select(Student).where(Student.inst_id == self.institution.id, overdue_subquery >= 3).limit(5)).all()
+        from datetime import date as dt_date_now
+        today_now = dt_date_now.today()
+        # Find students with multiple pending fees where due date has passed
+        overdue_subquery = select(func.count(Fee.id)).where(
+            Fee.student_id == Student.id, 
+            Fee.status.in_(['Pending', 'Partial']),
+            Fee.due_date < today_now
+        ).scalar_subquery()
+        defaulters = self.session.exec(select(Student).where(Student.inst_id == self.institution.id, overdue_subquery >= 2).limit(5)).all()
         
         # بھرے ہوئے کورسز کا چیک
         all_courses = self.session.exec(select(Course).where(Course.inst_id == self.institution.id, Course.is_active == True, Course.capacity > 0)).all()
