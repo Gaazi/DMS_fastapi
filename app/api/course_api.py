@@ -98,7 +98,8 @@ async def course_detail(request: Request, institution_slug: str, course_id: int,
         elif action == "session_delete":
             success, msg, _ = cm.delete_session(int(data.get('session_id')))
         elif action == "timetable_delete":
-            success, msg, _ = cm.delete_timetable_item(int(data.get('timetable_id')))
+            ids_val = data.get('timetable_ids') or data.get('timetable_id')
+            success, msg, _ = cm.delete_timetable_item(str(ids_val))
         elif action == "timetable_save":
             data['days'] = form_data_raw.getlist('days')
             success, msg, _ = cm.save_timetable_item(data)

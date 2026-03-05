@@ -10,7 +10,7 @@
         showTimetableModal: false,
         showPromoteModal: false,
         editSession: {},
-        editTimetable: {},
+        editTimetable: { days: [] },
         selectedStudents: []
     }">
 
@@ -368,76 +368,65 @@
           {% endif %}
         </div>
         
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-white/5">
-            <thead class="bg-black/20 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
-              <tr>
-                <th class="px-6 py-4 text-right">دن (Day)</th>
-                <th class="px-6 py-4 text-right">عنوان (Subject)</th>
-                <th class="px-6 py-4 text-right">اوقات</th>
-                <th class="px-6 py-4 text-center print:hidden">عمل</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5 bg-transparent">
-              {% set day_short = {'0': 'پ', '1': 'م', '2': 'ب', '3': 'ج', '4': 'جم', '5': 'ہ', '6': 'ا'} %}
-              {% set day_full = {'0': 'پیر', '1': 'منگل', '2': 'بدھ', '3': 'جمعرات', '4': 'جمعہ', '5': 'ہفتہ', '6': 'اتوار'} %}
+        <div class="overflow-hidden">
+          <ul class="divide-y divide-white/5 bg-transparent">
+              {% set day_full = {'0': 'سموار', '1': 'منگل', '2': 'بدھ', '3': 'جمعرات', '4': 'جمعہ', '5': 'سنیچر', '6': 'اتوار'} %}
               {% for slot in timetable %}
-              <tr class="hover:bg-white/[0.04] transition-colors group border-r-2 border-transparent hover:border-indigo-500">
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-1.5 flex-wrap min-w-[120px]">
-                    {% for day in slot.days %}
-                    <span class="w-7 h-7 flex items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 text-[10px] font-bold border border-indigo-500/20 shadow-sm" title="{{ day_full.get(day) }}">
-                        {{ day_short.get(day) }}
-                    </span>
-                    {% endfor %}
+              <li class="hover:bg-white/[0.04] transition-colors group p-4 border-r-2 border-transparent hover:border-indigo-500">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      
+                      <!-- Left: Details -->
+                      <div class="flex items-start sm:items-center gap-3">
+                          <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] shrink-0 mt-1.5 sm:mt-0"></div>
+                          
+                          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <!-- Subject -->
+                              <div class="text-[14px] font-bold text-slate-200">{{ slot.subject or 'تعلیمی سیشن' }}</div>
+                              <div class="text-slate-500/30 hidden sm:block">-</div>
+                              
+                              <!-- Days & Time -->
+                              <div class="flex flex-wrap items-center gap-2 text-[12px]">
+                                  <span class="text-slate-400 font-medium">
+                                      {% for day in slot.days %}
+                                          {{ day_full.get(day) }}{% if not loop.last %}، {% endif %}
+                                      {% endfor %}
+                                  </span>
+                                  <span class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                                      {{ slot.start_time|time }}{% if slot.end_time %} - {{ slot.end_time|time }}{% endif %}
+                                  </span>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Right: Actions -->
+                      <div class="flex items-center justify-end gap-2 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity">
+                          {% if is_academic_admin %}
+                          {% set ids_str = slot.records | map(attribute='id') | join(',') %}
+                          <button type="button" 
+                                  @click="editTimetable = {ids: '{{ ids_str }}', days: [{% for day in slot.days %}'{{ day }}'{% if not loop.last %},{% endif %}{% endfor %}], start_time: '{{ slot.start_time|time('%H:%M') }}', end_time: '{{ slot.end_time|time('%H:%M') }}', subject: '{{ slot.subject|default('')|replace('\'','\\\'') }}'}; showTimetableModal = true"
+                                  class="text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 p-2 rounded-lg transition-colors border border-blue-500/20" title="ترمیم">
+                              <i class="fas fa-edit text-[11px]"></i>
+                          </button>
+                          
+                          <form method="post" action="" onsubmit="return confirm('یہ مکمل شیڈول حذف کریں؟');" class="inline-block">
+                              {{ csrf_token() }}
+                              <input type="hidden" name="action" value="timetable_delete">
+                              <input type="hidden" name="timetable_ids" value="{{ ids_str }}">
+                              <button type="submit" class="text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 p-2 rounded-lg transition-colors border border-rose-500/20" title="حذف">
+                                  <i class="fas fa-trash-alt text-[11px]"></i>
+                              </button>
+                          </form>
+                          {% endif %}
+                      </div>
+                      
                   </div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
-                    <div class="text-sm font-bold text-slate-200">{{ slot.subject or 'تعلیمی سیشن' }}</div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                   <div class="inline-flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-1 gap-2 shadow-inner">
-                      <i class="fas fa-history text-[10px] text-indigo-400/50"></i>
-                      <span class="text-xs font-mono font-bold text-slate-300">{{ slot.start_time|time }} - {{ slot.end_time|time }}</span>
-                   </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center print:hidden">
-                  <div class="flex items-center justify-center gap-1">
-                    {% if is_academic_admin %}
-                    {% set ids_str = slot.records | map(attribute='id') | join(',') %}
-                    <button type="button" 
-                            @click="editTimetable = {ids: '{{ ids_str }}', days: [{% for day in slot.days %}'{{ day }}'{% if not loop.last %},{% endif %}{% endfor %}], start_time: '{{ slot.start_time|time('%H:%M') }}', end_time: '{{ slot.end_time|time('%H:%M') }}', subject: '{{ slot.subject|default('')|replace('\'','\\\'') }}'}; showTimetableModal = true"
-                            class="text-blue-400 hover:text-blue-300 p-2 transition-colors">
-                      <i class="fas fa-edit text-xs"></i>
-                    </button>
-                    
-                    {# Delete action might need to be specific or bulk. For now, individual delete is in the loop or we keep it simple. #}
-                    <div class="flex flex-col gap-1">
-                      {% for item in slot.records %}
-                      <form method="post" action="" onsubmit="return confirm('حذف کریں؟');" class="inline-block">
-                        {{ csrf_token() }}
-                        <input type="hidden" name="action" value="timetable_delete">
-                        <input type="hidden" name="timetable_id" value="{{ item.id }}">
-                        <button type="submit" class="text-slate-600 hover:text-rose-500 p-1 transition-colors" title="{{ day_full.get(item.day_of_week) }}">
-                          <i class="fas fa-times text-[10px]"></i>
-                        </button>
-                      </form>
-                      {% endfor %}
-                    </div>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
+              </li>
               {% else %}
-              <tr>
-                <td colspan="4" class="px-6 py-12 text-center text-slate-600 italic text-sm">کوئی مستقل شیڈول ترتیب نہیں دیا گیا ہے</td>
-              </tr>
+              <li class="p-8 text-center text-slate-500 italic text-sm">
+                  کوئی مستقل شیڈول ترتیب نہیں دیا گیا ہے
+              </li>
               {% endfor %}
-            </tbody>
-          </table>
+          </ul>
         </div>
       </div>
 
@@ -460,7 +449,7 @@
             </thead>
             <tbody class="divide-y divide-white/5 bg-transparent text-sm">
               {% for session in sessions %}
-              <tr class="hover:bg-white/[0.04] transition-colors group">
+              <tr class="hover:bg-white/[0.04] transition-colors group cursor-pointer" @click="window.location.href='{{ url('dms_session_attendance', institution.slug, session.id) }}'">
                 <td class="px-4 py-3 whitespace-nowrap">
                    <div class="flex flex-col">
                       <div class="flex items-center gap-1.5">
@@ -471,7 +460,7 @@
                         <span class="text-[8px] text-slate-600 uppercase">{{ session.get_session_type_display }}</span>
                         {% if session.start_time %}
                         <span class="text-[8px] text-slate-700 mx-0.5">•</span>
-                        <span class="text-[8px] text-slate-600 font-mono">{{ session.start_time|time }} - {{ session.end_time|time }}</span>
+                        <span class="text-[8px] text-slate-600 font-mono">{{ session.start_time|time }}{% if session.end_time %} - {{ session.end_time|time }}{% endif %}</span>
                         {% endif %}
                       </div>
                    </div>
@@ -484,16 +473,18 @@
                 <td class="px-4 py-3 whitespace-nowrap text-right print:hidden">
                   <div class="flex items-center gap-2 justify-end">
                       <a href="{{ url('dms_session_attendance', institution.slug, session.id) }}"
+                        onclick="event.stopPropagation()"
                         class="p-1 px-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all text-[10px] font-bold">
                         <i class="fas fa-clipboard-check"></i>
                       </a>
                       {% if is_academic_admin %}
                       <button type="button" 
+                              onclick="event.stopPropagation()"
                               @click="editSession = {id: '{{ session.id }}', date: '{{ session.date|time('%Y-%m-%d') }}', start_time: '{{ session.start_time|time('%H:%M') if session.start_time else '' }}', end_time: '{{ session.end_time|time('%H:%M') if session.end_time else '' }}', topic: '{{ session.topic|default('')|replace('\'','\\\'') }}', type: '{{ session.session_type }}'}; showEditModal = true"
                               class="p-1 px-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-all text-[10px]">
                           <i class="fas fa-edit"></i>
                       </button>
-                      <form method="post" onsubmit="return confirm('حذف کریں؟');" class="inline-block">
+                      <form method="post" onsubmit="return confirm('حذف کریں؟');" class="inline-block" onclick="event.stopPropagation()">
                         {{ csrf_token() }}
                         <input type="hidden" name="action" value="session_delete">
                         <input type="hidden" name="session_id" value="{{ session.id }}">

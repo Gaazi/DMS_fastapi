@@ -293,8 +293,16 @@ class CourseManager:
         """کورس کے پروفائل صفحے کے لیے تمام داخلے، سیشنز اور اسٹیٹس کا ڈیٹا تیار کرنا۔"""
         if not self.course: raise HTTPException(status_code=404, detail="Course not set.")
         
+        from datetime import date
+        today = date.today()
         admissions = self.session.exec(select(Admission).where(Admission.course_id == self.course.id).order_by(desc(Admission.admission_date))).all()
-        sessions = self.session.exec(select(ClassSession).where(ClassSession.course_id == self.course.id).order_by(desc(ClassSession.date), desc(ClassSession.id)).limit(15)).all()
+        sessions = self.session.exec(
+            select(ClassSession).where(
+                ClassSession.course_id == self.course.id,
+                extract('year', ClassSession.date) == today.year,
+                extract('month', ClassSession.date) == today.month
+            ).order_by(desc(ClassSession.date), desc(ClassSession.id))
+        ).all()
         
         # Recurring Schedule - Grouped by Slot for better UI
         from app.models.schedule import TimetableItem
@@ -313,6 +321,11 @@ class CourseManager:
                 }
             grouped_slots[key]['days'].append(item.day_of_week)
             grouped_slots[key]['records'].append(item)
+            
+        # Sort days: Saturday(5), Sunday(6), Monday(0)...
+        day_order = {'5': 1, '6': 2, '0': 3, '1': 4, '2': 5, '3': 6, '4': 7}
+        for slot in grouped_slots.values():
+            slot['days'].sort(key=lambda d: day_order.get(str(d), 99))
             
         timetable = sorted(grouped_slots.values(), key=lambda x: x['start_time'])
 
@@ -368,15 +381,20 @@ class CourseManager:
         self.session.commit()
         return True, "Schedule updated.", None
 
-    def delete_timetable_item(self, item_id: int):
-        """ٹائم ٹیبل سے مخصوص شیڈول حذف کرنا۔"""
+    def delete_timetable_item(self, ids_str: str):
+        """ٹائم ٹیبل سے مخصوص شیڈول (یا ایک سے زیادہ) حذف کرنا۔"""
         self._check_access()
         from app.models.schedule import TimetableItem
-        item = self.session.get(TimetableItem, item_id)
-        if not item or (self.course and item.course_id != self.course.id):
-            raise HTTPException(status_code=404, detail="Schedule item not found.")
         
-        self.session.delete(item)
+        ids = [int(i.strip()) for i in ids_str.split(',') if i.strip()]
+        if not ids:
+            return False, "No IDs provided", None
+            
+        for item_id in ids:
+            item = self.session.get(TimetableItem, item_id)
+            if item and (not self.course or item.course_id == self.course.id):
+                self.session.delete(item)
+                
         self.session.commit()
         return True, "Schedule removed.", None
 
