@@ -4,12 +4,7 @@ PassengerBaseURI "/"
 PassengerPython "/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/python"
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
 
-RewriteEngine On
-RewriteRule ^(.*)$ http://127.0.0.1:8001/$1 [P,L]
-
 # DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
 <IfModule Litespeed>
 </IfModule>
 # DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
-
-

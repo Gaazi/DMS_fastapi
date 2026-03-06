@@ -90,7 +90,6 @@ jobs:
 
           $ALEMBIC_BIN upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
-          # Uvicorn restart کے لیے flag file بنائیں
-          # Cron Job اسے دیکھ کر 1 منٹ میں Uvicorn restart کر دے گا
-          mkdir -p tmp && touch tmp/restart_uvicorn
-          echo "=== ✅ Deployment Done! Uvicorn restart flag set ==="
+          # Passenger کو ری اسٹارٹ کریں
+          mkdir -p tmp && touch tmp/restart.txt
+          echo "=== ✅ Deployment Done! Passenger will restart on next visit ==="

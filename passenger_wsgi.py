@@ -1,6 +1,21 @@
-# یہ فائل صرف cPanel کے Passenger کو خاموش رکھنے کے لیے ہے۔
-# اصل ٹریفک .htaccess کے RewriteRule کے ذریعے
-# Uvicorn (port 8001) کو جاتی ہے۔
+import sys
+import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+
+_wsgi_app = None
+
 def application(environ, start_response):
-    start_response('200 OK', [('Content-Type', 'text/plain')])
-    return [b"Uvicorn is handling requests on port 8001"]
+    global _wsgi_app
+    if _wsgi_app is None:
+        import asyncio
+        # uvloop کو ڈس ایبل کریں تاکہ Passenger کریش نہ ہو
+        asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
+        
+        from app.main import app
+        from a2wsgi import ASGIMiddleware
+        _wsgi_app = ASGIMiddleware(app)
+        
+    return _wsgi_app(environ, start_response)
