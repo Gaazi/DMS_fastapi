@@ -75,7 +75,7 @@ jobs:
           .htaccess,
           passenger_wsgi.py
 
-    - name: Restart App & Run Migrations
+    - name: Run Migrations via SSH
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SERVER_IP }}
@@ -84,25 +84,15 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         command_timeout: 5m
         script: |
-          TARGET_DIR="/home/esabaqco/demo.esabaq.com"
-          VENV_PATH="/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/activate"
+          cd /home/esabaqco/demo.esabaq.com
+          source /home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/activate
 
-          cd $TARGET_DIR
-          source $VENV_PATH
-
-          # 1. Dependencies
           pip install -r requirements.txt --quiet
           echo "✅ Dependencies installed"
 
-          # 2. Alembic Migrations
-          alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Migrations skipped"
+          alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
-          # 3. Uvicorn restart — fire and forget (no sleep, no wait)
-          pkill -f "uvicorn app.main:app" 2>/dev/null || true
+          # Uvicorn کو restart کریں (cron job اسے دوبارہ شروع کرے گا)
+          pkill -f "uvicorn app.main:app" 2>/dev/null && echo "🔄 Old uvicorn stopped (cron will restart)" || echo "ℹ️ No uvicorn was running"
 
-          bash -c "nohup /home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/uvicorn app.main:app \
-            --host 127.0.0.1 --port 8001 --workers 2 \
-            >> /home/esabaqco/uvicorn.log 2>&1 &" &
-
-          echo "✅ Uvicorn restart command sent!"
-          echo "=== Deployment Completed! ==="
+          echo "=== Deployment Done! Uvicorn will auto-restart via cron ==="
