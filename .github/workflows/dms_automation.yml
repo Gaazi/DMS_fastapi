@@ -60,7 +60,6 @@ jobs:
         SOURCE: "."
         TARGET: "/home/esabaqco/demo.esabaq.com/"
         ARGS: "-avz --delete"
-        # یہ فائلیں upload نہ ہوں (server پر پہلے سے موجود ہیں)
         EXCLUDE: >
           /venv/,
           /.git/,
@@ -71,9 +70,7 @@ jobs:
           db.sqlite3,
           *.log,
           /media/,
-          /staticfiles/,
-          .htaccess,
-          passenger_wsgi.py
+          /staticfiles/
 
     - name: Run Migrations via SSH
       uses: appleboy/ssh-action@master
@@ -92,6 +89,6 @@ jobs:
 
           alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
-          # Passenger کو ری اسٹارٹ کریں
-          mkdir -p tmp && touch tmp/restart.txt
-          echo "=== Deployment Done! Passenger will restart on next visit ==="
+          # Uvicorn ری اسٹارٹ کریں — cron job 1 منٹ میں دوبارہ شروع کر دے گا
+          pkill -f "uvicorn app.main:app" 2>/dev/null || true
+          echo "=== Deployment Done! Uvicorn will restart via cron job ==="

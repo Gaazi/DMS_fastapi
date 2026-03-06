@@ -1,14 +1,6 @@
-import sys, os
-
-# ورچوئل اینوائرنمنٹ کا راستہ (Path) سیٹ کریں
-INTERP = "/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/python"
-if sys.executable != INTERP:
-    os.execl(INTERP, INTERP, *sys.argv)
-
-sys.path.append(os.getcwd())
-
-from a2wsgi import ASGIMiddleware
-from app.main import app
-
-# یہ cPanel کے Passenger کو بتاتا ہے کہ ایپ کہاں ہے
-application = ASGIMiddleware(app)
+# یہ فائل صرف cPanel کے Passenger کو خاموش رکھنے کے لیے ہے۔
+# اصل ٹریفک .htaccess کے RewriteRule کے ذریعے
+# Uvicorn (port 8001) کو جاتی ہے۔
+def application(environ, start_response):
+    start_response('200 OK', [('Content-Type', 'text/plain')])
+    return [b"Uvicorn is handling requests on port 8001"]
