@@ -58,8 +58,8 @@ jobs:
         REMOTE_USER: ${{ secrets.SERVER_USER }}
         REMOTE_PORT: ${{ secrets.SSH_PORT }}
         SOURCE: "."
-        TARGET: "/home/esabaqco/demo.esabaq.com"
-        ARGS: "-rlgoDzvc --delete"
+        TARGET: "/home/esabaqco/demo.esabaq.com/"
+        ARGS: "-avz --delete"
         # یہ فائلیں upload نہ ہوں (server پر پہلے سے موجود ہیں)
         EXCLUDE: >
           /venv/,
@@ -99,7 +99,10 @@ jobs:
           echo "✅ Dependencies installed"
 
           # 3. ڈیٹا بیس مائیگریشنز (Alembic)
-          alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ No migrations needed"
+          echo "--- Checking env.py content on server ---"
+          grep "app.core.database" alembic/env.py || echo "❌ env.py is still OLD!"
+          
+          alembic upgrade head && echo "✅ Migrations done"
 
           # 4. پرانا Uvicorn بند کریں اور نیا شروع کریں
           pkill -f "uvicorn app.main:app" || echo "No old process to kill"
