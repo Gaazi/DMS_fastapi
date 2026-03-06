@@ -82,12 +82,13 @@ jobs:
         command_timeout: 5m
         script: |
           cd /home/esabaqco/demo.esabaq.com
-          source /home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/activate
+          PY_BIN="/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/python"
+          ALEMBIC_BIN="/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/alembic"
 
-          pip install -r requirements.txt --quiet
+          $PY_BIN -m pip install -r requirements.txt --quiet
           echo "✅ Dependencies installed"
 
-          alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
+          $ALEMBIC_BIN upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
           # Uvicorn restart کے لیے flag file بنائیں
           # Cron Job اسے دیکھ کر 1 منٹ میں Uvicorn restart کر دے گا
