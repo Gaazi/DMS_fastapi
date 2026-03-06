@@ -150,14 +150,15 @@ class FinanceLogic:
         self.session.refresh(expense)
         return expense
 
-    def record_income(self, source: str, amount: Decimal, description: str, date: Optional[dt_date] = None):
+    def record_income(self, source: str, amount: Decimal, description: str, date: Optional[dt_date] = None, donor_id: Optional[int] = None):
         """آمدنی کا اندراج۔"""
         income = Income(
             inst_id=self.institution.id,
             source=source,
             amount=amount,
             description=description,
-            date=date or dt_date.today()
+            date=date or dt_date.today(),
+            donor_id=donor_id
         )
         self.session.add(income)
         self.session.flush()

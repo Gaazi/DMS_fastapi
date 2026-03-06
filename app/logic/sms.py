@@ -372,11 +372,12 @@ class NotificationLogic:
                 continue
             processed.add(student.id)
 
+            from app.models.finance import Fee_Payment
             balance = (fee.amount_due or 0) - sum(
-                p.amount_paid for p in self.session.exec(
-                    select(__import__('app.models.finance', fromlist=['Fee_Payment']).Fee_Payment)
-                    .where(__import__('app.models.finance', fromlist=['Fee_Payment']).Fee_Payment.student_id == student.id,
-                           __import__('app.models.finance', fromlist=['Fee_Payment']).Fee_Payment.fee_id == fee.id)
+                p.amount for p in self.session.exec(
+                    select(Fee_Payment)
+                    .where(Fee_Payment.student_id == student.id,
+                           Fee_Payment.fee_id == fee.id)
                 ).all()
             )
             if balance <= 0:

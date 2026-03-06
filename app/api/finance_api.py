@@ -389,7 +389,7 @@ async def public_donation(request: Request, institution_slug: str, session: Sess
     
     from app.schemas.forms import PublicDonationSchema
     from pydantic import ValidationError
-    from app.logic.finance_donation import DonationLogic
+    from app.logic.donations import DonationLogic
 
     if request.method == "POST":
         form_data = await request.form()
@@ -507,7 +507,7 @@ async def fee_receipt_print(
         select(Fee_Payment).where(Fee_Payment.fee_id == fee_id).order_by(Fee_Payment.date)
     ).all()
 
-    total_paid = sum(p.amount_paid for p in payments)
+    total_paid = sum(p.amount for p in payments)
     balance    = max(0, (fee.amount_due or 0) - total_paid)
 
     context = {
@@ -548,7 +548,7 @@ async def student_fees_receipt_print(
     total_paid_all = 0
     for f in fees:
         pmts = session.exec(select(Fee_Payment).where(Fee_Payment.fee_id == f.id)).all()
-        paid = sum(p.amount_paid for p in pmts)
+        paid = sum(p.amount for p in pmts)
         object.__setattr__(f, '_paid', paid)
         object.__setattr__(f, '_balance', max(0, (f.amount_due or 0) - paid))
         total_paid_all += paid
