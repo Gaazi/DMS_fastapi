@@ -82,45 +82,27 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SSH_PORT }}
+        command_timeout: 5m
         script: |
           TARGET_DIR="/home/esabaqco/demo.esabaq.com"
           VENV_PATH="/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/activate"
 
-          echo "=== Deployment Starting ==="
           cd $TARGET_DIR
-
-          # 1. ورچوئل انوائرنمنٹ ایکٹیویٹ کریں
           source $VENV_PATH
-          echo "✅ Virtualenv activated"
 
-          # 2. نئی لائبریریز انسٹال کریں
+          # 1. Dependencies
           pip install -r requirements.txt --quiet
           echo "✅ Dependencies installed"
 
-          # 3. ڈیٹا بیس مائیگریشنز (Alembic)
-          alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Migration skipped or already up-to-date"
+          # 2. Alembic Migrations
+          alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Migrations skipped"
 
-          # 4. پرانا Uvicorn بند کریں اور نیا شروع کریں (SSH session سے مکمل آزاد)
+          # 3. Uvicorn restart — fire and forget (no sleep, no wait)
           pkill -f "uvicorn app.main:app" 2>/dev/null || true
-          sleep 1
 
-          # setsid سے نیا session بنائیں تاکہ SSH بند ہونے پر process بند نہ ہو
-          setsid nohup uvicorn app.main:app \
-            --host 127.0.0.1 \
-            --port 8001 \
-            --workers 2 \
-            >> /home/esabaqco/uvicorn.log 2>&1 </dev/null &
+          bash -c "nohup /home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/uvicorn app.main:app \
+            --host 127.0.0.1 --port 8001 --workers 2 \
+            >> /home/esabaqco/uvicorn.log 2>&1 &" &
 
-          disown $!
-          echo "✅ Uvicorn started in background (PID: $!)"
-          sleep 3
-
-          # 5. چیک کریں کہ چل رہا ہے
-          if pgrep -f "uvicorn app.main:app" > /dev/null 2>&1; then
-            echo "✅ Uvicorn is running successfully!"
-          else
-            echo "⚠️ Uvicorn may still be starting. Check logs:"
-            tail -10 /home/esabaqco/uvicorn.log
-          fi
-
+          echo "✅ Uvicorn restart command sent!"
           echo "=== Deployment Completed! ==="
