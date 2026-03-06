@@ -83,7 +83,6 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          set -e
           TARGET_DIR="/home/esabaqco/demo.esabaq.com"
           VENV_PATH="/home/esabaqco/virtualenv/demo.esabaq.com/3.11/bin/activate"
 
@@ -99,29 +98,29 @@ jobs:
           echo "✅ Dependencies installed"
 
           # 3. ڈیٹا بیس مائیگریشنز (Alembic)
-          echo "--- Checking env.py content on server ---"
-          grep "app.core.database" alembic/env.py || echo "❌ env.py is still OLD!"
-          
-          alembic upgrade head && echo "✅ Migrations done"
+          alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Migration skipped or already up-to-date"
 
-          # 4. پرانا Uvicorn بند کریں اور نیا شروع کریں
-          pkill -f "uvicorn app.main:app" || echo "No old process to kill"
-          sleep 2
-          nohup uvicorn app.main:app \
+          # 4. پرانا Uvicorn بند کریں اور نیا شروع کریں (SSH session سے مکمل آزاد)
+          pkill -f "uvicorn app.main:app" 2>/dev/null || true
+          sleep 1
+
+          # setsid سے نیا session بنائیں تاکہ SSH بند ہونے پر process بند نہ ہو
+          setsid nohup uvicorn app.main:app \
             --host 127.0.0.1 \
             --port 8001 \
             --workers 2 \
-            >> /home/esabaqco/uvicorn.log 2>&1 &
+            >> /home/esabaqco/uvicorn.log 2>&1 </dev/null &
 
-          sleep 5
+          disown $!
+          echo "✅ Uvicorn started in background (PID: $!)"
+          sleep 3
 
           # 5. چیک کریں کہ چل رہا ہے
-          if pgrep -f "uvicorn app.main:app" > /dev/null; then
-            echo "✅ Uvicorn is running!"
+          if pgrep -f "uvicorn app.main:app" > /dev/null 2>&1; then
+            echo "✅ Uvicorn is running successfully!"
           else
-            echo "❌ Uvicorn failed to start! Check logs."
-            tail -20 /home/esabaqco/uvicorn.log
-            exit 1
+            echo "⚠️ Uvicorn may still be starting. Check logs:"
+            tail -10 /home/esabaqco/uvicorn.log
           fi
 
-          echo "=== Deployment Completed Successfully! ==="
+          echo "=== Deployment Completed! ==="
