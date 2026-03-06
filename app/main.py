@@ -35,8 +35,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, lifespan=lifespan)
 
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+# ProxyHeadersMiddleware صرف uvicorn پر چلتا ہے، Passenger/WSGI پر نہیں
+# یہ Passenger کے ساتھ signal: 15 کریش کو روکتا ہے
+if not os.environ.get("PASSENGER_BASE_URI"):
+    try:
+        from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+        app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+    except ImportError:
+        pass
 
 
 # --- Enhanced Logging Configuration ---
