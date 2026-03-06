@@ -1,4 +1,6 @@
 from logging.config import fileConfig
+import sys, os
+sys.path.insert(0, os.getcwd())
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -38,7 +40,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    from app.db.session import engine
+    from app.core.database import engine
     url = str(engine.url)
     context.configure(
         url=url,
@@ -59,7 +61,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    from app.db.session import engine
+    from app.core.database import engine
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = str(engine.url)
     
