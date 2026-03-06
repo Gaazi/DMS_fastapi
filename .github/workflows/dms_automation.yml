@@ -89,6 +89,7 @@ jobs:
 
           alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
-          # Uvicorn ری اسٹارٹ کریں — cron job 1 منٹ میں دوبارہ شروع کر دے گا
-          pkill -f "uvicorn app.main:app" 2>/dev/null || true
-          echo "=== Deployment Done! Uvicorn will restart via cron job ==="
+          # Uvicorn restart کے لیے flag file بنائیں
+          # Cron Job اسے دیکھ کر 1 منٹ میں Uvicorn restart کر دے گا
+          mkdir -p tmp && touch tmp/restart_uvicorn
+          echo "=== ✅ Deployment Done! Uvicorn restart flag set ==="
