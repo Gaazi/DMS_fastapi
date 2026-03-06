@@ -35,6 +35,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, lifespan=lifespan)
 
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
+
 # --- Enhanced Logging Configuration ---
 LOG_FILE = "debug.log"
 UVICORN_LOG_FILE = "uvicorn.log"
