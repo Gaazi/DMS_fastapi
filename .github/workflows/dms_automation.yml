@@ -92,7 +92,4 @@ jobs:
 
           alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
-          # Uvicorn کو restart کریں (cron job اسے دوبارہ شروع کرے گا)
-          pkill -f "uvicorn app.main:app" 2>/dev/null && echo "🔄 Old uvicorn stopped (cron will restart)" || echo "ℹ️ No uvicorn was running"
-
-          echo "=== Deployment Done! Uvicorn will auto-restart via cron ==="
+          echo "=== Deployment Done! Cron job will restart uvicorn ==="
