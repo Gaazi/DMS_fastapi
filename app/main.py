@@ -18,7 +18,7 @@ from app.api import (
     auth_router, base_router, student_router, staff_router,
     finance_router, audit_router, attendance_router, export_router,
     course_router, facility_router, inventory_router, schedule_router,
-    finance_extra_router, public_admission_router, exams_router,
+    public_admission_router, exams_router,
     guardian_router, global_router, notification_router
 )
 from app.admin import setup_admin
@@ -205,7 +205,6 @@ app.include_router(course_router, tags=["Courses"])
 app.include_router(facility_router, tags=["Facilities"])
 app.include_router(inventory_router, tags=["Inventory"])
 app.include_router(schedule_router, tags=["Schedule"])
-app.include_router(finance_extra_router, tags=["Finance Extra"])
 app.include_router(public_admission_router, tags=["Public Admission"])
 app.include_router(exams_router, tags=["Exams"])
 app.include_router(guardian_router, tags=["Parent Portal"])
@@ -220,7 +219,7 @@ async def not_found_handler(request: Request, exc):
 @app.exception_handler(403)
 async def forbidden_handler(request: Request, exc: HTTPException):
     detail = getattr(exc, "detail", "آپ کو اس صفحے تک رسائی کی اجازت نہیں۔")
-    return await TemplateResponse.render("403.html", request, None, status_code=403, context={"detail": detail})
+    return await TemplateResponse.render("403.html", request, None, {"detail": detail}, status_code=403)
 
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exc: HTTPException):
@@ -245,7 +244,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     
     try:
         # Try to render the pretty 500 page
-        return await TemplateResponse.render("500.html", request, None, status_code=500, context={"error": str(exc)})
+        return await TemplateResponse.render("500.html", request, None, {"error": str(exc)}, status_code=500)
     except Exception as render_exc:
         # Fallback if 500.html ALSO has a syntax error
         print(f"ERROR: Fallback rendering failed: {render_exc}")

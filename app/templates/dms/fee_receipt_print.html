@@ -127,9 +127,9 @@
       <tbody class="divide-y divide-slate-100">
         {% for p in payments %}
         <tr>
-          <td class="px-2 py-1.5 font-mono text-slate-600">{{ p.date if p.date else '—' }}</td>
-          <td class="px-2 py-1.5 font-bold text-emerald-600">{{ p.amount_paid|int }}</td>
-          <td class="px-2 py-1.5 text-slate-500">{{ p.method or 'نقد' }}</td>
+          <td class="px-2 py-1.5 font-mono text-slate-600">{{ p.payment_date.strftime('%d/%m/%Y') if p.payment_date else '—' }}</td>
+          <td class="px-2 py-1.5 font-bold text-emerald-600">{{ p.amount|int }}</td>
+          <td class="px-2 py-1.5 text-slate-500">{{ p.payment_method or 'نقد' }}</td>
         </tr>
         {% endfor %}
       </tbody>

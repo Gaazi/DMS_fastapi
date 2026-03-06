@@ -11,7 +11,6 @@ from app.api.course_api import router as course_router
 from app.api.facility_api import router as facility_router
 from app.api.inventory_api import router as inventory_router
 from app.api.schedule_api import router as schedule_router
-from app.api.finance_extra_api import router as finance_extra_router
 from app.api.public_admission_api import router as public_admission_router
 from app.api.exams_api import router as exams_router
 from app.api.guardian_api import router as guardian_router

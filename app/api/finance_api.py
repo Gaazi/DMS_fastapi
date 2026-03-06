@@ -7,19 +7,18 @@ import json
 
 # Internal Imports
 from app.core.database import get_session
-from app.models import Institution, Donor, Income, Expense, User, Fee, Fee_Payment
+from app.models import Institution, Donor, Income, Expense, User, Fee, Fee_Payment, Parent
 from app.logic.auth import get_current_user
 from app.logic.finance import FinanceLogic
 from app.logic.donations import DonationLogic
 from app.logic.permissions import get_institution_with_access
-from app.utils.context import TemplateResponse
-
-router = APIRouter()
-
+from app.logic.students import StudentLogic
 from app.logic.payments import Cashier
+from app.utils.context import TemplateResponse
 from decimal import Decimal
 from sqlalchemy import func
-from app.models import Parent, Fee, Institution, Donor, Income, Expense, User, Fee_Payment
+
+router = APIRouter()
 
 # --- 1. balance (Finance Dashboard) ---
 @router.get("/{institution_slug}/balance/", response_class=HTMLResponse, name="balance")
@@ -255,10 +254,15 @@ async def donor_detail(request: Request, institution_slug: str, donor_id: int, s
 # --- 1. fees ---
 @router.get("/{institution_slug}/fees/{fee_id}/", response_class=HTMLResponse, name="fees")
 async def fees(request: Request, institution_slug: str, fee_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    from app.models import Student as _Student
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    fm = FinanceLogic(session, institution, current_user)
-    context = fm.fee_detail(fee_id)
-    context.update({"request": request, "institution": institution})
+    fee = session.get(Fee, fee_id)
+    if not fee or fee.inst_id != institution.id:
+        raise HTTPException(status_code=404, detail="Fee not found")
+    student = session.get(_Student, fee.student_id) if fee.student_id else None
+    sm = StudentLogic(session, current_user, institution=institution)
+    context = sm.get_student_detail_context(fee.student_id) if fee.student_id else {}
+    context.update({"request": request, "institution": institution, "fee": fee, "student": student})
     return await TemplateResponse.render('dms/student_detail.html', request, session, context)
 
 # --- 2. pay_installment ---
@@ -504,7 +508,7 @@ async def fee_receipt_print(
 
     # ادائیگیوں کی فہرست
     payments = session.exec(
-        select(Fee_Payment).where(Fee_Payment.fee_id == fee_id).order_by(Fee_Payment.date)
+        select(Fee_Payment).where(Fee_Payment.fee_id == fee_id).order_by(Fee_Payment.payment_date)
     ).all()
 
     total_paid = sum(p.amount for p in payments)
@@ -564,3 +568,84 @@ async def student_fees_receipt_print(
     }
     return await TemplateResponse.render("dms/fee_receipt_print.html", request, session, context)
 
+# ─────────────────────────¨0─────────────────────────────────────────────────
+# Income / Expense Edit  (finance_extra سے merge شدہ)
+# ───────────────────────────────────────────────────────────────────────────
+
+@router.api_route("/{institution_slug}/income/edit/{income_id}", methods=["GET", "POST"], name="income_edit")
+async def income_edit(
+    request: Request, institution_slug: str, income_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    from app.schemas.forms import IncomeFormSchema
+    from pydantic import ValidationError
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="finance")
+    fm = FinanceLogic(session, institution, current_user)
+    income = session.exec(select(Income).where(Income.id == income_id, Income.inst_id == institution.id)).first()
+    if not income:
+        raise HTTPException(status_code=404)
+    errors = None
+    form_data = None
+    if request.method == "POST":
+        form_data = dict(await request.form())
+        try:
+            validated = IncomeFormSchema(**form_data)
+            fm.update_income(income_id, validated.dict())
+            return RedirectResponse(url=f"/{institution_slug}/balance/", status_code=303)
+        except ValidationError as e:
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
+    return await TemplateResponse.render("dms/income_form.html", request, session, {
+        "institution": institution, "editing": True, "income": income,
+        "errors": errors, "form_data": form_data, "title": f"Edit Income #{income.receipt_number}"
+    })
+
+
+@router.api_route("/{institution_slug}/expense/edit/{expense_id}", methods=["GET", "POST"], name="expense_edit")
+async def expense_edit(
+    request: Request, institution_slug: str, expense_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    from app.schemas.forms import ExpenseFormSchema
+    from pydantic import ValidationError
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="finance")
+    fm = FinanceLogic(session, institution, current_user)
+    expense = session.exec(select(Expense).where(Expense.id == expense_id, Expense.inst_id == institution.id)).first()
+    if not expense:
+        raise HTTPException(status_code=404)
+    errors = None
+    form_data = None
+    if request.method == "POST":
+        form_data = dict(await request.form())
+        try:
+            validated = ExpenseFormSchema(**form_data)
+            fm.update_expense(expense_id, validated.dict())
+            return RedirectResponse(url=f"/{institution_slug}/balance/", status_code=303)
+        except ValidationError as e:
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
+    return await TemplateResponse.render("dms/expense_form.html", request, session, {
+        "institution": institution, "editing": True, "expense": expense,
+        "errors": errors, "form_data": form_data, "title": f"Edit Expense #{expense.receipt_number}"
+    })
+
+
+@router.get("/{institution_slug}/reports/transactions", response_class=HTMLResponse, name="transaction_report")
+async def transaction_report(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """Transaction Report (PDF/HTML Preview)"""
+    from datetime import datetime as _dt
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="finance")
+    expenses = session.exec(
+        select(Expense).where(Expense.inst_id == institution.id).order_by(Expense.date.desc())
+    ).all()
+    total = session.exec(
+        select(func.sum(Expense.amount)).where(Expense.inst_id == institution.id)
+    ).one() or 0
+    return await TemplateResponse.render("dms/reports/transaction_report.html", request, session, {
+        "institution": institution, "expenses": expenses,
+        "total": total, "today_date": _dt.now().date()
+    })
