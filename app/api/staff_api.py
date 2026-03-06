@@ -126,7 +126,10 @@ async def staff_payroll(
         data   = dict(await request.form())
         action = data.get("action")
         if action == "process_salary":
-            sm.process_salary(int(data["staff_id"]), float(data["amount"]), month, year)
+            target_staff = session.get(Staff, int(data["staff_id"]))
+            if target_staff and target_staff.inst_id == institution.id:
+                _sm2 = StaffLogic(current_user, session, target=target_staff)
+                _sm2.process_salary(month, year)
         elif action == "bulk_payroll":
             sm.execute_bulk_payroll(month, year)
         return RedirectResponse(url=request.url.path + f"?month={month}&year={year}", status_code=303)
@@ -154,11 +157,11 @@ async def staff_advances(
         data = dict(await request.form())
         try:
             v = StaffAdvanceSchema(**data)
-            sm.record_advance(v.staff_id, v.amount, v.adv_date)
+            sm.record_advance(v.staff_id, v.amount, v.date)
             return RedirectResponse(url=request.url.path, status_code=303)
         except ValidationError as e:
             errors = {err["loc"][0]: err["msg"] for err in e.errors()}
-            return await TemplateResponse.render("staff_advances_manage.html", request, session, {
+            return await TemplateResponse.render("dms/staff_manage.html", request, session, {
                 "institution": institution,
                 "staff_members": sm.get_staff_list(),
                 "advances": sm.get_advances(),
@@ -166,7 +169,7 @@ async def staff_advances(
                 "form_data": data,
             })
 
-    return await TemplateResponse.render("staff_advances_manage.html", request, session, {
+    return await TemplateResponse.render("dms/staff_manage.html", request, session, {
         "institution": institution,
         "staff_members": sm.get_staff_list(),
         "advances": sm.get_advances(),
