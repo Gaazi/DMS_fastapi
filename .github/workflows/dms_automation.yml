@@ -90,6 +90,10 @@ jobs:
 
           $ALEMBIC_BIN upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
+          # ── SPEED IMPROVEMENT: Bypass Passenger for Static & Media ──
+          echo -e "PassengerEnabled off\n<IfModule mod_expires.c>\nExpiresActive On\nExpiresDefault \"access plus 1 month\"\n</IfModule>" > static/.htaccess
+          echo -e "PassengerEnabled off\n<IfModule mod_expires.c>\nExpiresActive On\nExpiresDefault \"access plus 1 month\"\n</IfModule>" > media/.htaccess
+
           # Passenger کو ری اسٹارٹ کریں
           mkdir -p tmp && touch tmp/restart.txt
           echo "=== ✅ Deployment Done! Passenger will restart on next visit ==="
