@@ -29,4 +29,8 @@ class Settings:
     SMS_API_KEY: str = os.getenv("SMS_API_KEY", "")
     SMS_SENDER_ID: str = os.getenv("SMS_SENDER_ID", "FSTSMS")
 
+    # Production Server (proxy کے پیچھے چلنے پر اصل domain)
+    # Server کی .env میں لگائیں: PRODUCTION_HOST=demo.esabaq.com
+    PRODUCTION_HOST: str = os.getenv("PRODUCTION_HOST", "")
+
 settings = Settings()

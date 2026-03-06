@@ -35,6 +35,35 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION, lifespan=lifespan)
 
+# ── Production Proxy Fix ────────────────────────────────────────
+# جب PRODUCTION_HOST سیٹ ہو تو Host header اور scheme درست کریں
+# تاکہ admin redirect 127.0.0.1:8001 کی بجائے اصل domain پر جائے
+if settings.PRODUCTION_HOST:
+    from starlette.types import ASGIApp, Receive, Scope, Send
+
+    class RealHostMiddleware:
+        def __init__(self, app: ASGIApp):
+            self.app = app
+            self._host = settings.PRODUCTION_HOST.encode()
+
+        async def __call__(self, scope: Scope, receive: Receive, send: Send):
+            if scope["type"] in ("http", "websocket"):
+                scope["scheme"] = "https"
+                scope["server"] = (settings.PRODUCTION_HOST, 443)
+                headers = [
+                    (k, v) for k, v in scope.get("headers", [])
+                    if k not in (b"host", b"x-forwarded-host", b"x-forwarded-proto")
+                ]
+                headers += [
+                    (b"host", self._host),
+                    (b"x-forwarded-host", self._host),
+                    (b"x-forwarded-proto", b"https"),
+                ]
+                scope["headers"] = headers
+            await self.app(scope, receive, send)
+
+    app.add_middleware(RealHostMiddleware)
+
 # ProxyHeadersMiddleware صرف uvicorn پر چلتا ہے، Passenger/WSGI پر نہیں
 # یہ Passenger کے ساتھ signal: 15 کریش کو روکتا ہے
 if not os.environ.get("PASSENGER_BASE_URI"):
