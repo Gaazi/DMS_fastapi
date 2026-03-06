@@ -92,4 +92,6 @@ jobs:
 
           alembic upgrade head && echo "✅ Migrations done" || echo "⚠️ Already up-to-date"
 
-          echo "=== Deployment Done! Cron job will restart uvicorn ==="
+          # Passenger کو ری اسٹارٹ کریں
+          mkdir -p tmp && touch tmp/restart.txt
+          echo "=== Deployment Done! Passenger will restart on next visit ==="
