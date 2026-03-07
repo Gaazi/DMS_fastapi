@@ -7,21 +7,21 @@ from starlette.requests import Request
 from markupsafe import Markup
 
 class UserAdmin(DMSModelView, model=User):
-    column_list = [User.id, User.username, User.email, User.is_superuser, User.is_active, "reset_password"]
+    column_list = [User.id, User.username, User.email, User.is_superuser, User.is_active, User.password]
     column_searchable_list = [User.username, User.email]
     form_include_pk = False
     category = "People"
     icon = "fa-solid fa-users-gear"
     name_plural = "Users"
-    column_labels = {"reset_password": "پاس ورڈ"}
+    column_labels = {User.password: "پاس ورڈ"}
 
-    # ہر row میں Reset Password کا لنک دکھائیں
+    # پاسورڈ کالم میں اصل پاسورڈ دکھانے کے بجائے ری سیٹ کا بٹن دکھائیں
     column_formatters = {
-        "reset_password": lambda m, a: Markup(
+        User.password: lambda m, a: Markup(
             f'<a href="/admin/reset-password/{m.id}" '
-            f'style="background:#1d4ed8;color:#fff;padding:4px 10px;'
-            f'border-radius:6px;text-decoration:none;font-size:12px;">'
-            f'🔑 Reset</a>'
+            f'style="background:#1d4ed8;color:#fff;padding:8px 12px;'
+            f'border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold;">'
+            f'🔑 Password Reset</a>'
         )
     }
 
