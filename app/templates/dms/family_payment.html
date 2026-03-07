@@ -62,11 +62,11 @@
                     {% if student.photo %}
                     <img src="{{ student.photo }}" class="w-full h-full object-cover">
                     {% else %}
-                    <div class="w-full h-full flex items-center justify-center text-white/10 text-xl">{{ student.name|first }}</div>
+                    <div class="w-full h-full flex items-center justify-center text-white/10 text-xl">{{ student.full_name|first }}</div>
                     {% endif %}
                 </div>
                 <div class="min-w-0 flex-grow">
-                    <h4 class="text-sm font-bold text-white truncate">{{ student.name }}</h4>
+                    <h4 class="text-sm font-bold text-white truncate">{{ student.full_name }}</h4>
                     <p class="text-[10px] text-slate-500 font-mono">{{ student.reg_id }}</p>
                 </div>
                 <div class="text-left">

@@ -269,7 +269,7 @@
                         <select name="student_id" :required="issueTo === 'student'" class="w-full bg-[#0a0a14] text-white border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all shadow-inner">
                             <option value="">طالب علم کا انتخاب کریں...</option>
                             {% for student in students %}
-                            <option value="{{ student.id }}" {% if form_data.student_id|int == student.id %}selected{% endif %}>{{ student.name }}</option>
+                            <option value="{{ student.id }}" {% if form_data.student_id|int == student.id %}selected{% endif %}>{{ student.full_name }}</option>
                             {% endfor %}
                         </select>
                     </div>

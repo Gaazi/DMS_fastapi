@@ -41,7 +41,11 @@ async def inventory_dashboard(
             errors = {err["loc"][0]: err["msg"] for err in e.errors()}
 
     ctx = im.get_inventory_context()
-    ctx.update({"institution": institution, "errors": errors})
+    ctx.update({
+        "institution": institution, 
+        "errors": errors, 
+        "form_data": data if request.method == "POST" else {}
+    })
     return await TemplateResponse.render("dms/inventory_list.html", request, session, ctx)
 
 

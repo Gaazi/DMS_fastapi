@@ -64,10 +64,10 @@
             
             <div class="w-14 h-16 md:w-16 md:h-20 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center overflow-hidden transition-all duration-700 group-hover:border-blue-500/40 group-hover:scale-[1.02] shadow-2xl relative">
                 {% if student.photo %}
-                    <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="w-full h-full object-cover">
+                    <img src="{{ student.photo.url }}" alt="{{ student.full_name }}" class="w-full h-full object-cover">
                 {% else %}
                     <div class="w-full h-full bg-gradient-to-br from-slate-800 to-black flex items-center justify-center">
-                        <span class="text-white text-2xl font-thin opacity-20">{{ student.name|first|upper }}</span>
+                        <span class="text-white text-2xl font-thin opacity-20">{{ student.full_name|first|upper }}</span>
                     </div>
                 {% endif %}
                 <!-- HUD Scan Overlay -->
@@ -79,7 +79,7 @@
         <!-- Col 3: Encrypted Identity Data -->
         <div class="flex-grow min-w-0 flex flex-col justify-center z-20 pointer-events-none px-0.5 lg:px-2">
             <div class="flex items-center gap-1 mb-0.5">
-                <h4 class="text-xs md:text-lg font-bold text-white truncate leading-tight group-hover:text-blue-50 transition-colors">{{ student.name }}</h4>
+                <h4 class="text-xs md:text-lg font-bold text-white truncate leading-tight group-hover:text-blue-50 transition-colors">{{ student.full_name }}</h4>
                 {% if not student.is_active %}
                     <div class="px-0.5 py-0.5 rounded-sm bg-rose-600/20 border border-rose-500/30">
                         <span class="text-[7px] md:text-[8px] text-rose-500 uppercase tracking-widest">OFFLINE</span>

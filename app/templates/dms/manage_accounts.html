@@ -89,8 +89,8 @@
                     </div>
                     
                     <div class="bg-black/20 rounded-xl p-3 border border-white/5 mb-4">
-                        {% if acc.staff %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 ملازم: <span class="text-white">{{ acc.staff.name }}</span></p>{% endif %}
-                        {% if acc.student %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 طالبعلم: <span class="text-white">{{ acc.student.name }}</span></p>{% endif %}
+                        {% if acc.staff %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 ملازم: <span class="text-white">{{ acc.staff.full_name }}</span></p>{% endif %}
+                        {% if acc.student %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 طالبعلم: <span class="text-white">{{ acc.student.full_name }}</span></p>{% endif %}
                         {% if acc.parent %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 سرپرست: <span class="text-white">{{ acc.parent.name }}</span></p>{% endif %}
                         
                         <div class="mt-2 pt-2 border-t border-white/5 flex items-center gap-2">
@@ -181,8 +181,8 @@
                     </div>
                     
                     <div class="bg-black/20 rounded-xl p-3 border border-white/5 mb-4">
-                        {% if acc.staff %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 ملازم: <span class="text-white">{{ acc.staff.name }}</span></p>{% endif %}
-                        {% if acc.student %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 طالبعلم: <span class="text-white">{{ acc.student.name }}</span></p>{% endif %}
+                        {% if acc.staff %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 ملازم: <span class="text-white">{{ acc.staff.full_name }}</span></p>{% endif %}
+                        {% if acc.student %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 طالبعلم: <span class="text-white">{{ acc.student.full_name }}</span></p>{% endif %}
                         {% if acc.parent %}<p class="text-[10px] text-slate-400 font-urdu mb-1">🔗 سرپرست: <span class="text-white">{{ acc.parent.name }}</span></p>{% endif %}
                         
                         <div class="mt-2 pt-2 border-t border-white/5 flex items-center gap-2">

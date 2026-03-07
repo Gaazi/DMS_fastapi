@@ -130,15 +130,21 @@ async def staff_payroll(
             if target_staff and target_staff.inst_id == institution.id:
                 _sm2 = StaffLogic(current_user, session, target=target_staff)
                 _sm2.process_salary(month, year)
-        elif action == "bulk_payroll":
+        elif action == "bulk_payroll" or action == "bulk_pay":
             sm.execute_bulk_payroll(month, year)
         return RedirectResponse(url=request.url.path + f"?month={month}&year={year}", status_code=303)
 
+    results = sm.get_payroll_stats(month, year)
+    total_payable = sum(res['report']['final'] for res in results if res['report'] and res['report']['final'])
+
     return await TemplateResponse.render("dms/payroll_report.html", request, session, {
         "institution": institution,
-        "stats": sm.get_payroll_stats(month, year),
+        "results": results,
+        "total_payable": total_payable,
         "current_month": month,
         "current_year": year,
+        "month": month,
+        "year": year
     })
 
 

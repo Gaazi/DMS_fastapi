@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}ID Card - {{ student.name }}{% endblock %}
+{% block title %}ID Card - {{ student.full_name }}{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-12" dir="rtl">
@@ -48,7 +48,7 @@
             <!-- Student Info -->
             <div class="text-center z-10 w-full space-y-4">
                 <div>
-                    <h2 class="text-2xl font-bold text-white mb-1">{{ student.name }}</h2>
+                    <h2 class="text-2xl font-bold text-white mb-1">{{ student.full_name }}</h2>
                     <p class="text-slate-400 text-sm font-medium">{{ student.father_name or student.guardian_name or '---' }}</p>
                 </div>
 
