@@ -62,6 +62,17 @@ class PasswordResetConfirmSchema(BaseModel):
             raise ValueError("Passwords do not match")
         return v
 
+class ChangePasswordSchema(BaseModel):
+    current_password: str = Field(min_length=1, description="Mawjooda Password")
+    new_password: str = Field(min_length=6, description="Naya Password")
+    confirm_new_password: str = Field(min_length=6, description="Naya Password Dobara Likhain")
+
+    @validator("confirm_new_password")
+    def passwords_must_match(cls, v, values):
+        if values.get("new_password") and values["new_password"] != v:
+            raise ValueError("Naye passwords aapas mein match nahi karte")
+        return v
+
 class SignupFormSchema(BaseModel):
     username: str = Field(min_length=3)
     email: EmailStr

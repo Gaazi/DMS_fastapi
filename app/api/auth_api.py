@@ -249,6 +249,39 @@ async def institution_password_reset_confirm(
 ):
     return await password_reset_confirm(request, session)
 
+@router.api_route("/{institution_slug}/profile/change-password/", methods=["GET", "POST"], response_class=HTMLResponse, name="change_password")
+async def change_password(
+    request: Request,
+    institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return RedirectResponse(url=f"/{institution_slug}/login/", status_code=303)
+        
+    from app.schemas.forms import ChangePasswordSchema
+    from pydantic import ValidationError
+
+    ctx = {"institution_slug": institution_slug, "user": current_user, "form_data": None, "errors": {}, "error": None, "success": None}
+
+    if request.method == "POST":
+        data = dict(await request.form())
+        ctx["form_data"] = data
+        try:
+            validated = ChangePasswordSchema(**data)
+            is_valid = UserLogic.verify_password(validated.current_password, current_user.password)
+            if not is_valid:
+                ctx["error"] = "Mawjooda password ghalat hai."
+                return await TemplateResponse.render("change_password.html", request, session, ctx)
+
+            UserLogic.set_new_password(current_user, validated.new_password, session)
+            ctx["success"] = "Password kamyabe se tabdeel ho gaya hai."
+            ctx["form_data"] = None
+        except ValidationError as e:
+            ctx["errors"] = {err["loc"][0]: err["msg"] for err in e.errors()}
+
+    return await TemplateResponse.render("change_password.html", request, session, ctx)
+
 @router.api_route("/signup/", methods=["GET", "POST"],
                   response_class=HTMLResponse, name="dms_signup")
 async def signup(
