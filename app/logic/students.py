@@ -526,7 +526,6 @@ class StudentLogic:
                         course_id=int(course_id),
                         status="pending",
                         admission_date=dt_date.today(),
-                        inst_id=self.institution.id,
                     )
                     self.session.add(new_admission)
 

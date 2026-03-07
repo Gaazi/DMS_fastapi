@@ -85,7 +85,7 @@ async def all_notifications(
         for course in alerts.get('full_classes', []):
             notifications.append({
                 "title": "کلاس تقریباً بھر چکی ہے",
-                "description": f"کورس {course.name} کی گنجائش پوری ہونے کے قریب ہے۔",
+                "description": f"کورس {course.title} کی گنجائش پوری ہونے کے قریب ہے۔",
                 "time": "آج",
                 "color": "amber",
                 "icon": "fa-solid fa-users",

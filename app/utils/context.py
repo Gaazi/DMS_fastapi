@@ -155,7 +155,7 @@ def _now_func(format_str=None):
         return now
     # Map common Django format codes to Python strftime
     django_to_py = {
-        'd': '%d', 'j': '%-d', 'm': '%m', 'n': '%-m',
+        'd': '%d', 'j': '%d', 'm': '%m', 'n': '%m',
         'Y': '%Y', 'y': '%y', 'M': '%b', 'N': '%B',
         'H': '%H', 'i': '%M', 's': '%S',
     }
@@ -182,7 +182,7 @@ def django_date_filter(date_obj, format_str="d M Y"):
         return str(date_obj)
         
     django_to_py = {
-        'd': '%d', 'j': '%-d', 'm': '%m', 'n': '%-m',
+        'd': '%d', 'j': '%d', 'm': '%m', 'n': '%m',
         'Y': '%Y', 'y': '%y', 'M': '%b', 'F': '%B', 'N': '%B',
         'H': '%H', 'i': '%M', 's': '%S', 'h': '%I', 'a': '%p', 'A': '%p'
     }
