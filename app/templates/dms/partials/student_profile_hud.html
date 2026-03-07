@@ -11,13 +11,31 @@
     <!-- System Status & Actions Header -->
     <div id="hud-header" class="relative z-10 bg-white/[0.02] border-b border-white/10 no-print px-3 sm:px-4 py-3">
         <div class="flex flex-wrap items-center gap-2">
-            <!-- 0. Status Indicator -->
-            <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] shadow-inner">
+            <!-- 0. Status Indicator & Toggle -->
+            {% if is_academic_admin %}
+            <form method="POST" class="inline m-0 p-0">
+                {{ csrf_token() }}
+                <input type="hidden" name="action" value="update_status">
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+                {% if not student.is_active %}
+                <input type="hidden" name="is_active" value="on">
+                {% endif %}
+                <button type="submit" 
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border {% if student.is_active %}border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400{% else %}border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400{% endif %} transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm group"
+                        title="{% if student.is_active %}Click to Suspend{% else %}Click to Activate{% endif %}">
+                    <div class="w-1.5 h-1.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_8px_#34d399] group-hover:bg-rose-400 group-hover:shadow-[0_0_8px_#f43f5e]{% else %}bg-rose-500 shadow-[0_0_8px_#f43f5e] group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_#34d399]{% endif %} transition-colors"></div>
+                    <span class="group-hover:hidden">{% if student.is_active %}Active{% else %}Inactive{% endif %}</span>
+                    <span class="hidden group-hover:inline">{% if student.is_active %}Suspend{% else %}Activate{% endif %}</span>
+                </button>
+            </form>
+            {% else %}
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] shadow-inner">
                 <div class="w-1.5 h-1.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_8px_#34d399]{% else %}bg-rose-500 shadow-[0_0_8px_#f43f5e]{% endif %}"></div>
                 <span class="text-[10px] font-black {% if student.is_active %}text-emerald-400{% else %}text-rose-400{% endif %} uppercase tracking-widest">
                     {% if student.is_active %}Active{% else %}Inactive{% endif %}
                 </span>
             </div>
+            {% endif %}
 
             <!-- 1. Account Portal -->
             {% if is_academic_admin %}
@@ -48,44 +66,8 @@
             </form>
             {% endif %}
 
-            <!-- 3. Print Report -->
-            <button onclick="window.print()" 
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
-                <i class="fas fa-print opacity-70"></i>Report
-            </button>
-            
-            <!-- 4. ID Card -->
-            <a href="{{ url('student_id_card', institution.slug, student.id) }}" 
-               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
-                <i class="fas fa-id-card opacity-70"></i>ID Card
-            </a>
-
-            <!-- 5. Edit Button -->
-            <a href="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}?edit={{ student.id }}" 
-               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
-                <i class="fas fa-edit opacity-70"></i>Edit
-            </a>
-
-            <!-- 6. Management Actions (Suspend/Activate & Delete) -->
+            <!-- 4. Delete -->
             {% if is_academic_admin %}
-            <div class="h-6 w-px bg-white/10 mx-1"></div>
-            
-            <!-- Suspend/Activate -->
-            <form method="POST" class="inline m-0 p-0">
-                {{ csrf_token() }}
-                <input type="hidden" name="action" value="update_status">
-                <input type="hidden" name="student_id" value="{{ student.id }}">
-                {% if not student.is_active %}
-                <input type="hidden" name="is_active" value="on">
-                {% endif %}
-                <button type="submit" 
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border {% if student.is_active %}border-amber-500/20 bg-amber-500/5 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300{% else %}border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300{% endif %} transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
-                    <i class="fas {% if student.is_active %}fa-pause-circle{% else %}fa-play-circle{% endif %} opacity-70"></i>
-                    {% if student.is_active %}Suspend{% else %}Activate{% endif %}
-                </button>
-            </form>
-            
-            <!-- Delete -->
             <form method="POST" action="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}" onsubmit="return confirm('کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟');" class="inline m-0 p-0">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="delete">
@@ -96,6 +78,26 @@
                 </button>
             </form>
             {% endif %}
+
+            <div class="h-6 w-px bg-white/10 mx-1"></div>
+
+            <!-- 5. Print Report -->
+            <button onclick="window.print()" 
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
+                <i class="fas fa-print opacity-70"></i>Report
+            </button>
+            
+            <!-- 6. ID Card -->
+            <a href="{{ url('student_id_card', institution.slug, student.id) }}" 
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
+                <i class="fas fa-id-card opacity-70"></i>ID Card
+            </a>
+
+            <!-- 7. Edit Button -->
+            <a href="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}?edit={{ student.id }}" 
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
+                <i class="fas fa-edit opacity-70"></i>Edit
+            </a>
         </div>
     </div>
 

@@ -346,8 +346,13 @@ class StudentLogic:
             object.__setattr__(ad, "_attendance", self.attendance().get_member_summary(student, course_id=ad.course_id))
 
         from app.logic.institution import InstitutionLogic
+        from app.logic.permissions import InstitutionAccess
+        access = InstitutionAccess(self.user, self.institution)
+
         return {
             "student": student,
+            "is_academic_admin": access.can_manage_academics(),
+            "can_edit_staff": access.can_manage_institution(),
             "fees": fees,
             "fee_totals": fee_totals,
             "fee_balance": fee_totals['balance'],
@@ -465,14 +470,17 @@ class StudentLogic:
         return False
 
     def handle_post_detail(self, action: str, data: dict, student_id: int) -> str:
-        """Student detail POST actions۔ Returns redirect URL or empty string."""
+        """Student detail POST actions — Returns redirect action str."""
         if action == "update_student":
             self.save_student(data)
         elif action == "promote":
             self.promote_student(student_id, int(data.get("new_course_id")))
-        elif action == "soft_delete":
+        elif action == "delete" or action == "soft_delete":
             self.soft_delete(student_id)
             return "redirect_to_list"
+        elif action == "update_status":
+            self.update_status(student_id, data.get("is_active") == "on")
+            return "redirect_to_self"
         return "redirect_to_self"
 
     def get_admission_context(self, course_id: int = None) -> dict:

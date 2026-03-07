@@ -53,7 +53,7 @@
                    <span class="text-xs md:text-xs">درخواستیں</span>
                    
                    <!-- Show dot if any pending -->
-                   {% if pending_students_count > 0 %}
+                   {% if pending_students_count|default(0) > 0 %}
                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.6)]"></span>
                    {% endif %}
                 </a>
