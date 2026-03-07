@@ -1,0 +1,59 @@
+=== Missing Templates in API routes ===
+  [ERROR] auth_api.py references non-existent template: no_institution_linked.html
+  [ERROR] auth_api.py references non-existent template: no_institution_linked.html
+  [ERROR] auth_api.py references non-existent template: no_institution_linked.html
+  [ERROR] auth_api.py references non-existent template: login.html
+  [ERROR] auth_api.py references non-existent template: login.html
+  [ERROR] auth_api.py references non-existent template: login.html
+  [ERROR] auth_api.py references non-existent template: forgot_password.html
+  [ERROR] auth_api.py references non-existent template: forgot_password.html
+  [ERROR] auth_api.py references non-existent template: forgot_password.html
+  [ERROR] auth_api.py references non-existent template: forgot_password.html
+  [ERROR] auth_api.py references non-existent template: password_reset_verify_otp.html
+  [ERROR] auth_api.py references non-existent template: password_reset_verify_otp.html
+  [ERROR] auth_api.py references non-existent template: password_reset_verify_otp.html
+  [ERROR] auth_api.py references non-existent template: reset_password.html
+  [ERROR] auth_api.py references non-existent template: reset_password.html
+  [ERROR] auth_api.py references non-existent template: reset_password.html
+  [ERROR] auth_api.py references non-existent template: reset_password.html
+  [ERROR] auth_api.py references non-existent template: change_password.html
+  [ERROR] auth_api.py references non-existent template: change_password.html
+  [ERROR] auth_api.py references non-existent template: signup.html
+  [ERROR] auth_api.py references non-existent template: signup.html
+  [ERROR] auth_api.py references non-existent template: signup.html
+
+=== Unused API routers ===
+  [WARNING] attendance_api.py might not be included in main.py
+  [WARNING] audit_api.py might not be included in main.py
+  [WARNING] auth_api.py might not be included in main.py
+  [WARNING] course_api.py might not be included in main.py
+  [WARNING] exams_api.py might not be included in main.py
+  [WARNING] export_api.py might not be included in main.py
+  [WARNING] facility_api.py might not be included in main.py
+  [WARNING] finance_api.py might not be included in main.py
+  [WARNING] global_api.py might not be included in main.py
+  [WARNING] guardian_api.py might not be included in main.py
+  [WARNING] inventory_api.py might not be included in main.py
+  [WARNING] notification_api.py might not be included in main.py
+  [WARNING] public_admission_api.py might not be included in main.py
+  [WARNING] schedule_api.py might not be included in main.py
+  [WARNING] staff_api.py might not be included in main.py
+  [WARNING] student_api.py might not be included in main.py
+
+=== Potentially Unsecured API Routes (Missing Current User) ===
+  [WARNING] base_api.py -> home (/) might be unsecured
+  [WARNING] base_api.py -> unknown (/overview/) might be unsecured
+  [WARNING] base_api.py -> manifest (manifest) might be unsecured
+  [WARNING] base_api.py -> service_worker (service_worker) might be unsecured
+  [WARNING] base_api.py -> share_target (/share-target/) might be unsecured
+  [WARNING] export_api.py -> unknown (/backups/) might be unsecured
+  [WARNING] export_api.py -> unknown (/backups/create/) might be unsecured
+  [WARNING] export_api.py -> unknown (/{institution_slug}/export/bundle/) might be unsecured
+  [WARNING] export_api.py -> unknown (/{institution_slug}/export/sheet/) might be unsecured
+  [WARNING] export_api.py -> unknown (/{institution_slug}/restore/) might be unsecured
+  [WARNING] finance_api.py -> unknown (/{institution_slug}/donor/add/) might be unsecured
+  [WARNING] finance_api.py -> public_support (/{institution_slug}/support/) might be unsecured
+  [WARNING] finance_api.py -> public_donation (/{institution_slug}/donate/) might be unsecured
+  [WARNING] staff_api.py -> unknown (/{institution_slug}/staff/manage/edit/{staff_id}/) might be unsecured
+  [WARNING] staff_api.py -> unknown (/{institution_slug}/staff/payroll/) might be unsecured
+  [WARNING] staff_api.py -> unknown (/{institution_slug}/staff/payroll-report/) might be unsecured

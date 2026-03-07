@@ -349,7 +349,7 @@ async def donation(request: Request, institution_slug: str, session: Session = D
     context.update({"request": request, "institution": institution})
     
     if request.headers.get('HX-Request') and request.headers.get('HX-Target') == 'income-dashboard-summary':
-        return await TemplateResponse.render("dms/partials/income_dashboard_summary_partial.html", request, session, context)
+        return await TemplateResponse.render("dms/partials/income_summary_partial.html", request, session, context)
     return await TemplateResponse.render("dms/income.html", request, session, context)
 
 # --- 5. income_create ---

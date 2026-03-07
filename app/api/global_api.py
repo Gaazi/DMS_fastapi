@@ -26,7 +26,8 @@ async def global_dashboard(
 ):
     gm = GlobalLogic(current_user, session)
     ctx = gm.get_global_overview()
-    return await TemplateResponse.render("dms/global_dashboard.html", request, session, ctx)
+    # Use institution_overview.html since no global_dashboard.html exists
+    return await TemplateResponse.render("dms/institution_overview.html", request, session, ctx)
 
 
 # ── 2. Institutions By Type ──────────────────────────────────────────────────
@@ -38,4 +39,5 @@ async def global_type_list(
 ):
     gm = GlobalLogic(current_user, session)
     ctx = gm.get_type_list_context(institution_type)
-    return await TemplateResponse.render("dms/global_type_list.html", request, session, ctx)
+    # Use institution_type_list.html since no global_type_list.html exists
+    return await TemplateResponse.render("dms/institution_type_list.html", request, session, ctx)

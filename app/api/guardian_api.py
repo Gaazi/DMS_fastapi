@@ -58,7 +58,7 @@ async def parent_students(
     institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="any")
     gm = GuardianLogic(session, current_user, institution=institution)
     ctx = gm.get_dashboard_context()
-    return await TemplateResponse.render("dms/student_list.html", request, session, {
+    return await TemplateResponse.render("dms/partials/student_list.html", request, session, {
         "institution": institution,
         "students": ctx.get("students", []),
     })

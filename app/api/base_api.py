@@ -211,7 +211,7 @@ async def superadmin_overview(
     from sqlmodel import select
     from app.models import Institution
     institutions = session.exec(select(Institution)).all()
-    return await TemplateResponse.render("dms/superadmin_overview.html", request, session, {"institutions": institutions})
+    return await TemplateResponse.render("dms/institution_overview.html", request, session, {"institutions": institutions})
 
 
 # ── 10. PWA & Static Assets ──────────────────────────────────────────────────
