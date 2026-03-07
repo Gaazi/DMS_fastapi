@@ -4,6 +4,7 @@ from app.models.people import Staff, Parent, Student, Admission
 from app.models.attendance import Attendance, Staff_Attendance
 from app.models.audit import ActivityLog
 from starlette.requests import Request
+from markupsafe import Markup
 
 class UserAdmin(DMSModelView, model=User):
     column_list = [User.id, User.username, User.email, User.is_superuser, User.is_active, "reset_password"]
@@ -16,10 +17,12 @@ class UserAdmin(DMSModelView, model=User):
 
     # ہر row میں Reset Password کا لنک دکھائیں
     column_formatters = {
-        "reset_password": lambda m, a: f'<a href="/admin/reset-password/{m.id}" '
-                                       f'style="background:#1d4ed8;color:#fff;padding:4px 10px;'
-                                       f'border-radius:6px;text-decoration:none;font-size:12px;">'
-                                       f'🔑 Reset</a>'
+        "reset_password": lambda m, a: Markup(
+            f'<a href="/admin/reset-password/{m.id}" '
+            f'style="background:#1d4ed8;color:#fff;padding:4px 10px;'
+            f'border-radius:6px;text-decoration:none;font-size:12px;">'
+            f'🔑 Reset</a>'
+        )
     }
 
     async def on_model_change(self, data: dict, model: User, is_created: bool, request: Request) -> None:
