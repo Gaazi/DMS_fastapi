@@ -94,7 +94,7 @@
             </a>
 
             <!-- 7. Edit Button -->
-            <a href="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}?edit={{ student.id }}" 
+            <a href="{{ url('musallee_admission' if institution.type == 'masjid' else 'admission', institution.slug) }}?student_id={{ student.id }}" 
                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
                 <i class="fas fa-edit opacity-70"></i>Edit
             </a>

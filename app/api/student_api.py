@@ -121,8 +121,16 @@ async def admission(
     sm = StudentLogic(session, current_user, institution=institution)
 
     if request.method == "POST":
-        from app.schemas.forms import StudentAdmissionSchema
         data = dict(await request.form())
+        student_id_raw = data.get("student_id")
+        
+        # Edit existing student
+        if student_id_raw:
+            sm.save_student(data)
+            return RedirectResponse(url=request.url_for("student_detail", institution_slug=institution_slug, student_id=int(student_id_raw)), status_code=303)
+        
+        # New admission
+        from app.schemas.forms import StudentAdmissionSchema
         try:
             validated = StudentAdmissionSchema(**data)
             vd = validated.dict()
@@ -142,9 +150,16 @@ async def admission(
             ctx.update({"institution": institution, "errors": errors, "form_data": data})
             return await TemplateResponse.render("dms/admission.html", request, session, ctx)
 
+    # GET — check if editing
+    student_id_raw = request.query_params.get("student_id")
     course_id = request.query_params.get("course_id")
     ctx = sm.get_admission_context(course_id)
     ctx["institution"] = institution
+    
+    if student_id_raw:
+        editing_student = session.get(Student, int(student_id_raw))
+        ctx["editing_student"] = editing_student
+    
     return await TemplateResponse.render("dms/admission.html", request, session, ctx)
 
 
