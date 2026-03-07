@@ -6,14 +6,6 @@ from fastapi import Request, Depends, HTTPException
 from app.core.config import settings
 from app.logic.utils import get_random_string
 try:
-    import bcrypt
-    # Monkey-patch bcrypt to emulate the silent truncation behavior of earlier versions.
-    # Passlib's internal tests feed oversized passwords (>72 bytes) which crashes bcrypt 4.0+.
-    _original_hashpw = bcrypt.hashpw
-    def _patched_hashpw(password: bytes, salt: bytes) -> bytes:
-        return _original_hashpw(password[:72], salt)
-    bcrypt.hashpw = _patched_hashpw
-    
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256", "django_pbkdf2_sha256", "md5_crypt", "sha256_crypt"], deprecated="auto")
 except ImportError:
