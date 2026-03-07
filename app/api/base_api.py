@@ -58,6 +58,55 @@ async def dashboard(
     ctx = im.get_dashboard_data()
     return await TemplateResponse.render("dms/dashboard.html", request, session, ctx)
 
+# ── 3.1 All Notifications ────────────────────────────────────────────────────
+@router.get("/{institution_slug}/all-notifications/", response_class=HTMLResponse, name="all_notifications")
+async def all_notifications(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="any")
+    
+    # Generate some notifications using alerts
+    im = InstitutionLogic(current_user, session=session, institution=institution)
+    alerts = im.get_quick_alerts()
+    
+    notifications = []
+    if alerts.get('count', 0) > 0:
+        for student in alerts.get('defaulters', []):
+            notifications.append({
+                "title": "فیس کی ادائیگی زیر التوا",
+                "description": f"طالب علم {student.name} کی دو یا اس سے زیادہ فیسیں واجب الادا ہیں۔",
+                "time": "آج",
+                "color": "rose",
+                "icon": "fa-solid fa-triangle-exclamation",
+                "url": request.url_for("student_detail", institution_slug=institution.slug, student_id=student.id)
+            })
+        for course in alerts.get('full_classes', []):
+            notifications.append({
+                "title": "کلاس تقریباً بھر چکی ہے",
+                "description": f"کورس {course.name} کی گنجائش پوری ہونے کے قریب ہے۔",
+                "time": "آج",
+                "color": "amber",
+                "icon": "fa-solid fa-users",
+                "url": request.url_for("course_detail", institution_slug=institution.slug, course_id=course.id)
+            })
+            
+    # Add system notification
+    notifications.append({
+        "title": "DMS سسٹم میں خوش آمدید",
+        "description": "پروجیکٹ ڈیٹا مکمل طور پر ہم آہنگ ہے۔",
+        "time": "سسٹم",
+        "color": "indigo",
+        "icon": "fa-solid fa-check-circle",
+        "url": "#"
+    })
+    
+    return await TemplateResponse.render("dms/all_notifications.html", request, session, {
+        "institution": institution,
+        "notifications": notifications
+    })
+
 
 # ── 4. Institution Overview (تمام ادارے) ────────────────────────────────────
 @router.get("/overview/", response_class=HTMLResponse, name="institution_overview")

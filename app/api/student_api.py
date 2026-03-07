@@ -57,12 +57,18 @@ async def students_page(
     return await TemplateResponse.render(template, request, session, ctx)
 
 
-# Mosque alias
+# Mosque aliases
 @router.get("/{institution_slug}/musalleen/", response_class=HTMLResponse, name="musalleen_list")
 async def musalleen_page(request: Request, institution_slug: str,
                          session: Session = Depends(get_session),
                          current_user: User = Depends(get_current_user)):
     return await students_page(request, institution_slug, session, current_user)
+
+@router.api_route("/{institution_slug}/musalleen/admission/", methods=["GET", "POST"], response_class=HTMLResponse, name="musallee_admission")
+async def musallee_admission(request: Request, institution_slug: str,
+                             session: Session = Depends(get_session),
+                             current_user: User = Depends(get_current_user)):
+    return await admission(request, institution_slug, session, current_user)
 
 
 # ── 2. Student Detail ───────────────────────────────────────────────────────

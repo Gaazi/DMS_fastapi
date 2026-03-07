@@ -214,7 +214,7 @@ async def get_global_context(request, session: Session, current_user: Optional[U
         "csrf_token": lambda: "", # Dummy for now
         "dms_header": {
             "notifications_json": [],
-            "notifications_url": f"/{institution.slug}/notifications/" if institution else "#",
+            "notifications_url": f"/{institution.slug}/all-notifications/" if institution else "#",
             "unread_count": 0,
             "user": user_payload,
         },
