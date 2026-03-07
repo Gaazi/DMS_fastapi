@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ institution.name }} - امتحانات (Exams){% endblock %}
+
+{% block content %}
+<div class="relative z-10 text-slate-200 selection:bg-indigo-500/30" 
+     x-data="{ 
+        loaded: false, 
+        searchQuery: '' 
+     }"
+     x-init="setTimeout(() => loaded = true, 50)">
+
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-12">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+            <!-- Exams List (Right / Main) -->
+            <div class="lg:col-span-8" x-show="loaded" x-transition:enter="transition delay-400 duration-1000">
+                <div class="w-full bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-sm">
+                    
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5 gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                                <i class="fas fa-file-alt text-xs"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-bold text-white block">رجسٹرڈ امتحانات</span>
+                                <span class="text-[10px] text-slate-500">{{ exams|length }} امتحانات دستیاب ہیں</span>
+                            </div>
+                        </div>
+
+                        <!-- Search Input -->
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" 
+                                   placeholder="تلاش کریں..." 
+                                   class="w-full bg-black/40 border border-white/10 rounded-xl px-9 py-2 text-[11px] text-white focus:border-indigo-500 outline-none transition-all"
+                                   x-model="searchQuery">
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-500">
+                                <i class="fas fa-search text-[10px]"></i>
+                            </div>
+                        </div>
+
+                        <a href="#exam_form" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-[11px] font-bold transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
+                            <i class="fas fa-plus"></i>
+                            <span>نیا امتحان</span>
+                        </a>
+                    </div>
+
+                    <!-- Rows Container -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6" dir="rtl">
+                        {% for exam in exams %}
+                        <div class="relative group h-full" x-show="!searchQuery || '{{ exam.title }}'.toLowerCase().includes(searchQuery.toLowerCase())">
+                            <!-- Premium Card Structure -->
+                            <div class="h-full flex flex-col bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/40 hover:bg-white/[0.05] transition-all duration-500 group-hover:-translate-y-1 relative">
+                                
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-all"></div>
+
+                                <!-- Card Body -->
+                                <div class="p-5 flex-1 flex flex-col items-center text-center">
+                                    <div class="mb-4">
+                                        <span class="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[9px] font-bold tracking-widest uppercase border border-indigo-500/20">
+                                            ID: {{ exam.id|stringformat:"02d" }}
+                                        </span>
+                                    </div>
+
+                                    <h4 class="text-base font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors leading-tight">
+                                        {{ exam.title }}
+                                    </h4>
+                                    
+                                    <div class="flex items-center gap-2 mb-2 text-slate-400">
+                                        <i class="far fa-calendar-alt text-[10px]"></i>
+                                        <span class="text-[11px] font-bold">{{ exam.date|date }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Footer Actions -->
+                                <div class="px-5 py-4 bg-white/[0.02] border-t border-white/5">
+                                    <a href="{{ url('record_marks', institution_slug=institution.slug, exam_id=exam.id) }}" class="flex w-full items-center justify-center text-center px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-bold rounded-lg transition-all border border-blue-500/20">
+                                        نمبر درج کریں (Record Marks)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-span-full py-16 text-center space-y-4">
+                            <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-folder-open text-2xl text-slate-700"></i>
+                            </div>
+                            <p class="text-slate-500 font-bold">کوئی امتحان نہیں ملا</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Exam Form (Left / Sidebar) -->
+            <div id="exam_form" class="lg:col-span-4 space-y-8" x-show="loaded" x-transition:enter="transition delay-200 duration-1000">
+                <div class="bg-[#0a0a0f]/80 backdrop-blur-xl rounded-2xl border border-white/10 p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+                    <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+                    <div class="relative z-10 mb-8">
+                        <div class="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center mb-4 text-indigo-400">
+                            <i class="fas fa-plus text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">نیا امتحان شامل کریں</h2>
+                        <p class="text-xs text-slate-400 mt-1">نئے امتحان کی تفصیلات درج کریں</p>
+                    </div>
+
+                    <form method="POST" action="{{ url('exam_list', institution_slug=institution.slug) }}" class="space-y-6 relative z-10" dir="rtl">
+                        {% if errors %}
+                        <div class="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs mb-4">
+                            براہ کرم فارم میں موجود غلطیاں درست کریں۔
+                        </div>
+                        {% endif %}
+
+                        <!-- Title -->
+                        <div class="space-y-2 group">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                                امتحان کا عنوان (Exam Title) <span class="text-red-400">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                                    <i class="fas fa-heading text-xs"></i>
+                                </div>
+                                <input type="text" name="title" required
+                                       class="block w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                                       placeholder="مثلاً: چھ ماہی امتحان 2026">
+                            </div>
+                            {% if errors.title %}
+                                <p class="text-[10px] text-red-400">{{ errors.title }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Date -->
+                        <div class="space-y-2 group" x-data="{
+                                initDatePicker() {
+                                    flatpickr(this.$refs.dateInput, {
+                                        dateFormat: 'Y-m-d',
+                                        defaultDate: 'today',
+                                        theme: 'dark'
+                                    });
+                                }
+                            }">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                                تاریخ (Date) <span class="text-red-400">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="text" name="date" x-ref="dateInput" x-init="initDatePicker()" required
+                                       class="block w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all bg-[url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z\'/></svg>')] bg-no-repeat bg-[center_left_1rem] bg-[length:1.25rem_1.25rem] cursor-pointer"
+                                       placeholder="YYYY-MM-DD">
+                            </div>
+                            {% if errors.date %}
+                                <p class="text-[10px] text-red-400">{{ errors.date }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-indigo-500 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98]">
+                                <i class="fas fa-save"></i>
+                                <span>محفوظ کریں</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
