@@ -8,9 +8,6 @@ from starlette.requests import Request
 class UserAdmin(DMSModelView, model=User):
     column_list = [User.id, User.username, User.email, User.is_superuser, User.is_active]
     column_searchable_list = [User.username, User.email]
-    # پاس ورڈ فیلڈ لسٹ میں نہ دکھائیں
-    column_exclude_list = [User.password]
-    # فارم میں پاسورڈ دکھائیں لیکن نام تبدیل کریں
     form_include_pk = False
     category = "People"
     icon = "fa-solid fa-users-gear"
