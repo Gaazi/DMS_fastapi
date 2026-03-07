@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dms-premium-cache-v2';
+const CACHE_NAME = 'dms-premium-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/static/manifest.json',

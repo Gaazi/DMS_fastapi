@@ -59,7 +59,13 @@
                     <input type="password" name="password" required class="w-full bg-slate-950/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-emerald-500/50 focus:bg-slate-900/60 transition-all placeholder-slate-600 {% if errors.password %}border-rose-500/50{% endif %}" placeholder="••••••••">
                 </div>
                 <div class="text-left -mt-2">
-                    <a href="{{ url('password_reset_request') }}" class="text-xs text-blue-300 hover:text-blue-200 transition-colors font-mehr">
+                    {% set slug = request.path_params.get('institution_slug') if request and request.path_params else None %}
+                    {% if slug %}
+                        {% set reset_link = url('institution_password_reset_request', institution_slug=slug) %}
+                    {% else %}
+                        {% set reset_link = url('password_reset_request') %}
+                    {% endif %}
+                    <a href="{{ '/password-reset/' if reset_link == '#' else reset_link }}" class="text-xs text-blue-300 hover:text-blue-200 transition-colors font-mehr">
                         پاس ورڈ بھول گئے؟
                     </a>
                 </div>

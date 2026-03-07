@@ -144,6 +144,7 @@ async def institution_login(request: Request, institution_slug: str, session: Se
 
 # ── 4. Signup ─────────────────────────────────────────────────────────────────
 # Password Reset
+@router.api_route("/password-reset", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_request_no_slash")
 @router.api_route("/password-reset/", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_request")
 async def password_reset_request(
     request: Request,
@@ -177,6 +178,17 @@ async def password_reset_request(
     })
 
 
+@router.api_route("/{institution_slug}/password-reset", methods=["GET", "POST"], response_class=HTMLResponse, name="institution_password_reset_request_no_slash")
+@router.api_route("/{institution_slug}/password-reset/", methods=["GET", "POST"], response_class=HTMLResponse, name="institution_password_reset_request")
+async def institution_password_reset_request(
+    request: Request,
+    institution_slug: str,
+    session: Session = Depends(get_session),
+):
+    return await password_reset_request(request, session)
+
+
+@router.api_route("/password-reset/confirm", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_confirm_no_slash")
 @router.api_route("/password-reset/confirm/", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_confirm")
 async def password_reset_confirm(
     request: Request,
@@ -226,6 +238,16 @@ async def password_reset_confirm(
     return await TemplateResponse.render("reset_password.html", request, session, {
         "form": None, "errors": {}, "error": None, "form_data": None, "token": token
     })
+
+
+@router.api_route("/{institution_slug}/password-reset/confirm", methods=["GET", "POST"], response_class=HTMLResponse, name="institution_password_reset_confirm_no_slash")
+@router.api_route("/{institution_slug}/password-reset/confirm/", methods=["GET", "POST"], response_class=HTMLResponse, name="institution_password_reset_confirm")
+async def institution_password_reset_confirm(
+    request: Request,
+    institution_slug: str,
+    session: Session = Depends(get_session),
+):
+    return await password_reset_confirm(request, session)
 
 @router.api_route("/signup/", methods=["GET", "POST"],
                   response_class=HTMLResponse, name="dms_signup")
