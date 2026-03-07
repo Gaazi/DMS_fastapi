@@ -43,7 +43,16 @@ class ExamLogic:
         courses = self.session.exec(
             select(Course).where(Course.inst_id == self.institution.id, Course.is_active == True)
         ).all()
-        return {"exam": exam, "students": students, "courses": courses}
+        students_data = [{"id": s.id, "name": s.name, "reg_id": s.reg_id or "-"} for s in students]
+        courses_data = [{"id": c.id, "title": c.title} for c in courses]
+        import json
+        return {
+            "exam": exam, 
+            "students": students, 
+            "courses": courses,
+            "students_json": json.dumps(students_data),
+            "courses_json": json.dumps(courses_data)
+        }
 
     def get_report_card_context(self, exam_id: int, student_id: int) -> Optional[dict]:
         """رزلٹ کارڈ کا context۔"""

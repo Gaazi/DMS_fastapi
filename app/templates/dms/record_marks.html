@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ institution.name }} - نمبر درج کریں (Record Marks){% endblock %}
+
+{% block content %}
+<div class="relative z-10 text-slate-200" 
+     x-data="marksManager({{ students_json|safe }}, {{ courses_json|safe }}, {{ exam.id }})">
+
+    <div class="max-w-5xl mx-auto px-4 py-12">
+        <div class="bg-[#0a0a0f]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            <!-- Header -->
+            <div class="px-6 py-5 border-b border-white/10 bg-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white">{{ exam.title }}</h2>
+                    <p class="text-xs text-slate-400 mt-1">نمبرات کا اندراج (Recording Marks)</p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+                    <div class="w-full md:w-64">
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">مضمون / کورس منتخب کریں</label>
+                        <select x-model="selectedCourseId" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none">
+                            <option value="">منتخب کریں...</option>
+                            <template x-for="c in courses" :key="c.id">
+                                <option :value="c.id" x-text="c.title"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6" x-show="!selectedCourseId">
+                <div class="flex flex-col items-center justify-center py-16 text-slate-500">
+                    <i class="fas fa-book-open text-4xl mb-4 opacity-50"></i>
+                    <p class="font-bold">براہ کرم نمبر درج کرنے کے لیے کوئی کورس منتخب کریں</p>
+                </div>
+            </div>
+
+            <!-- Marks Grid -->
+            <div class="p-6 overflow-x-auto" x-show="selectedCourseId" style="display: none;">
+                <table class="w-full text-right border-collapse" dir="rtl">
+                    <thead>
+                        <tr class="text-[10px] uppercase tracking-widest text-slate-500 border-b border-white/10">
+                            <th class="pb-3 px-2 text-right font-bold w-1/3">طالب علم (Student)</th>
+                            <th class="pb-3 px-2 text-center font-bold">کل نمبر (Total)</th>
+                            <th class="pb-3 px-2 text-center font-bold">حاصل کردہ (Obtained)</th>
+                            <th class="pb-3 px-2 text-right font-bold">ریمارکس (Remarks)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="(s, index) in students" :key="s.id">
+                            <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                <td class="py-3 px-2">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-white" x-text="s.name"></span>
+                                        <span class="text-[10px] text-slate-500" x-text="s.reg_id"></span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-2 w-32">
+                                    <input type="number" min="1" class="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-center text-sm text-white focus:border-indigo-500 outline-none" 
+                                           x-model="marksData[s.id].total">
+                                </td>
+                                <td class="py-3 px-2 w-32">
+                                    <input type="number" min="0" :max="marksData[s.id].total" class="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-center text-sm text-white focus:border-indigo-500 outline-none" 
+                                           x-model="marksData[s.id].obtained">
+                                </td>
+                                <td class="py-3 px-2 w-48">
+                                    <input type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-indigo-500 outline-none placeholder-slate-600" 
+                                           placeholder="آپشنل..." x-model="marksData[s.id].remarks">
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+
+                <div class="mt-8 flex justify-end">
+                    <form method="POST" action="{{ url('record_marks_post', institution_slug=institution.slug, exam_id=exam.id) }}" @submit.prevent="submitForm($event)">
+                        <input type="hidden" name="marks_json" x-ref="marksJson">
+                        <button type="submit" class="flex items-center gap-2 bg-gradient-to-l from-indigo-500 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95"
+                                :disabled="isSubmitting" :class="{'opacity-50 cursor-not-allowed': isSubmitting}">
+                            <i class="fas fa-save" x-show="!isSubmitting"></i>
+                            <i class="fas fa-spinner fa-spin" x-show="isSubmitting" style="display: none;"></i>
+                            <span>محفوظ کریں (Save Marks)</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function marksManager(studentsList, coursesList, examId) {
+    // Map initial data for Alpine
+    let mappedStudents = studentsList.map(s => ({
+        id: s.id,
+        name: s.name,
+        reg_id: s.reg_id || '-'
+    }));
+    
+    let defaultData = {};
+    mappedStudents.forEach(s => {
+        defaultData[s.id] = { obtained: '', total: 100, remarks: '' };
+    });
+
+    return {
+        students: mappedStudents,
+        courses: coursesList,
+        selectedCourseId: '',
+        marksData: defaultData,
+        isSubmitting: false,
+
+        submitForm(e) {
+            let finalData = [];
+            this.students.forEach(s => {
+                let md = this.marksData[s.id];
+                if (md.obtained !== '' && md.obtained !== null) {
+                    finalData.push({
+                        student_id: s.id,
+                        course_id: parseInt(this.selectedCourseId),
+                        obtained: parseInt(md.obtained),
+                        total: parseInt(md.total) || 100,
+                        remarks: md.remarks
+                    });
+                }
+            });
+
+            if (finalData.length === 0) {
+                alert("براہ کرم کم از کم ایک طالب علم کا نمبر درج کریں۔");
+                return;
+            }
+
+            this.isSubmitting = true;
+            this.$refs.marksJson.value = JSON.stringify(finalData);
+            e.target.submit();
+        }
+    }
+}
+</script>
+{% endblock %}

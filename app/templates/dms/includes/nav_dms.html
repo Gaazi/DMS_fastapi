@@ -15,6 +15,14 @@
     </a>
     {% endif %}
 
+    {# 2.5 امتحانات #}
+    {% if can_view_academics and institution.type != 'masjid' and current_institution.type != 'masjid' %}
+    <a href="{{ url('exam_list', institution.slug|default(current_institution.slug)) }}"
+        class="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/90 text-xs backdrop-blur-md transition-all duration-300 hover:bg-white/25 hover:border-white/30">
+        <span>امتحانات</span>
+    </a>
+    {% endif %}
+
     {# 3. حاضری #}
     {% if can_view_academics %}
     <a href="{{ url('student_attendance', institution.slug|default(current_institution.slug)) }}"
