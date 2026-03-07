@@ -1,15 +1,15 @@
 """
 Admin Password Reset Page
 ─────────────────────────
-/admin/reset-password/{user_id}  → GET  (form دکھائیں)
-/admin/reset-password/{user_id}  → POST (password بدلیں)
+/dms-admin/reset-password/{user_id}  → GET  (form دکھائیں)
+/dms-admin/reset-password/{user_id}  → POST (password بدلیں)
 """
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlmodel import Session, select
+from sqlmodel import Session
 from app.core.database import get_session
 from app.models.auth import User
-from app.logic.auth import pwd_context
+from app.logic.auth import pwd_context, get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin Password Reset"])
 
@@ -37,11 +37,12 @@ _STYLE = """
 async def reset_password_form(
     request: Request,
     user_id: int,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    admin_user: User = Depends(get_current_user)
 ):
-    # Admin session چیک کریں
-    if not request.session.get("admin_id"):
-        return RedirectResponse("/admin/login")
+    # Admin (Superuser) role check
+    if not admin_user or not admin_user.is_superuser:
+        return RedirectResponse("/login/")
 
     user = session.get(User, user_id)
     if not user:
@@ -78,10 +79,12 @@ async def reset_password_submit(
     user_id: int,
     new_password: str = Form(...),
     confirm_password: str = Form(...),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    admin_user: User = Depends(get_current_user)
 ):
-    if not request.session.get("admin_id"):
-        return RedirectResponse("/admin/login")
+    # Admin (Superuser) role check
+    if not admin_user or not admin_user.is_superuser:
+        return RedirectResponse("/login/")
 
     user = session.get(User, user_id)
     if not user:
