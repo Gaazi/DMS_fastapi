@@ -19,7 +19,7 @@ router = APIRouter()
 
 # ── 1. Facility List ─────────────────────────────────────────────────────────
 @router.api_route("/{institution_slug}/facilities", methods=["GET", "POST"],
-                  response_class=HTMLResponse, name="facility_list")
+                  response_class=HTMLResponse, name="dms_facilities")
 async def facility_list(
     request: Request, institution_slug: str,
     session: Session = Depends(get_session),

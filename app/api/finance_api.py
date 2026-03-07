@@ -370,7 +370,7 @@ async def donation_in_overview(request: Request, institution_slug: str, session:
 # This route is now at position 7 (donor_list).
 
 # --- 10. donor_create_quick ---
-@router.post("/{institution_slug}/donor/quick-save/")
+@router.post("/{institution_slug}/donor/quick-save/", name="donor_create_quick")
 async def donor_create_quick(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
     dm = DonationLogic(session, current_user, institution=institution)
