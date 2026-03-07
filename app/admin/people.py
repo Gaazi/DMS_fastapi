@@ -40,7 +40,8 @@ class UserAdmin(DMSModelView, model=User):
         if new_password:
             # نیا پاسورڈ ٹائپ کیا ہے -> اسے Hash کرو
             from app.logic.auth import pwd_context
-            data["password"] = pwd_context.hash(new_password)
+            # Bcrypt limit is 72 bytes, manually truncate to prevent ValueErrors
+            data["password"] = pwd_context.hash(new_password[:72])
         elif not is_created and model.password:
             # کچھ ٹائپ نہیں کیا -> پرانا پاسورڈ برقرار رکھو
             data["password"] = model.password
