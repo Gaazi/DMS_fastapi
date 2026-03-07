@@ -230,6 +230,7 @@ def safe_int_main(v, default=0):
         return default
 
 templates.env.filters["int"] = safe_int_main
+templates.env.filters["none_to_blank"] = lambda v: "" if v is None or isinstance(v, jinja2.Undefined) else v
 templates.env.filters["stringformat"] = stringformat_filter
 templates.env.filters["truncatechars"] = truncatechars_filter
 templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
