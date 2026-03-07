@@ -36,15 +36,33 @@ def add_class(value, class_name):
     return value # Fallback
 
 def jinja2_date_filter(date_obj, format_str="%d %b %Y"):
+    """Django-compatible date filter for Jinja2.
+    Translates Django format codes (d, m, Y, j, M, etc.) to Python strftime.
+    """
     if not date_obj:
         return ""
     if isinstance(date_obj, str):
         try:
-            from datetime import datetime
-            date_obj = datetime.fromisoformat(date_obj)
-        except:
+            from datetime import datetime as _dt
+            date_obj = _dt.fromisoformat(date_obj)
+        except Exception:
             return date_obj
-    return date_obj.strftime(format_str)
+    if not hasattr(date_obj, 'strftime'):
+        return str(date_obj)
+    # Map Django date format codes -> Python strftime
+    django_to_py = {
+        'd': '%d', 'j': '%d', 'm': '%m', 'n': '%m',
+        'Y': '%Y', 'y': '%y', 'M': '%b', 'N': '%B',
+        'H': '%H', 'i': '%M', 's': '%S', 'A': '%p',
+    }
+    py_fmt = ""
+    for ch in format_str:
+        py_fmt += django_to_py.get(ch, ch)
+    try:
+        return date_obj.strftime(py_fmt)
+    except Exception:
+        return str(date_obj)
+
 
 # Custom Filters for Django compatibility
 def add_filter(value, arg):
@@ -113,6 +131,11 @@ templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict)
 templates.env.filters["translate"] = translate_filter
 import json
 templates.env.filters["tojson"] = lambda v: json.dumps(v)
+# Prevent None from rendering as literal "None" in templates
+templates.env.filters["default"] = lambda v, default="", boolean=False: (default if (v is None or (boolean and not v)) else v)
+templates.env.filters["int"] = lambda v, default=0: int(v) if v is not None else default
+templates.env.filters["none_to_blank"] = lambda v: "" if v is None else v
+
 templates.env.globals["csrf_token"] = lambda: ""
 def _now_func(format_str=None):
     """Django-compatible now() function for Jinja2.

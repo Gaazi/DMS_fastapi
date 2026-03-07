@@ -24,7 +24,12 @@ class Person(AuditModel):
     
     @property
     def full_name(self) -> str:
-        return self.name
+        # Strip any "[None]" or "[SomeStr]" artifact appended during old migration
+        import re as _re
+        raw = self.name or ""
+        # Remove trailing " [Something]" pattern  (e.g. "Asad Khan [None]" -> "Asad Khan")
+        cleaned = _re.sub(r'\s*\[[^\]]*\]\s*$', '', raw).strip()
+        return cleaned or raw
     
     @full_name.setter
     def full_name(self, value):

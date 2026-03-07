@@ -251,7 +251,60 @@ async def donor_detail(request: Request, institution_slug: str, donor_id: int, s
     context.update({"request": request, "institution": institution})
     return await TemplateResponse.render("dms/donor_detail.html", request, session, context)
 
-# --- 1. fees ---
+# ─────────────────────────────────────────────────────────────────────────────
+# Family Fee Collection — MUST be before /{fee_id}/ to prevent routing conflict
+# ─────────────────────────────────────────────────────────────────────────────
+@router.api_route("/{institution_slug}/fees/family/", methods=["GET", "POST"], response_class=HTMLResponse, name="family_fee_collection")
+async def family_fee_collection(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
+    
+    # Handle both query params and form data for family_id
+    form_data_raw = await request.form() if request.method == "POST" else {}
+    family_id = request.query_params.get('family_id') or form_data_raw.get('family_id')
+    
+    parent = None
+    results = None
+    
+    if request.method == "POST":
+        data = dict(form_data_raw)
+        action = data.get('action')
+        
+        if action == "pay":
+            f_id = data.get('family_id')
+            amount = float(data.get('amount', 0))
+            method = data.get('method', 'Cash')
+            
+            cashier = Cashier(session, institution, current_user)
+            results = cashier.collect_family_fee(family_id=f_id, amount=amount, method=method)
+            
+            return await TemplateResponse.render("dms/receipt_family.html", request, session, {
+                "institution": institution,
+                "results": results,
+                "total_paid": amount
+            })
+
+    if family_id:
+        parent = session.exec(select(Parent).where(func.lower(Parent.family_id) == family_id.lower(), Parent.inst_id == institution.id)).first()
+        if parent:
+            # Aggregate dues for display
+            total_family_dues = 0
+            for student in parent.students:
+                dues = session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
+                    Fee.student_id == student.id, Fee.status.in_(['Pending', 'Partial', 'Overdue'])
+                )).one() or 0
+                student.total_dues = float(dues)
+                total_family_dues += student.total_dues
+            parent.total_family_dues = total_family_dues
+
+    context = {
+        "request": request,
+        "institution": institution,
+        "parent": parent,
+        "family_id": family_id
+    }
+    return await TemplateResponse.render("dms/family_payment.html", request, session, context)
+
+# --- 1. fees (single fee detail) ---
 @router.get("/{institution_slug}/fees/{fee_id}/", response_class=HTMLResponse, name="fees")
 async def fees(request: Request, institution_slug: str, fee_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     from app.models import Student as _Student
@@ -417,55 +470,7 @@ async def public_donation(request: Request, institution_slug: str, session: Sess
 
     return await TemplateResponse.render("dms/public_donation.html", request, session, {"institution": institution})
 
-@router.api_route("/{institution_slug}/fees/family/", methods=["GET", "POST"], response_class=HTMLResponse, name="family_fee_collection")
-async def family_fee_collection(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-    
-    # Handle both query params and form data for family_id
-    form_data_raw = await request.form() if request.method == "POST" else {}
-    family_id = request.query_params.get('family_id') or form_data_raw.get('family_id')
-    
-    parent = None
-    results = None
-    
-    if request.method == "POST":
-        data = dict(form_data_raw)
-        action = data.get('action')
-        
-        if action == "pay":
-            f_id = data.get('family_id')
-            amount = float(data.get('amount', 0))
-            method = data.get('method', 'Cash')
-            
-            cashier = Cashier(session, institution, current_user)
-            results = cashier.collect_family_fee(family_id=f_id, amount=amount, method=method)
-            
-            return await TemplateResponse.render("dms/receipt_family.html", request, session, {
-                "institution": institution,
-                "results": results,
-                "total_paid": amount
-            })
 
-    if family_id:
-        parent = session.exec(select(Parent).where(func.lower(Parent.family_id) == family_id.lower(), Parent.inst_id == institution.id)).first()
-        if parent:
-            # Aggregate dues for display
-            total_family_dues = 0
-            for student in parent.students:
-                dues = session.exec(select(func.sum(Fee.amount_due + Fee.late_fee - Fee.discount - Fee.amount_paid)).where(
-                    Fee.student_id == student.id, Fee.status.in_(['Pending', 'Partial'])
-                )).one() or 0
-                student.total_dues = float(dues)
-                total_family_dues += student.total_dues
-            parent.total_family_dues = total_family_dues
-
-    context = {
-        "request": request,
-        "institution": institution,
-        "parent": parent,
-        "family_id": family_id
-    }
-    return await TemplateResponse.render("dms/family_payment.html", request, session, context)
 
 @router.get("/{institution_slug}/reports/family-dues/", response_class=HTMLResponse, name="family_financial_report")
 async def family_financial_report(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):

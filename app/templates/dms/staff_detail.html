@@ -75,7 +75,7 @@
                         <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">{{ member.full_name }}</h1>
                         <div class="w-2 h-2 rounded-full {% if member.is_active %}bg-emerald-500 shadow-[0_0_8px_#10b981]{% else %}bg-rose-500{% endif %}"></div>
                     </div>
-                    <p class="text-blue-400/80 font-urdu text-base">{{ member.get_role_display }}</p>
+                    <p class="text-blue-400/80 font-urdu text-base">{{ member.get_role_display() }}</p>
                     <div class="flex items-center gap-3 mt-2">
                         <span class="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase">#{{ member.id }}</span>
                         <span class="text-[10px] font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase">{{ member.hire_date|date("M Y")|default("---") }}</span>

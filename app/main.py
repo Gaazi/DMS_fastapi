@@ -220,7 +220,7 @@ def truncatechars_filter(value, arg):
         return value
 
 templates.env.filters["add"] = add_filter
-templates.env.filters["int"] = lambda v: int(v) if v is not None else 0
+templates.env.filters["int"] = lambda v, default=0: int(v) if v is not None else default
 templates.env.filters["stringformat"] = stringformat_filter
 templates.env.filters["truncatechars"] = truncatechars_filter
 templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
