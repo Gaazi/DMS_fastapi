@@ -38,6 +38,13 @@
             <span>بیلنس</span>
         </a>
 
+        {# 5.5 خاندانی فیس #}
+        <a href="{{ url('family_fee_collection', institution.slug|default(current_institution.slug)) }}"
+            class="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/90 text-xs backdrop-blur-md transition-all duration-300 hover:bg-emerald-500/20 hover:border-emerald-500/30">
+            <i class="fas fa-users text-[10px] text-emerald-400"></i>
+            <span>فیملی فیس</span>
+        </a>
+
         {# 6. آمدنی #}
         <a href="{{ url('income', institution.slug|default(current_institution.slug)) }}"
             class="flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/90 text-xs backdrop-blur-md transition-all duration-300 hover:bg-white/25 hover:border-white/30">
