@@ -25,7 +25,7 @@
                         title="{% if student.is_active %}Click to Suspend{% else %}Click to Activate{% endif %}">
                     <div class="w-1.5 h-1.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_8px_#34d399] group-hover:bg-rose-400 group-hover:shadow-[0_0_8px_#f43f5e]{% else %}bg-rose-500 shadow-[0_0_8px_#f43f5e] group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_#34d399]{% endif %} transition-colors"></div>
                     <span class="group-hover:hidden">{% if student.is_active %}Active{% else %}Inactive{% endif %}</span>
-                    <span class="hidden group-hover:inline">{% if student.is_active %}Suspend{% else %}Activate{% endif %}</span>
+                    <span class="hidden group-hover:inline">{% if student.is_active %}Inactive{% else %}Active{% endif %}</span>
                 </button>
             </form>
             {% else %}
