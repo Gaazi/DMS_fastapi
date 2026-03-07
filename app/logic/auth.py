@@ -265,10 +265,9 @@ class UserLogic:
         return "/welcome/"
 
     @staticmethod
-    def get_user_for_password_reset(login: str, email: str, session: Session) -> Optional[User]:
+    def get_user_for_password_reset(login: str, session: Session) -> Optional[User]:
         login = (login or "").strip()
-        email = (email or "").strip().lower()
-        if not login or not email:
+        if not login:
             return None
 
         user = session.exec(
@@ -281,7 +280,7 @@ class UserLogic:
         ).first()
         if not user:
             return None
-        if (user.email or "").strip().lower() != email:
+        if not (user.email or "").strip():
             return None
         return user
 

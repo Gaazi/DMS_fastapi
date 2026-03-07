@@ -162,11 +162,11 @@ async def password_reset_request(
         data = dict(await request.form())
         try:
             validated = PasswordResetRequestSchema(**data)
-            user = UserLogic.get_user_for_password_reset(validated.login, validated.email, session)
+            user = UserLogic.get_user_for_password_reset(validated.login, session)
             if not user:
                 return await TemplateResponse.render("forgot_password.html", request, session, {
                     "errors": {},
-                    "error": "Provided account details are not valid.",
+                    "error": "Username/Email ghalat hai ya account me email save nahi hai.",
                     "form_data": data
                 })
 

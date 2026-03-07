@@ -50,7 +50,6 @@ class LoginFormSchema(BaseModel):
 
 class PasswordResetRequestSchema(BaseModel):
     login: str = Field(min_length=3, description="Enter username or email")
-    email: EmailStr
 
 class PasswordResetConfirmSchema(BaseModel):
     password: str = Field(min_length=6)
