@@ -31,41 +31,63 @@ class Cashier:
             raise HTTPException(status_code=404, detail="Student not found")
 
         receipts = []
-        remaining_cash = amount_dec
         pending_fees = self._get_pending_fees(student, admission_id=admission_id)
 
-        # Step A: Wallet Use
-        if use_wallet and student.wallet_balance > 0:
+        # Explicit Wallet Method Selection
+        if method == "Wallet":
             wallet_balance = Decimal(str(student.wallet_balance or 0))
+            if wallet_balance < amount_dec:
+                raise HTTPException(status_code=400, detail=f"والٹ میں مطلوبہ رقم موجود نہیں ہے۔ (موجودہ بیلنس: {wallet_balance})")
+            
+            remaining_wallet_pay = amount_dec
             for fee in pending_fees:
+                if remaining_wallet_pay <= 0: break
                 balance = self._fee_balance(fee)
                 if balance <= 0: continue
                 
-                wallet_deduct = min(wallet_balance, balance)
-                if wallet_deduct > 0:
-                    p_rec = self._process_single_payment(student, fee, wallet_deduct, "Wallet", is_wallet=True)
-                    self._update_wallet(student, wallet_deduct, "debit", f"Paid {fee.fee_type}", p_rec)
-                    wallet_balance -= wallet_deduct
-                    receipts.append(p_rec.receipt_number)
-
-        # Step B: Cash Use
-        if remaining_cash > 0:
-            for fee in pending_fees:
-                self.session.refresh(fee)
-                balance = self._fee_balance(fee)
-                
-                if balance <= 0: continue
-                if remaining_cash <= 0: break
-                
-                pay_amount = min(remaining_cash, balance)
-                p_rec = self._process_single_payment(student, fee, pay_amount, method)
+                pay_amount = min(remaining_wallet_pay, balance)
+                p_rec = self._process_single_payment(student, fee, pay_amount, "Wallet", is_wallet=True)
+                self._update_wallet(student, pay_amount, "debit", f"Paid {fee.fee_type}", p_rec)
+                remaining_wallet_pay -= pay_amount
                 receipts.append(p_rec.receipt_number)
-                remaining_cash -= pay_amount
+                
+            # Note: Unused wallet allocation (surplus) is simply ignored because the money is already in the wallet!
 
-        # Step C: Surplus to Wallet
-        if remaining_cash > 0:
-            w_rec = self._deposit_to_wallet(student, remaining_cash, method)
-            receipts.append(w_rec.receipt_number)
+        else:
+            remaining_cash = amount_dec
+            
+            # Step A: Legacy Checkbox (use_wallet)
+            if use_wallet and student.wallet_balance > 0:
+                wallet_balance = Decimal(str(student.wallet_balance or 0))
+                for fee in pending_fees:
+                    balance = self._fee_balance(fee)
+                    if balance <= 0: continue
+                    
+                    wallet_deduct = min(wallet_balance, balance)
+                    if wallet_deduct > 0:
+                        p_rec = self._process_single_payment(student, fee, wallet_deduct, "Wallet", is_wallet=True)
+                        self._update_wallet(student, wallet_deduct, "debit", f"Paid {fee.fee_type}", p_rec)
+                        wallet_balance -= wallet_deduct
+                        receipts.append(p_rec.receipt_number)
+
+            # Step B: Cash/Online Use
+            if remaining_cash > 0:
+                for fee in pending_fees:
+                    self.session.refresh(fee)
+                    balance = self._fee_balance(fee)
+                    
+                    if balance <= 0: continue
+                    if remaining_cash <= 0: break
+                    
+                    pay_amount = min(remaining_cash, balance)
+                    p_rec = self._process_single_payment(student, fee, pay_amount, method)
+                    receipts.append(p_rec.receipt_number)
+                    remaining_cash -= pay_amount
+
+            # Step C: Surplus to Wallet
+            if remaining_cash > 0:
+                w_rec = self._deposit_to_wallet(student, remaining_cash, method)
+                receipts.append(w_rec.receipt_number)
 
         # آڈٹ لاگنگ
         AuditLogic.log_activity(
