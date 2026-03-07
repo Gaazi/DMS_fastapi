@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}ادارہ پورٹ فولیو{% endblock %}
 
@@ -13,7 +13,7 @@
       </div>
       <div class="flex flex-wrap items-center gap-3">
         {% if dms_header.user.role == 'Admin' %}
-        <form method="get" action="{{ url('all_institutions_export') }}"
+        <form method="get" action="{{ url('export_all_institutions') }}"
           class="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg shadow">
           <label for="global-backup-format" class="text-sm text-blue-700">مکمل بیک اپ ڈاؤن لوڈ</label>
           <select id="global-backup-format" name="format"

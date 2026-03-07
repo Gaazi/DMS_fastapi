@@ -110,13 +110,17 @@ async def all_notifications(
 
 # ── 4. Institution Overview (تمام ادارے) ────────────────────────────────────
 @router.get("/overview/", response_class=HTMLResponse, name="institution_overview")
+@router.get("/overview/{institution_type}/", response_class=HTMLResponse, name="institution_type_list")
 async def institution_overview(
     request: Request,
+    institution_type: Optional[str] = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
     from app.logic.auth import UserLogic
     insts = UserLogic.get_user_institutions(current_user, session)
+    if institution_type:
+        insts = [i for i in insts if i.type == institution_type]
     return await TemplateResponse.render("dms/institution_overview.html", request, session, {"institutions": insts})
 
 

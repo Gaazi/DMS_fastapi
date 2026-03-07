@@ -242,7 +242,7 @@
             </div>
             {% endif %}
             
-            <form action="{{ url('inventory_issue', institution.slug) }}" method="post" class="space-y-6">
+            <form action="{{ url('issue_item', institution.slug) }}" method="post" class="space-y-6">
                 {{ csrf_token() }}
                 <input type="hidden" name="item_id" x-model="selectedItem">
                 

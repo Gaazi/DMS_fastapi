@@ -118,7 +118,7 @@
                             <span>{% if editing_facility %}تبدیلی محفوظ کریں{% else %}سسٹم میں شامل کریں{% endif %}</span>
                         </button>
                         {% if editing_facility %}
-                        <a href="{{ url('facility_list', institution.slug) }}"
+                        <a href="{{ url('dms_facilities', institution.slug) }}"
                            class="w-full py-4 text-slate-400 text-center rounded-[1.25rem] text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors bg-slate-50 border border-slate-100">
                             کینسل کریں
                         </a>
