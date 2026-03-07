@@ -1,6 +1,9 @@
 from sqlmodel import Session, select, or_
 from typing import Optional, List, Tuple
 import datetime
+import logging
+import smtplib
+from email.mime.text import MIMEText
 from jose import JWTError, jwt
 from fastapi import Request, Depends, HTTPException
 from app.core.config import settings
@@ -25,13 +28,15 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-def create_password_reset_token(username: str, expire_minutes: int = 20) -> str:
+def create_password_reset_token(username: str, otp: Optional[str] = None, expire_minutes: int = 20) -> str:
     to_encode = {"sub": username, "type": "password_reset"}
+    if otp:
+        to_encode["otp"] = str(otp)
     expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=expire_minutes)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-def verify_password_reset_token(token: str) -> Optional[str]:
+def verify_password_reset_token(token: str, otp: Optional[str] = None) -> Optional[str]:
     if not token:
         return None
     try:
@@ -39,6 +44,8 @@ def verify_password_reset_token(token: str) -> Optional[str]:
     except JWTError:
         return None
     if payload.get("type") != "password_reset":
+        return None
+    if otp is not None and str(payload.get("otp", "")) != str(otp).strip():
         return None
     username = payload.get("sub")
     return username if username else None
@@ -277,6 +284,52 @@ class UserLogic:
         if (user.email or "").strip().lower() != email:
             return None
         return user
+
+    @staticmethod
+    def generate_reset_otp(length: int = 6) -> str:
+        import secrets
+        digits = "0123456789"
+        return "".join(secrets.choice(digits) for _ in range(length))
+
+    @staticmethod
+    def send_password_reset_email(
+        to_email: str,
+        username: str,
+        otp: str,
+        confirm_link: str,
+        otp_link: str,
+        expire_minutes: int = 20,
+    ) -> Tuple[bool, str]:
+        if not (settings.EMAIL_HOST and settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD):
+            return False, "Email service is not configured on server."
+
+        from_email = settings.SERVER_EMAIL or settings.EMAIL_HOST_USER
+        subject = "DMS Password Reset OTP & Confirmation Link"
+        body = (
+            f"Assalam o Alaikum {username},\n\n"
+            f"Password reset request receive hui hai.\n"
+            f"OTP: {otp}\n"
+            f"OTP expiry: {expire_minutes} minutes\n\n"
+            f"Option 1 (Recommended): OTP verify page\n{otp_link}\n\n"
+            f"Option 2: Direct confirmation link\n{confirm_link}\n\n"
+            "Agar yeh request aap ne nahi ki, is email ko ignore karein."
+        )
+
+        message = MIMEText(body, "plain", "utf-8")
+        message["Subject"] = subject
+        message["From"] = from_email
+        message["To"] = to_email
+
+        try:
+            with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=20) as server:
+                if settings.EMAIL_USE_TLS:
+                    server.starttls()
+                server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+                server.sendmail(from_email, [to_email], message.as_string())
+            return True, "Email sent"
+        except Exception as e:
+            logging.getLogger("dms_app").error(f"Password reset email failed for {to_email}: {e}")
+            return False, "Reset email send nahi ho saka. SMTP credentials check karein."
 
     @staticmethod
     def set_new_password(user: User, new_password: str, session: Session) -> bool:

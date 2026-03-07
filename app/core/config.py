@@ -29,6 +29,14 @@ class Settings:
     SMS_API_KEY: str = os.getenv("SMS_API_KEY", "")
     SMS_SENDER_ID: str = os.getenv("SMS_SENDER_ID", "FSTSMS")
 
+    # Email (SMTP)
+    EMAIL_HOST: str = os.getenv("EMAIL_HOST", "")
+    EMAIL_PORT: int = int(os.getenv("EMAIL_PORT", "587"))
+    EMAIL_USE_TLS: bool = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
+    EMAIL_HOST_USER: str = os.getenv("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD: str = os.getenv("EMAIL_HOST_PASSWORD", "")
+    SERVER_EMAIL: str = os.getenv("SERVER_EMAIL", os.getenv("EMAIL_HOST_USER", ""))
+
     # Production Server (proxy کے پیچھے چلنے پر اصل domain)
     # Server کی .env میں لگائیں: PRODUCTION_HOST=demo.esabaq.com
     PRODUCTION_HOST: str = os.getenv("PRODUCTION_HOST", "")

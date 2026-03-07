@@ -62,6 +62,9 @@ class PasswordResetConfirmSchema(BaseModel):
             raise ValueError("Passwords do not match")
         return v
 
+class PasswordResetOtpSchema(BaseModel):
+    otp: str = Field(min_length=4, max_length=8)
+
 class ChangePasswordSchema(BaseModel):
     current_password: str = Field(min_length=1, description="Mawjooda Password")
     new_password: str = Field(min_length=6, description="Naya Password")

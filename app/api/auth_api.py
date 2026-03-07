@@ -153,6 +153,11 @@ async def password_reset_request(
     from app.schemas.forms import PasswordResetRequestSchema
     from pydantic import ValidationError
 
+    institution_slug = request.path_params.get("institution_slug")
+    request_path = f"/{institution_slug}/password-reset/" if institution_slug else "/password-reset/"
+    otp_verify_path_base = f"/{institution_slug}/password-reset/verify/" if institution_slug else "/password-reset/verify/"
+    confirm_path_base = f"/{institution_slug}/password-reset/confirm/" if institution_slug else "/password-reset/confirm/"
+
     if request.method == "POST":
         data = dict(await request.form())
         try:
@@ -165,8 +170,31 @@ async def password_reset_request(
                     "form_data": data
                 })
 
-            token = create_password_reset_token(user.username)
-            return RedirectResponse(url=f"/password-reset/confirm/?token={token}", status_code=303)
+            otp = UserLogic.generate_reset_otp()
+            token = create_password_reset_token(user.username, otp=otp)
+
+            otp_verify_path = f"{otp_verify_path_base}?token={token}"
+            confirm_path = f"{confirm_path_base}?token={token}"
+            base_url = str(request.base_url).rstrip("/")
+            otp_verify_link = f"{base_url}{otp_verify_path}"
+            confirm_link = f"{base_url}{confirm_path}"
+
+            sent, message = UserLogic.send_password_reset_email(
+                to_email=user.email,
+                username=user.username,
+                otp=otp,
+                confirm_link=confirm_link,
+                otp_link=otp_verify_link,
+                expire_minutes=20,
+            )
+            if not sent:
+                return await TemplateResponse.render("forgot_password.html", request, session, {
+                    "errors": {},
+                    "error": message,
+                    "form_data": data
+                })
+
+            return RedirectResponse(url=otp_verify_path, status_code=303)
         except ValidationError as e:
             errors = {err["loc"][0]: err["msg"] for err in e.errors()}
             return await TemplateResponse.render("forgot_password.html", request, session, {
@@ -174,7 +202,11 @@ async def password_reset_request(
             })
 
     return await TemplateResponse.render("forgot_password.html", request, session, {
-        "form": None, "errors": {}, "error": None, "form_data": None
+        "form": None,
+        "errors": {},
+        "error": None,
+        "form_data": None,
+        "request_path": request_path,
     })
 
 
@@ -188,6 +220,70 @@ async def institution_password_reset_request(
     return await password_reset_request(request, session)
 
 
+@router.api_route("/password-reset/verify", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_verify_otp_no_slash")
+@router.api_route("/password-reset/verify/", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_verify_otp")
+async def password_reset_verify_otp(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    from app.schemas.forms import PasswordResetOtpSchema
+    from pydantic import ValidationError
+
+    institution_slug = request.path_params.get("institution_slug")
+    request_path = f"/{institution_slug}/password-reset/" if institution_slug else "/password-reset/"
+    otp_verify_path_base = f"/{institution_slug}/password-reset/verify/" if institution_slug else "/password-reset/verify/"
+    confirm_path_base = f"/{institution_slug}/password-reset/confirm/" if institution_slug else "/password-reset/confirm/"
+
+    token = request.query_params.get("token", "")
+    if request.method == "POST":
+        data = dict(await request.form())
+        token = data.get("token", "")
+        try:
+            validated = PasswordResetOtpSchema(**data)
+            username = verify_password_reset_token(token, otp=validated.otp)
+            if not username:
+                return await TemplateResponse.render("password_reset_verify_otp.html", request, session, {
+                    "errors": {},
+                    "error": "OTP invalid ya expired hai.",
+                    "form_data": data,
+                    "token": token,
+                    "request_path": request_path,
+                })
+            return RedirectResponse(url=f"{confirm_path_base}?token={token}", status_code=303)
+        except ValidationError as e:
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
+            return await TemplateResponse.render("password_reset_verify_otp.html", request, session, {
+                "errors": errors,
+                "form_data": data,
+                "error": None,
+                "token": token,
+                "request_path": request_path,
+            })
+
+    if not verify_password_reset_token(token):
+        return RedirectResponse(url=request_path, status_code=303)
+
+    return await TemplateResponse.render("password_reset_verify_otp.html", request, session, {
+        "form": None,
+        "errors": {},
+        "error": None,
+        "form_data": None,
+        "token": token,
+        "request_path": request_path,
+        "otp_verify_path": otp_verify_path_base,
+    })
+
+
+@router.api_route("/{institution_slug}/password-reset/verify", methods=["GET", "POST"], response_class=HTMLResponse, name="institution_password_reset_verify_otp_no_slash")
+@router.api_route("/{institution_slug}/password-reset/verify/", methods=["GET", "POST"], response_class=HTMLResponse, name="institution_password_reset_verify_otp")
+async def institution_password_reset_verify_otp(
+    request: Request,
+    institution_slug: str,
+    session: Session = Depends(get_session),
+):
+    return await password_reset_verify_otp(request, session)
+
+
 @router.api_route("/password-reset/confirm", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_confirm_no_slash")
 @router.api_route("/password-reset/confirm/", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_confirm")
 async def password_reset_confirm(
@@ -196,6 +292,10 @@ async def password_reset_confirm(
 ):
     from app.schemas.forms import PasswordResetConfirmSchema
     from pydantic import ValidationError
+
+    institution_slug = request.path_params.get("institution_slug")
+    request_path = f"/{institution_slug}/password-reset/" if institution_slug else "/password-reset/"
+    login_path = f"/{institution_slug}/login/?reset=success" if institution_slug else "/login/?reset=success"
 
     token = request.query_params.get("token", "")
     if request.method == "POST":
@@ -209,7 +309,8 @@ async def password_reset_confirm(
                     "errors": {},
                     "error": "Reset link is invalid or expired.",
                     "form_data": data,
-                    "token": token
+                    "token": token,
+                    "request_path": request_path,
                 })
 
             user = session.exec(select(User).where(User.username == username)).first()
@@ -218,25 +319,32 @@ async def password_reset_confirm(
                     "errors": {},
                     "error": "Reset link is invalid or expired.",
                     "form_data": data,
-                    "token": token
+                    "token": token,
+                    "request_path": request_path,
                 })
 
             UserLogic.set_new_password(user, validated.password, session)
-            return RedirectResponse(url="/login/?reset=success", status_code=303)
+            return RedirectResponse(url=login_path, status_code=303)
         except ValidationError as e:
             errors = {err["loc"][0]: err["msg"] for err in e.errors()}
             return await TemplateResponse.render("reset_password.html", request, session, {
                 "errors": errors,
                 "form_data": data,
                 "error": None,
-                "token": token
+                "token": token,
+                "request_path": request_path,
             })
 
     if not verify_password_reset_token(token):
-        return RedirectResponse(url="/password-reset/", status_code=303)
+        return RedirectResponse(url=request_path, status_code=303)
 
     return await TemplateResponse.render("reset_password.html", request, session, {
-        "form": None, "errors": {}, "error": None, "form_data": None, "token": token
+        "form": None,
+        "errors": {},
+        "error": None,
+        "form_data": None,
+        "token": token,
+        "request_path": request_path,
     })
 
 
