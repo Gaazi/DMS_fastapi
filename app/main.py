@@ -228,12 +228,13 @@ templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
 templates.env.filters["time"] = lambda v, arg="%H:%M": v.strftime(arg) if hasattr(v, "strftime") else v
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
 
+# Admin Password Reset — sqladmin سے پہلے register کریں
+# (ورنہ sqladmin سارے /admin/* کو خود لے لیتا ہے اور 404 دیتا ہے)
+app.include_router(pwd_reset_router)
+
 # Setup SQLAdmin — routers سے پہلے mount کریں
 # (تاکہ /{slug}/ route /dms-admin/ کو نہ پکڑے)
 admin = setup_admin(app)
-
-# Admin Password Reset
-app.include_router(pwd_reset_router)
 
 # Register Routers
 app.include_router(auth_router, tags=["Authentication"])
