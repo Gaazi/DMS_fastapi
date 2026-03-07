@@ -6,6 +6,10 @@ from fastapi import Request, Depends, HTTPException
 from app.core.config import settings
 from app.logic.utils import get_random_string
 try:
+    import passlib.handlers.bcrypt
+    if hasattr(passlib.handlers.bcrypt, "_BcryptWrapBugMixin"):
+        passlib.handlers.bcrypt._BcryptWrapBugMixin.detect_wrap_bug = lambda *a, **kw: False
+    
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256", "django_pbkdf2_sha256", "md5_crypt", "sha256_crypt"], deprecated="auto")
 except ImportError:
