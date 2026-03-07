@@ -36,21 +36,23 @@ class Cashier:
 
         # Step A: Wallet Use
         if use_wallet and student.wallet_balance > 0:
+            wallet_balance = Decimal(str(student.wallet_balance or 0))
             for fee in pending_fees:
-                balance = (fee.amount_due + fee.late_fee - fee.discount) - fee.amount_paid
+                balance = self._fee_balance(fee)
                 if balance <= 0: continue
                 
-                wallet_deduct = min(student.wallet_balance, balance)
+                wallet_deduct = min(wallet_balance, balance)
                 if wallet_deduct > 0:
                     p_rec = self._process_single_payment(student, fee, wallet_deduct, "Wallet", is_wallet=True)
                     self._update_wallet(student, wallet_deduct, "debit", f"Paid {fee.fee_type}", p_rec)
+                    wallet_balance -= wallet_deduct
                     receipts.append(p_rec.receipt_number)
 
         # Step B: Cash Use
         if remaining_cash > 0:
             for fee in pending_fees:
                 self.session.refresh(fee)
-                balance = (fee.amount_due + fee.late_fee - fee.discount) - fee.amount_paid
+                balance = self._fee_balance(fee)
                 
                 if balance <= 0: continue
                 if remaining_cash <= 0: break
@@ -107,7 +109,7 @@ class Cashier:
             if remaining_cash <= 0: break
             student = next(s for s in all_students if s.id == fee.student_id)
             
-            balance = (fee.amount_due + fee.late_fee - fee.discount) - fee.amount_paid
+            balance = self._fee_balance(fee)
             if balance <= 0: continue
             
             pay_amount = min(remaining_cash, balance)
@@ -233,12 +235,22 @@ class Cashier:
         )
         self.session.add(trans)
         
+        # Cast wallet_balance to Decimal to avoid float + Decimal TypeError
+        current_balance = Decimal(str(student.wallet_balance or 0))
         if t_type == "credit": 
-            student.wallet_balance += amount
+            student.wallet_balance = current_balance + amount
         else: 
-            student.wallet_balance -= amount
+            student.wallet_balance = current_balance - amount
             
         self.session.add(student)
+
+    def _fee_balance(self, fee: "Fee") -> Decimal:
+        """Get fee balance as Decimal, safely casting SQLite floats."""
+        due = Decimal(str(fee.amount_due or 0))
+        late = Decimal(str(fee.late_fee or 0))
+        disc = Decimal(str(fee.discount or 0))
+        paid = Decimal(str(fee.amount_paid or 0))
+        return max(Decimal("0"), due + late - disc - paid)
 
     def _deposit_to_wallet(self, student: Student, amount: Decimal, method: str):
         # والٹ میں جمع کی گئی رقم کو براہ راست آمدن کے طور پر ریکارڈ کریں
