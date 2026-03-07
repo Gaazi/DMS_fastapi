@@ -114,7 +114,29 @@ templates.env.filters["translate"] = translate_filter
 import json
 templates.env.filters["tojson"] = lambda v: json.dumps(v)
 templates.env.globals["csrf_token"] = lambda: ""
-templates.env.globals["now"] = lambda: datetime.datetime.now()
+def _now_func(format_str=None):
+    """Django-compatible now() function for Jinja2.
+    Accepts optional Django-style format codes like 'd/M/Y'.
+    """
+    now = datetime.datetime.now()
+    if not format_str:
+        return now
+    # Map common Django format codes to Python strftime
+    django_to_py = {
+        'd': '%d', 'j': '%-d', 'm': '%m', 'n': '%-m',
+        'Y': '%Y', 'y': '%y', 'M': '%b', 'N': '%B',
+        'H': '%H', 'i': '%M', 's': '%S',
+    }
+    # Convert Django format to Python strftime by replacing tokens
+    py_fmt = ""
+    for ch in format_str:
+        py_fmt += django_to_py.get(ch, ch)
+    try:
+        return now.strftime(py_fmt)
+    except Exception:
+        return now.strftime('%d/%m/%Y')
+
+templates.env.globals["now"] = _now_func
 
 async def get_global_context(request, session: Session, current_user: Optional[User] = None) -> Dict[str, Any]:
     # Mocking resolver_match for Django template compatibility

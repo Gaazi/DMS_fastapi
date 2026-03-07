@@ -166,11 +166,11 @@ class Cashier:
         return self.session.get(Student, s_id)
 
     def _get_pending_fees(self, student: Student, admission_id: Optional[int] = None) -> List[Fee]:
-        # بقایا فیسیں حاصل کریں (جہاں ادا شدہ رقم کل واجبات سے کم ہو)
+        # بقایا فیسیں حاصل کریں - Pending/Partial/Overdue (ادا نہ ہوں) لیکن Cancelled نہیں
         stmt = select(Fee).where(
             Fee.student_id == student.id,
             Fee.inst_id == self.institution.id,
-            Fee.status.in_(['Pending', 'Partial'])
+            Fee.status.in_(['Pending', 'Partial', 'Overdue'])
         )
         all_pending = self.session.exec(stmt).all()
         
@@ -210,17 +210,21 @@ class Cashier:
             self.session.add(income)
         
         # فیس کی ادا شدہ رقم اپڈیٹ کریں
-        # SQLite stores Float as native Python float; cast to Decimal to avoid TypeError
+        # SQLite stores Float as native Python float; cast to Decimal then back to float
         current_paid = Decimal(str(fee.amount_paid or 0))
         amount_due = Decimal(str(fee.amount_due or 0))
         late_fee_val = Decimal(str(fee.late_fee or 0))
         discount_val = Decimal(str(fee.discount or 0))
         
-        fee.amount_paid = current_paid + amount
-        if fee.amount_paid >= (amount_due + late_fee_val - discount_val):
+        new_paid = current_paid + amount
+        fee.amount_paid = float(new_paid)  # Float column: store as float
+        
+        if new_paid >= (amount_due + late_fee_val - discount_val):
             fee.status = "Paid"
-        else:
+        elif new_paid > 0:
             fee.status = "Partial"
+        else:
+            fee.status = "Pending"
             
         self.session.add(fee)
         return p_rec
@@ -235,12 +239,12 @@ class Cashier:
         )
         self.session.add(trans)
         
-        # Cast wallet_balance to Decimal to avoid float + Decimal TypeError
+        # Cast wallet_balance to Decimal to avoid float + Decimal TypeError, then store as float
         current_balance = Decimal(str(student.wallet_balance or 0))
         if t_type == "credit": 
-            student.wallet_balance = current_balance + amount
+            student.wallet_balance = float(current_balance + amount)
         else: 
-            student.wallet_balance = current_balance - amount
+            student.wallet_balance = float(current_balance - amount)
             
         self.session.add(student)
 
