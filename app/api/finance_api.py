@@ -318,37 +318,7 @@ async def fees(request: Request, institution_slug: str, fee_id: int, session: Se
     context.update({"request": request, "institution": institution, "fee": fee, "student": student})
     return await TemplateResponse.render('dms/student_detail.html', request, session, context)
 
-# --- 2. pay_installment ---
-# This route is replaced by pay_fee_route and collect_fee_bulk
-# @router.post("/{institution_slug}/fees/{fee_id}/pay/")
-# async def pay_installment(
-#     request: Request, institution_slug: str, fee_id: int,
-#     session: Session = Depends(get_session), current_user: User = Depends(get_current_user)
-# ):
-#     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
-#     fm = FinanceLogic(current_user, session=session, institution=institution)
-#     form_data = await request.form()
-    
-#     result = fm.pay(
-#         fee_id=fee_id if fee_id != 0 else None,
-#         student_id=form_data.get('student_id'),
-#         amount=form_data.get('amount', 0),
-#         method=form_data.get('method', 'Cash'),
-#         use_wallet=form_data.get('use_wallet') == 'on'
-#     )
-    
-#     if result['status'] == 'success':
-#         response = await TemplateResponse.render('dms/partials/receipt_fee.html', request, session, result)
-#         response.headers['HX-Trigger'] = json.dumps({"updateBalance": None, "refreshFeeTable": None, "closeModal": None})
-#         return response
-            
-#     raise HTTPException(status_code=400, detail="ادائیگی مکمل نہیں ہوسکی۔")
 
-# --- 2.1 batch_generate_fees ---
-# This route is now at position 4.
-
-# --- 3. balance ---
-# This route is now at position 1.
 
 # --- 4. donation (آمدنی ڈیش بورڈ) ---
 @router.get("/{institution_slug}/in/", response_class=HTMLResponse, name="income")
