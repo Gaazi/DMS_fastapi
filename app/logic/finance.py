@@ -214,8 +214,8 @@ class FinanceLogic:
             inc_stmt = inc_stmt.where(Income.date >= start_date, Income.date <= end_date)
             exp_stmt = exp_stmt.where(Expense.date >= start_date, Expense.date <= end_date)
             
-        total_in = self.session.exec(inc_stmt).one() or Decimal('0.00')
-        total_out = self.session.exec(exp_stmt).one() or Decimal('0.00')
+        total_in = Decimal(str(self.session.exec(inc_stmt).one() or Decimal('0.00')))
+        total_out = Decimal(str(self.session.exec(exp_stmt).one() or Decimal('0.00')))
         
         return {
             'total_amount': total_in, 
