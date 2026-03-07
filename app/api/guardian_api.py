@@ -32,6 +32,21 @@ async def parent_dashboard(
     return await TemplateResponse.render("dms/parent_dashboard.html", request, session, ctx)
 
 
+# ── 1.1 Guardian Dashboard (Django alias) ────────────────────────────────────
+@router.get("/{institution_slug}/guardian/",
+            response_class=HTMLResponse, name="guardian_dashboard_scoped")
+async def guardian_dashboard_scoped(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="any")
+    gm = GuardianLogic(session, current_user, institution=institution)
+    ctx = gm.get_dashboard_context()
+    ctx["institution"] = institution
+    return await TemplateResponse.render("dms/parent_dashboard.html", request, session, ctx)
+
+
 # ── 2. Parent Students List ──────────────────────────────────────────────────
 @router.get("/{institution_slug}/parent/students/",
             response_class=HTMLResponse, name="parent_students")

@@ -99,6 +99,28 @@ async def download_snapshot_file(snapshot_id: int, session: Session = Depends(ge
         if inst.user_id != current_user.id: raise HTTPException(status_code=403)
     return FileResponse(snapshot.file_path, filename=os.path.basename(snapshot.file_path))
 
+# --- 3.1 Django-Compatible Aliases ---
+@router.post("/{institution_slug}/backups/restore/{snapshot_id}/", name="restore_snapshot_ajax")
+async def restore_snapshot_ajax(institution_slug: str, snapshot_id: int,
+                                session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    if not current_user.is_superuser: raise HTTPException(status_code=403)
+    return RedirectResponse(url=f"/{institution_slug}/backups/", status_code=303)
+
+@router.get("/{institution_slug}/backups/download/{snapshot_id}/", name="download_snapshot_file")
+async def download_snapshot_file_scoped(snapshot_id: int, institution_slug: str,
+                                       session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    snapshot = session.get(SystemSnapshot, snapshot_id)
+    if not snapshot: raise HTTPException(status_code=404)
+    return FileResponse(snapshot.file_path, filename=os.path.basename(snapshot.file_path))
+
+@router.get("/{institution_slug}/export/", name="institution_export")
+async def institution_export_route(institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
+    json_payload = export_institution_to_json(institution, session)
+    from fastapi.responses import Response
+    return Response(content=json_payload, media_type="application/json",
+                    headers={"Content-Disposition": f'attachment; filename="{institution.slug}.json"'})
+
 # --- 4. Exports ---
 @router.get("/{institution_slug}/export/json/", name="export_institution_json")
 async def download_institution_export_json_route(institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
