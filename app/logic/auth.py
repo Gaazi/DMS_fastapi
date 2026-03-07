@@ -5,6 +5,7 @@ import logging
 import smtplib
 from email.mime.text import MIMEText
 from jose import JWTError, jwt
+from sqlalchemy import func
 from fastapi import Request, Depends, HTTPException
 from app.core.config import settings
 from app.logic.utils import get_random_string
@@ -147,20 +148,22 @@ class UserLogic:
     def authenticate(username, password, session: Session) -> Optional[User]:
         """صارف کی تصدیق۔"""
         login_value = (username or "").strip()
-        user = session.exec(
-            select(User).where(
-                or_(
-                    User.username == login_value,
-                    User.email == login_value
-                )
-            )
-        ).first()
+        if not login_value:
+            return None
+
+        user = session.exec(select(User).where(User.username == login_value)).first()
+        if not user:
+            user = session.exec(select(User).where(User.email == login_value)).first()
+        if not user and "@" in login_value:
+            user = session.exec(
+                select(User).where(func.lower(User.email) == login_value.lower())
+            ).first()
+
         if user:
             try:
                 if pwd_context.verify(password, user.password):
                     return user
             except Exception as e:
-                import logging
                 logging.getLogger("dms_app").error(f"Password hash error for user {username}: {e}")
                 return None
         return None
@@ -278,19 +281,28 @@ class UserLogic:
         if not login:
             return None
 
-        user = session.exec(
-            select(User).where(
-                or_(
-                    User.username == login,
-                    User.email == login
-                )
-            )
-        ).first()
+        user = session.exec(select(User).where(User.username == login)).first()
+        if not user:
+            user = session.exec(select(User).where(User.email == login)).first()
+        if not user and "@" in login:
+            user = session.exec(
+                select(User).where(func.lower(User.email) == login.lower())
+            ).first()
         if not user:
             return None
         if not (user.email or "").strip():
             return None
         return user
+
+    @staticmethod
+    def verify_password(plain_password: str, hashed_password: str) -> bool:
+        if not plain_password or not hashed_password:
+            return False
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception as e:
+            logging.getLogger("dms_app").error(f"Password verify error: {e}")
+            return False
 
     @staticmethod
     def generate_reset_otp(length: int = 6) -> str:
@@ -351,13 +363,15 @@ class UserLogic:
     def handle_signup(data: dict, session: Session) -> Tuple[bool, str, Optional[User]]:
         """نیا اکاؤنٹ بنانے کا عمل۔"""
         username = data.get("username")
+        email = (data.get("email") or "").strip().lower()
         password = data.get("password")
-        
+
         if session.exec(select(User).where(User.username == username)).first():
             return False, "یہ صارف نام پہلے سے موجود ہے۔", None
-            
+
         user = User(
             username=username,
+            email=email,
             password=pwd_context.hash(password),
             is_active=True,
             date_joined=datetime.datetime.utcnow()
@@ -365,5 +379,4 @@ class UserLogic:
         session.add(user)
         session.commit()
         return True, "اکاؤنٹ بن گیا ہے۔", user
-
 

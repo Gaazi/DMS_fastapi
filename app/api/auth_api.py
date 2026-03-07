@@ -96,13 +96,13 @@ async def dms_login(
 
     if request.method == "POST":
         data = dict(await request.form())
-        next_url = data.get("next") or next_url
+        next_url = (data.get("next") or next_url or "").strip()
         try:
             validated = LoginFormSchema(**data)
             user = UserLogic.authenticate(validated.username, validated.password, session)
             if user:
                 token = create_access_token({"sub": user.username})
-                if next_url and next_url.startswith("/"):
+                if next_url and next_url.startswith("/") and not next_url.startswith("//"):
                     redirect_url = next_url
                 else:
                     default_inst = session.exec(
