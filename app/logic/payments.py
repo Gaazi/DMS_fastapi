@@ -36,10 +36,15 @@ class Cashier:
         # Explicit Wallet Method Selection
         if method == "Wallet":
             wallet_balance = Decimal(str(student.wallet_balance or 0))
-            if wallet_balance < amount_dec:
-                raise HTTPException(status_code=400, detail=f"والٹ میں مطلوبہ رقم موجود نہیں ہے۔ (موجودہ بیلنس: {wallet_balance})")
+            if wallet_balance <= 0:
+                raise HTTPException(status_code=400, detail="والٹ میں کوئی رقم موجود نہیں ہے۔")
             
-            remaining_wallet_pay = amount_dec
+            # Use requested amount OR whatever is available in wallet (whichever is lower)
+            remaining_wallet_pay = min(amount_dec, wallet_balance)
+            
+            # Since we modify amount_dec, keep track of how much we actually paid via wallet
+            actual_paid = Decimal("0")
+            
             for fee in pending_fees:
                 if remaining_wallet_pay <= 0: break
                 balance = self._fee_balance(fee)
@@ -48,10 +53,12 @@ class Cashier:
                 pay_amount = min(remaining_wallet_pay, balance)
                 p_rec = self._process_single_payment(student, fee, pay_amount, "Wallet", is_wallet=True)
                 self._update_wallet(student, pay_amount, "debit", f"Paid {fee.fee_type}", p_rec)
+                
                 remaining_wallet_pay -= pay_amount
+                actual_paid += pay_amount
                 receipts.append(p_rec.receipt_number)
                 
-            # Note: Unused wallet allocation (surplus) is simply ignored because the money is already in the wallet!
+            amount_dec = actual_paid # Update the actual amount process for the final response
 
         else:
             remaining_cash = amount_dec
