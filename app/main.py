@@ -22,7 +22,6 @@ from app.api import (
     guardian_router, global_router, notification_router
 )
 from app.admin import setup_admin
-from app.admin.password_reset import router as pwd_reset_router
 
 from contextlib import asynccontextmanager
 from app.core.database import init_db
@@ -227,10 +226,6 @@ templates.env.filters["truncatechars"] = truncatechars_filter
 templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")
 templates.env.filters["time"] = lambda v, arg="%H:%M": v.strftime(arg) if hasattr(v, "strftime") else v
 templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict) else None
-
-# Admin Password Reset — sqladmin سے پہلے register کریں
-# (ورنہ sqladmin سارے /admin/* کو خود لے لیتا ہے اور 404 دیتا ہے)
-app.include_router(pwd_reset_router)
 
 # Setup SQLAdmin — routers سے پہلے mount کریں
 # (تاکہ /{slug}/ route /dms-admin/ کو نہ پکڑے)

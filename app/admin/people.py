@@ -3,39 +3,51 @@ from app.models.auth import User
 from app.models.people import Staff, Parent, Student, Admission
 from app.models.attendance import Attendance, Staff_Attendance
 from app.models.audit import ActivityLog
+from wtforms import PasswordField
 from starlette.requests import Request
-from markupsafe import Markup
+from app.admin.base import DMSModelView
+from app.models.auth import User
+from app.models.people import Staff, Parent, Student, Admission
+from app.models.attendance import Attendance, Staff_Attendance
+from app.models.audit import ActivityLog
 
 class UserAdmin(DMSModelView, model=User):
-    column_list = [User.id, User.username, User.email, User.is_superuser, User.is_active, User.password]
+    # لسٹ میں پاس ورڈ نہ دکھائیں (سیکیورٹی)
+    column_list = [User.id, User.username, User.email, User.is_superuser, User.is_active]
     column_searchable_list = [User.username, User.email]
     form_include_pk = False
     category = "People"
     icon = "fa-solid fa-users-gear"
     name_plural = "Users"
-    column_labels = {User.password: "پاس ورڈ"}
 
-    # پاسورڈ کالم میں اصل پاسورڈ دکھانے کے بجائے ری سیٹ کا بٹن دکھائیں
-    column_formatters = {
-        User.password: lambda m, a: Markup(
-            f'<a href="/admin/reset-password/{m.id}" '
-            f'style="background:#1d4ed8;color:#fff;padding:8px 12px;'
-            f'border-radius:6px;text-decoration:none;font-size:12px;font-weight:bold;">'
-            f'🔑 Password Reset</a>'
-        )
+    # فارم کے اندر پاس ورڈ فیلڈ سیٹ اپ
+    form_overrides = {
+        "password": PasswordField  # فیلڈ میں ستارے (***) نظر آئیں گے
+    }
+    
+    # یہ یقینی بناتا ہے کہ ایڈٹ کرتے وقت پاسورڈ فیلڈ ہمیشہ خالی رہے
+    form_args = {
+        "password": {
+            "label": "نیا پاس ورڈ (اگر بدلنا ہو تبھی لکھیں)",
+            "description": "پاس ورڈ تبدیل کرنے کے لیے یہاں نیا پاس ورڈ ٹائپ کریں۔ اگر خالی چھوڑیں گے تو پرانا پاس ورڈ ہی رہے گا۔",
+            "render_kw": {"placeholder": "••••••••"}
+        }
     }
 
     async def on_model_change(self, data: dict, model: User, is_created: bool, request: Request) -> None:
         """
-        اگر admin نے password فیلڈ بھری ہے تو اسے hash کر دیں۔
-        اگر فیلڈ خالی چھوڑی تو پرانا password رہنے دیں۔
+        جب بھی Admin Save کا بٹن دبائے گا تو یہ فنکشن چلے گا:
+        1. اگر پاسورڈ فیلڈ میں نیا پاسورڈ ڈالا ہے، تو اسے Hash کر کے save کر دو۔
+        2. اگر فیلڈ خالی چھوڑ دی گئی ہے تو پرانا پاسورڈ وہی کا وہی رہنے دو۔
         """
         new_password = data.get("password", "").strip()
+        
         if new_password:
+            # نیا پاسورڈ ٹائپ کیا ہے -> اسے Hash کرو
             from app.logic.auth import pwd_context
-            data["password"] = pwd_context.hash(new_password[:72])
+            data["password"] = pwd_context.hash(new_password)
         elif not is_created and model.password:
-            # خالی ہے اور یہ edit ہے تو پرانا رکھیں
+            # کچھ ٹائپ نہیں کیا -> پرانا پاسورڈ برقرار رکھو
             data["password"] = model.password
 
 class StaffAdmin(DMSModelView, model=Staff):
