@@ -22,6 +22,7 @@ from app.api import (
     guardian_router, global_router, notification_router
 )
 from app.admin import setup_admin
+from app.admin.password_reset import router as pwd_reset_router
 
 from contextlib import asynccontextmanager
 from app.core.database import init_db
@@ -230,6 +231,9 @@ templates.env.filters["dict_key"] = lambda d, k: d.get(k) if isinstance(d, dict)
 # Setup SQLAdmin — routers سے پہلے mount کریں
 # (تاکہ /{slug}/ route /dms-admin/ کو نہ پکڑے)
 admin = setup_admin(app)
+
+# Admin Password Reset
+app.include_router(pwd_reset_router)
 
 # Register Routers
 app.include_router(auth_router, tags=["Authentication"])
