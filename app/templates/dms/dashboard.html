@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 
 {% block title %}{{ institution.name }} - ڈیش بورڈ{% endblock %}
@@ -418,7 +418,7 @@
                         <p class="text-[10px] text-slate-500 uppercase">{{ staff.role|upper }}</p>
                     </div>
                 </div>
-                <a href="{{ url('staff_detail', institution.slug, staff.id) if url('staff_detail', institution.slug, staff.id) else '#' }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white transition-colors">
+                <a href="{{ url('dms_staff_detail', institution.slug, staff.id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white transition-colors">
                     <i class="fas fa-chevron-left text-[10px]"></i>
                 </a>
             </div>
