@@ -208,8 +208,14 @@ class Cashier:
             self.session.add(income)
         
         # فیس کی ادا شدہ رقم اپڈیٹ کریں
-        fee.amount_paid += amount
-        if fee.amount_paid >= (fee.amount_due + fee.late_fee - fee.discount):
+        # SQLite stores Float as native Python float; cast to Decimal to avoid TypeError
+        current_paid = Decimal(str(fee.amount_paid or 0))
+        amount_due = Decimal(str(fee.amount_due or 0))
+        late_fee_val = Decimal(str(fee.late_fee or 0))
+        discount_val = Decimal(str(fee.discount or 0))
+        
+        fee.amount_paid = current_paid + amount
+        if fee.amount_paid >= (amount_due + late_fee_val - discount_val):
             fee.status = "Paid"
         else:
             fee.status = "Partial"

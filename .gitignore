@@ -45,3 +45,4 @@ verify_output.txt
 *.diff
 *.patch
 diff*.txt
+.django_project/

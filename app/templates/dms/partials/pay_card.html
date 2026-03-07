@@ -39,10 +39,16 @@
     {% if first_pending_fee %}
     <!-- Alpine dynamically binds the action URL based on selectedFeeId -->
     <form :action="`/${'{{ institution.slug }}'}/fees/${selectedFeeId}/pay/`"
-        hx-post="javascript:void(0)"
-        @submit.prevent="htmx.ajax('POST', $event.target.action, {target: '#receipt-container', swap: 'innerHTML'})"
-        @htmx:before-request="loading = true"
-        @htmx:after-request="loading = false; openModal = false" class="space-y-4 sm:space-y-5" id="payment-form">
+        id="payment-form"
+        @submit.prevent="
+            loading = true;
+            htmx.ajax('POST', $event.target.action, {
+                source: $event.target,
+                target: '#receipt-container',
+                swap: 'innerHTML'
+            }).then(() => { loading = false; openModal = false; });
+        "
+        class="space-y-4 sm:space-y-5">
         {{ csrf_token() }}
 
         <div
