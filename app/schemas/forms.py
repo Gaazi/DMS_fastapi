@@ -48,6 +48,20 @@ class LoginFormSchema(BaseModel):
     username: str = Field(min_length=3, description="نام کم از کم 3 حروف کا ہونا چاہیے")
     password: str = Field(min_length=6, description="پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے")
 
+class PasswordResetRequestSchema(BaseModel):
+    login: str = Field(min_length=3, description="Enter username or email")
+    email: EmailStr
+
+class PasswordResetConfirmSchema(BaseModel):
+    password: str = Field(min_length=6)
+    confirm_password: str = Field(min_length=6)
+
+    @validator("confirm_password")
+    def passwords_must_match(cls, v, values):
+        if values.get("password") and values["password"] != v:
+            raise ValueError("Passwords do not match")
+        return v
+
 class SignupFormSchema(BaseModel):
     username: str = Field(min_length=3)
     email: EmailStr
@@ -223,3 +237,4 @@ class StaffPayrollSchema(BaseModel):
     amount: Decimal = Field(gt=0)
     month: int = Field(ge=1, le=12)
     year: int
+

@@ -25,6 +25,24 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
+def create_password_reset_token(username: str, expire_minutes: int = 20) -> str:
+    to_encode = {"sub": username, "type": "password_reset"}
+    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=expire_minutes)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+def verify_password_reset_token(token: str) -> Optional[str]:
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        return None
+    if payload.get("type") != "password_reset":
+        return None
+    username = payload.get("sub")
+    return username if username else None
+
 async def get_current_user(request: Request, session: Session = Depends(get_session)) -> Optional[User]:
     token = request.cookies.get("session_token")
     if not token:
@@ -239,6 +257,35 @@ class UserLogic:
         # 5. کوئی link نہیں → welcome
         return "/welcome/"
 
+    @staticmethod
+    def get_user_for_password_reset(login: str, email: str, session: Session) -> Optional[User]:
+        login = (login or "").strip()
+        email = (email or "").strip().lower()
+        if not login or not email:
+            return None
+
+        user = session.exec(
+            select(User).where(
+                or_(
+                    User.username == login,
+                    User.email == login
+                )
+            )
+        ).first()
+        if not user:
+            return None
+        if (user.email or "").strip().lower() != email:
+            return None
+        return user
+
+    @staticmethod
+    def set_new_password(user: User, new_password: str, session: Session) -> bool:
+        if not user or not new_password or len(new_password) < 6:
+            return False
+        user.password = pwd_context.hash(new_password)
+        session.add(user)
+        session.commit()
+        return True
 
     @staticmethod
     def handle_signup(data: dict, session: Session) -> Tuple[bool, str, Optional[User]]:
@@ -258,3 +305,4 @@ class UserLogic:
         session.add(user)
         session.commit()
         return True, "اکاؤنٹ بن گیا ہے۔", user
+

@@ -11,7 +11,13 @@ from sqlmodel import Session, select, update
 from app.core.database import get_session
 from app.core.config import settings
 from app.models import User, Institution, Staff, Student, Parent
-from app.logic.auth import UserLogic, get_current_user, create_access_token
+from app.logic.auth import (
+    UserLogic,
+    get_current_user,
+    create_access_token,
+    create_password_reset_token,
+    verify_password_reset_token,
+)
 from app.logic.permissions import get_institution_with_access
 from app.utils.context import TemplateResponse
 
@@ -86,6 +92,7 @@ async def dms_login(
     from pydantic import ValidationError
 
     next_url = request.query_params.get("next", "")
+    reset_success = request.query_params.get("reset") == "success"
 
     if request.method == "POST":
         data = dict(await request.form())
@@ -122,7 +129,12 @@ async def dms_login(
             })
 
     return await TemplateResponse.render("login.html", request, session, {
-        "form": None, "errors": {}, "error": None, "form_data": None, "next": next_url
+        "form": None,
+        "errors": {},
+        "error": None,
+        "form_data": None,
+        "next": next_url,
+        "success": "Password reset ho gaya hai. Ab naya password se login karein." if reset_success else None,
     })
 
 @router.api_route("/{institution_slug}/login/", methods=["GET", "POST"], name="institution_login")
@@ -131,6 +143,90 @@ async def institution_login(request: Request, institution_slug: str, session: Se
 
 
 # ── 4. Signup ─────────────────────────────────────────────────────────────────
+# Password Reset
+@router.api_route("/password-reset/", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_request")
+async def password_reset_request(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    from app.schemas.forms import PasswordResetRequestSchema
+    from pydantic import ValidationError
+
+    if request.method == "POST":
+        data = dict(await request.form())
+        try:
+            validated = PasswordResetRequestSchema(**data)
+            user = UserLogic.get_user_for_password_reset(validated.login, validated.email, session)
+            if not user:
+                return await TemplateResponse.render("forgot_password.html", request, session, {
+                    "errors": {},
+                    "error": "Provided account details are not valid.",
+                    "form_data": data
+                })
+
+            token = create_password_reset_token(user.username)
+            return RedirectResponse(url=f"/password-reset/confirm/?token={token}", status_code=303)
+        except ValidationError as e:
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
+            return await TemplateResponse.render("forgot_password.html", request, session, {
+                "errors": errors, "form_data": data, "error": None
+            })
+
+    return await TemplateResponse.render("forgot_password.html", request, session, {
+        "form": None, "errors": {}, "error": None, "form_data": None
+    })
+
+
+@router.api_route("/password-reset/confirm/", methods=["GET", "POST"], response_class=HTMLResponse, name="password_reset_confirm")
+async def password_reset_confirm(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    from app.schemas.forms import PasswordResetConfirmSchema
+    from pydantic import ValidationError
+
+    token = request.query_params.get("token", "")
+    if request.method == "POST":
+        data = dict(await request.form())
+        token = data.get("token", "")
+        try:
+            validated = PasswordResetConfirmSchema(**data)
+            username = verify_password_reset_token(token)
+            if not username:
+                return await TemplateResponse.render("reset_password.html", request, session, {
+                    "errors": {},
+                    "error": "Reset link is invalid or expired.",
+                    "form_data": data,
+                    "token": token
+                })
+
+            user = session.exec(select(User).where(User.username == username)).first()
+            if not user:
+                return await TemplateResponse.render("reset_password.html", request, session, {
+                    "errors": {},
+                    "error": "Reset link is invalid or expired.",
+                    "form_data": data,
+                    "token": token
+                })
+
+            UserLogic.set_new_password(user, validated.password, session)
+            return RedirectResponse(url="/login/?reset=success", status_code=303)
+        except ValidationError as e:
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
+            return await TemplateResponse.render("reset_password.html", request, session, {
+                "errors": errors,
+                "form_data": data,
+                "error": None,
+                "token": token
+            })
+
+    if not verify_password_reset_token(token):
+        return RedirectResponse(url="/password-reset/", status_code=303)
+
+    return await TemplateResponse.render("reset_password.html", request, session, {
+        "form": None, "errors": {}, "error": None, "form_data": None, "token": token
+    })
+
 @router.api_route("/signup/", methods=["GET", "POST"],
                   response_class=HTMLResponse, name="dms_signup")
 async def signup(
@@ -209,3 +305,4 @@ async def create_portal_account(
 @router.get("/auth/google/", name="auth_google")
 async def auth_google(request: Request, process: str = "login"):
     return RedirectResponse(url="/login/", status_code=303)
+
