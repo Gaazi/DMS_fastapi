@@ -146,7 +146,15 @@ class UserLogic:
     @staticmethod
     def authenticate(username, password, session: Session) -> Optional[User]:
         """صارف کی تصدیق۔"""
-        user = session.exec(select(User).where(User.username == username)).first()
+        login_value = (username or "").strip()
+        user = session.exec(
+            select(User).where(
+                or_(
+                    User.username == login_value,
+                    User.email == login_value
+                )
+            )
+        ).first()
         if user:
             try:
                 if pwd_context.verify(password, user.password):
@@ -357,4 +365,5 @@ class UserLogic:
         session.add(user)
         session.commit()
         return True, "اکاؤنٹ بن گیا ہے۔", user
+
 
