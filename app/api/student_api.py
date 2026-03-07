@@ -70,6 +70,13 @@ async def musallee_admission(request: Request, institution_slug: str,
                              current_user: User = Depends(get_current_user)):
     return await admission(request, institution_slug, session, current_user)
 
+@router.api_route("/{institution_slug}/musalleen/detail/{student_id}/", methods=["GET", "POST"], response_class=HTMLResponse, name="musalleen_detail")
+async def musalleen_detail(request: Request, institution_slug: str, student_id: int,
+                           session: Session = Depends(get_session),
+                           current_user: User = Depends(get_current_user)):
+    return await student_detail(request, institution_slug, student_id, session, current_user)
+
+
 
 # ── 2. Student Detail ───────────────────────────────────────────────────────
 @router.api_route("/{institution_slug}/students/detail/{student_id}/", methods=["GET", "POST"],
