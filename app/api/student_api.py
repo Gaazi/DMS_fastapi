@@ -57,6 +57,14 @@ async def students_page(
     return await TemplateResponse.render(template, request, session, ctx)
 
 
+# student_list — HTMX partial alias (Django compatibility)
+@router.get("/{institution_slug}/students/list/", response_class=HTMLResponse, name="student_list")
+async def student_list(request: Request, institution_slug: str,
+                       session: Session = Depends(get_session),
+                       current_user: User = Depends(get_current_user)):
+    return await students_page(request, institution_slug, session, current_user)
+
+
 # Mosque aliases
 @router.get("/{institution_slug}/musalleen/", response_class=HTMLResponse, name="musalleen_list")
 async def musalleen_page(request: Request, institution_slug: str,

@@ -20,7 +20,7 @@ router = APIRouter()
 
 # ── 1. Timetable View ────────────────────────────────────────────────────────
 @router.get("/{institution_slug}/timetable/",
-            response_class=HTMLResponse, name="timetable_view")
+            response_class=HTMLResponse, name="timetable")
 async def timetable_view(
     request: Request, institution_slug: str,
     course_id: Optional[int] = None,

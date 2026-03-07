@@ -49,8 +49,28 @@ async def inventory_dashboard(
     return await TemplateResponse.render("dms/inventory_list.html", request, session, ctx)
 
 
-# ── 2. Issue Item ────────────────────────────────────────────────────────────
-@router.post("/{institution_slug}/inventory/issue/", name="inventory_issue")
+# ── 2. Add Item (alias) ─────────────────────────────────────────────────────
+@router.post("/{institution_slug}/inventory/add/", name="add_item")
+async def add_item(
+    request: Request, institution_slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type="admin")
+    im = InventoryLogic(session, current_user, institution=institution)
+    from app.schemas.forms import InventoryItemSchema
+    from pydantic import ValidationError
+    data = dict(await request.form())
+    try:
+        validated = InventoryItemSchema(**data)
+        im.save_item(validated.dict())
+    except ValidationError:
+        pass
+    return RedirectResponse(url=request.url_for("inventory_dashboard", institution_slug=institution_slug), status_code=303)
+
+
+# ── 3. Issue Item ────────────────────────────────────────────────────────────
+@router.post("/{institution_slug}/inventory/issue/", name="issue_item")
 async def issue_item(
     request: Request, institution_slug: str,
     session: Session = Depends(get_session),
@@ -78,7 +98,7 @@ async def issue_item(
 
 
 # ── 3. Return Item ───────────────────────────────────────────────────────────
-@router.post("/{institution_slug}/inventory/return/{issue_id}/", name="inventory_return")
+@router.post("/{institution_slug}/inventory/return/{issue_id}/", name="return_item")
 async def return_item(
     institution_slug: str, issue_id: int,
     session: Session = Depends(get_session),

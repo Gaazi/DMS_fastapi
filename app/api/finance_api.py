@@ -206,6 +206,26 @@ async def record_expense(request: Request, institution_slug: str, session: Sessi
             
     return await TemplateResponse.render("dms/expense_form.html", request, session, {"institution": institution})
 
+# --- 6.1 expense_detail ---
+@router.get("/{institution_slug}/out/{expense_id}/", response_class=HTMLResponse, name="expense_detail")
+async def expense_detail(request: Request, institution_slug: str, expense_id: int,
+                         session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
+    expense = session.get(Expense, expense_id)
+    if not expense or expense.inst_id != institution.id:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    return await TemplateResponse.render('dms/expense_detail.html', request, session, {'institution': institution, 'expense': expense})
+
+# --- 6.2 income_list alias ---
+@router.get("/{institution_slug}/in/overview/", response_class=HTMLResponse, name="income_list")
+async def income_list_page(request: Request, institution_slug: str,
+                           session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    institution, _ = get_institution_with_access(institution_slug, session, current_user, access_type='finance')
+    dm = DonationLogic(session, current_user, institution=institution)
+    context = dm.get_donation_list_context(page=request.query_params.get("page"))
+    context.update({"request": request, "institution": institution})
+    return await TemplateResponse.render("dms/income_list.html", request, session, context)
+
 # --- 7. donor management ---
 @router.api_route("/{institution_slug}/donor/", methods=["GET", "POST"], name="donor")
 async def donor_list(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
