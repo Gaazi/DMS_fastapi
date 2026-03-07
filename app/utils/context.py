@@ -132,9 +132,18 @@ templates.env.filters["translate"] = translate_filter
 import json
 templates.env.filters["tojson"] = lambda v: json.dumps(v)
 # Prevent None from rendering as literal "None" in templates
-templates.env.filters["default"] = lambda v, default="", boolean=False: (default if (v is None or (boolean and not v)) else v)
-templates.env.filters["int"] = lambda v, default=0: int(v) if v is not None else default
-templates.env.filters["none_to_blank"] = lambda v: "" if v is None else v
+import jinja2
+
+def safe_int(v, default=0):
+    if v is None or isinstance(v, jinja2.Undefined) or v == "":
+        return default
+    try:
+        return int(float(v))
+    except (ValueError, TypeError):
+        return default
+
+templates.env.filters["int"] = safe_int
+templates.env.filters["none_to_blank"] = lambda v: "" if v is None or isinstance(v, jinja2.Undefined) else v
 
 templates.env.globals["csrf_token"] = lambda: ""
 def _now_func(format_str=None):

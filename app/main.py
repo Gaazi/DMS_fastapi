@@ -220,7 +220,16 @@ def truncatechars_filter(value, arg):
         return value
 
 templates.env.filters["add"] = add_filter
-templates.env.filters["int"] = lambda v, default=0: int(v) if v is not None else default
+import jinja2
+def safe_int_main(v, default=0):
+    if v is None or isinstance(v, jinja2.Undefined) or v == "":
+        return default
+    try:
+        return int(float(v))
+    except (ValueError, TypeError):
+        return default
+
+templates.env.filters["int"] = safe_int_main
 templates.env.filters["stringformat"] = stringformat_filter
 templates.env.filters["truncatechars"] = truncatechars_filter
 templates.env.filters["cut"] = lambda v, arg: str(v).replace(arg, "")

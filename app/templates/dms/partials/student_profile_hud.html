@@ -115,7 +115,7 @@
             <!-- Text Info Cluster (Left) -->
             <div class="flex-grow min-w-0 space-y-1 text-left">
                 <div>
-                    <h1 class="text-2xl font-black text-white tracking-tighter leading-none mb-1 truncate">{{ student.name }}</h1>
+                    <h1 class="text-2xl font-black text-white tracking-tighter leading-none mb-1 truncate">{{ student.full_name }}</h1>
                     <div class="flex items-center gap-2">
                         <p class="text-[14px] text-slate-200">{% if institution.type == 'masjid' %}Guardian/Ref:{% else %}Father:{% endif %} {{ student.guardian_name }}</p>
                     </div>
@@ -134,9 +134,9 @@
             <div class="relative shrink-0">
                 <div class="w-20 h-20 rounded-[1.5rem] bg-black border border-white/10 overflow-hidden shadow-2xl flex items-center justify-center">
                     {% if student.photo %}
-                        <img src="{{ student.photo }}" alt="{{ student.name }}" class="w-full h-full object-cover grayscale-[0.2] contrast-125">
+                        <img src="{{ student.photo }}" alt="{{ student.full_name }}" class="w-full h-full object-cover grayscale-[0.2] contrast-125">
                     {% else %}
-                        <span class="text-3xl font-thin text-white/10">{{ student.name|first|upper }}</span>
+                        <span class="text-3xl font-thin text-white/10">{{ student.full_name|first|upper }}</span>
                     {% endif %}
                 </div>
                 <div class="absolute -bottom-2 -right-2 bg-indigo-600 text-white text-[9px] font-mono px-1.5 py-0.5 rounded shadow-lg uppercase">{{ student.reg_id }}</div>
