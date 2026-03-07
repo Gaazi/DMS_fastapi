@@ -129,6 +129,7 @@ async def download_institution_export_json_route(institution_slug: str, session:
     return Response(content=json_payload, media_type="application/json", headers={"Content-Disposition": f'attachment; filename="{institution.slug}.json"'})
 
 @router.get("/{institution_slug}/export/bundle/", name="export_institution_bundle")
+@router.get("/{institution_slug}/export/full/", name="institution_export_bundle")
 async def download_institution_export_bundle_route(request: Request, institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     if request.query_params.get("format") == "sheet":
@@ -138,6 +139,7 @@ async def download_institution_export_bundle_route(request: Request, institution
     return Response(content=archive, media_type="application/zip", headers={"Content-Disposition": f'attachment; filename="{institution.slug}-bundle.zip"'})
 
 @router.get("/{institution_slug}/export/sheet/", name="export_institution_sheet")
+@router.get("/{institution_slug}/export/sheets/", name="institution_export_sheet")
 async def download_institution_export_sheet_route(institution_slug: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     excel_bytes = export_institution_to_excel(institution, session)
@@ -145,6 +147,7 @@ async def download_institution_export_sheet_route(institution_slug: str, session
 
 # --- 5. Restores ---
 @router.post("/{institution_slug}/restore/", name="restore_institution")
+@router.post("/{institution_slug}/import/restore/", name="institution_import_restore")
 async def restore_institution_backup(institution_slug: str, backup_file: UploadFile = File(...), session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     institution, access = get_institution_with_access(institution_slug, session, current_user, access_type='admin')
     content = await backup_file.read()

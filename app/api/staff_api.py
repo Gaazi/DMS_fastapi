@@ -111,6 +111,8 @@ async def staff_attendance(
 
 # ── 4. Payroll ──────────────────────────────────────────────────────────────
 @router.api_route("/{institution_slug}/staff/payroll/", methods=["GET", "POST"], name="staff_payroll")
+@router.api_route("/{institution_slug}/staff/payroll-report/", methods=["GET", "POST"], name="payroll_report")
+@router.api_route("/{institution_slug}/staff/pay/", methods=["GET", "POST"], name="dms_staff_payroll")
 async def staff_payroll(
     request: Request, institution_slug: str,
     session: Session = Depends(get_session),
