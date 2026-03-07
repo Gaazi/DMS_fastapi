@@ -168,7 +168,41 @@ def _now_func(format_str=None):
     except Exception:
         return now.strftime('%d/%m/%Y')
 
+def django_date_filter(date_obj, format_str="d M Y"):
+    """Django style date filter for Jinja2 (e.g. {{ obj.date|date("d M Y") }})."""
+    if not date_obj:
+        return ""
+    if isinstance(date_obj, str):
+        try:
+            from dateutil.parser import parse
+            date_obj = parse(date_obj)
+        except Exception:
+            return date_obj
+    if not hasattr(date_obj, "strftime"):
+        return str(date_obj)
+        
+    django_to_py = {
+        'd': '%d', 'j': '%-d', 'm': '%m', 'n': '%-m',
+        'Y': '%Y', 'y': '%y', 'M': '%b', 'F': '%B', 'N': '%B',
+        'H': '%H', 'i': '%M', 's': '%S', 'h': '%I', 'a': '%p', 'A': '%p'
+    }
+    
+    # Simple substitution (note: standard Django format codes might overlap, but this is a rough approximation)
+    py_fmt = ""
+    # special handling for things like %Y-%m-%d
+    if "%" in format_str: # user already provided a python strftime format
+        py_fmt = format_str
+    else:
+        for ch in format_str:
+            py_fmt += django_to_py.get(ch, ch)
+            
+    try:
+        return date_obj.strftime(py_fmt)
+    except Exception:
+        return date_obj.strftime("%d-%m-%Y")
+
 templates.env.globals["now"] = _now_func
+templates.env.filters["date"] = django_date_filter
 
 async def get_global_context(request, session: Session, current_user: Optional[User] = None) -> Dict[str, Any]:
     # Mocking resolver_match for Django template compatibility
