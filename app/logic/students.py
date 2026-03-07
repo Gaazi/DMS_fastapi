@@ -444,7 +444,7 @@ class StudentLogic:
         }
 
     def handle_post_list(self, action: str, data: dict) -> bool:
-        """Student list POST actions۔ Returns True on success (redirect needed)."""
+        """Student list POST actions — Returns True on success."""
         if action == "save_student":
             enroll_data = {
                 "course_id": data.get("course_id"),
@@ -457,7 +457,10 @@ class StudentLogic:
             self.save_student(data, enroll_data if enroll_data["course_id"] else None)
             return True
         elif action == "update_status":
-            self.update_status(int(data.get("student_id")), data.get("is_active") == "true")
+            self.update_status(int(data.get("student_id")), data.get("is_active") == "on")
+            return True
+        elif action == "delete" or action == "soft_delete":
+            self.soft_delete(int(data.get("student_id")))
             return True
         return False
 

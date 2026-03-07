@@ -1,87 +1,76 @@
-<!-- Master Profile HUD: Compact Nebula Intelligence Hub -->
-<div dir="ltr" class="text-left relative overflow-hidden bg-[#080810] border border-white/10 rounded-[2.5rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)] mb-8 text-slate-200 transition-all duration-700" x-show="loaded" x-transition:enter="transition duration-700 ease-out">
+<!-- Master Profile HUD: Premium Nebula Intelligence Hub -->
+<div dir="ltr" class="text-left relative overflow-hidden bg-[#080810] border border-white/10 rounded-[2rem] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)] mb-8 text-slate-200 transition-all duration-700">
     <!-- Multi-Layered Premium Nebula Background -->
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.1),transparent_70%)] pointer-events-none"></div>
     <div class="absolute -top-32 -right-32 w-80 h-80 bg-indigo-600/15 rounded-full blur-[110px] pointer-events-none"></div>
     <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-violet-600/10 rounded-full blur-[110px] pointer-events-none"></div>
     
     <!-- Ultra-Thin Glass Gloss Overlay -->
-    <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none border-t border-white/10 rounded-t-[2.5rem]"></div>
+    <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none border-t border-white/10 rounded-t-[2rem]"></div>
     
     <!-- System Status & Actions Header -->
-    <div id="hud-header" class="relative z-10 bg-white/[0.02] border-b border-white/10 no-print px-3 sm:px-4 py-2.5">
+    <div id="hud-header" class="relative z-10 bg-white/[0.02] border-b border-white/10 no-print px-3 sm:px-4 py-3">
         <div class="flex flex-wrap items-center gap-2">
-            <!-- 0. Status -->
-            <div class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/[0.03]">
-                <div class="w-1.5 h-1.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_8px_#34d399]{% else %}bg-rose-500{% endif %}"></div>
-                {% if student.is_active %}
-                <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Active</span>
-                {% else %}
-                <span class="text-[9px] font-black text-rose-400 uppercase tracking-widest">Inactive</span>
-                {% endif %}
+            <!-- 0. Status Indicator -->
+            <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] shadow-inner">
+                <div class="w-1.5 h-1.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_8px_#34d399]{% else %}bg-rose-500 shadow-[0_0_8px_#f43f5e]{% endif %}"></div>
+                <span class="text-[10px] font-black {% if student.is_active %}text-emerald-400{% else %}text-rose-400{% endif %} uppercase tracking-widest">
+                    {% if student.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
             </div>
-            <!-- 4. Account -->
+
+            <!-- 1. Account Portal -->
             {% if is_academic_admin %}
-            {% if not student.user %}
-            <form method="POST" action="{{ url('create_portal_account', institution.slug, 'student', student.id) }}" onsubmit="return confirm('کیا آپ اس طالب علم کا آن لائن پورٹل اکاؤنٹ بنانا چاہتے ہیں؟');" class="inline m-0 p-0">
+                {% if not student.user_id %}
+                <form method="POST" action="{{ url('create_portal_account', institution.slug, 'student', student.id) }}" onsubmit="return confirm('کیا آپ اس طالب علم کا آن لائن پورٹل اکاؤنٹ بنانا چاہتے ہیں؟');" class="inline m-0 p-0">
+                    {{ csrf_token() }}
+                    <button type="submit" 
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/5 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm group">
+                        <i class="fas fa-user-plus opacity-70 group-hover:scale-110 transition-transform"></i>Account
+                    </button>
+                </form>
+                {% else %}
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 cursor-help text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm" 
+                      title="User Account Connected">
+                    <i class="fas fa-check-circle opacity-70"></i>Portal
+                </div>
+                {% endif %}
+            {% endif %}
+
+            <!-- 2. Staff Promotion (Role) -->
+            {% if is_academic_admin and can_edit_staff %}
+            <form method="POST" action="{{ url('promote_to_staff', institution_slug=institution.slug, student_id=student.id) }}" onsubmit="return confirm('کیا آپ اس مبر کا ڈیٹا کاپی کر کے انہیں اسٹاف میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
                 {{ csrf_token() }}
                 <button type="submit" 
-                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-cyan-500/20 bg-cyan-500/5 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
-                    <i class="fas fa-user-plus opacity-70"></i>Account
-                </button>
-            </form>
-            {% else %}
-            <span class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 cursor-help text-[9px] font-black uppercase tracking-widest whitespace-nowrap" 
-                  title="یوزر نیم: {{ student.user.username }}">
-                <i class="fas fa-check-circle opacity-70"></i>Account
-            </span>
-            {% endif %}
-            {% endif %}
-            
-            <!-- 2. Role -->
-            {% if is_academic_admin and can_edit_staff %}
-            <form method="POST" action="{{ url('promote_to_staff', institution_slug=institution.slug, student_id=student.id) }}" onsubmit="return confirm('کیا آپ اس ممبر کا ڈیٹا کاپی کر کے انہیں اسٹاف (عملے) میں نیا عہدہ دینا چاہتے ہیں؟');" class="inline m-0 p-0">
-                <button type="submit" 
-                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-fuchsia-500/20 bg-fuchsia-500/5 text-fuchsia-400 hover:bg-fuchsia-500/20 hover:text-fuchsia-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap cursor-pointer">
-                    <i class="fas fa-award opacity-70"></i>Role
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-fuchsia-500/20 bg-fuchsia-500/5 text-fuchsia-400 hover:bg-fuchsia-500/20 hover:text-fuchsia-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap group">
+                    <i class="fas fa-award opacity-70 group-hover:rotate-12 transition-transform"></i>Role
                 </button>
             </form>
             {% endif %}
 
-
-            <!-- 3. Report -->
+            <!-- 3. Print Report -->
             <button onclick="window.print()" 
-                    class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
                 <i class="fas fa-print opacity-70"></i>Report
             </button>
             
-            <!-- 0. ID Card -->
+            <!-- 4. ID Card -->
             <a href="{{ url('student_id_card', institution.slug, student.id) }}" 
-               class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
                 <i class="fas fa-id-card opacity-70"></i>ID Card
             </a>
 
-            <!-- 1. Family -->
-            {% set parent = student.parents[0] if student.parents else None %}
-            {% if parent %}
-            <a href="{{ url('family_fee_collection', institution.slug) }}?family_id={{ parent.family_id }}" 
-               class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
-                <i class="fas fa-users opacity-70"></i>Family
-            </a>
-            {% else %}
-            <div class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-slate-500/20 bg-slate-500/5 text-slate-500 text-[9px] font-black uppercase tracking-widest whitespace-nowrap opacity-50">
-                <i class="fas fa-users opacity-70"></i>Family
-            </div>
-            {% endif %}
-
-            <!-- 2. Edit -->
+            <!-- 5. Edit Button -->
             <a href="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}?edit={{ student.id }}" 
-               class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
                 <i class="fas fa-edit opacity-70"></i>Edit
             </a>
 
-            <!-- 5. Suspend/Activate -->
+            <!-- 6. Management Actions (Suspend/Activate & Delete) -->
             {% if is_academic_admin %}
+            <div class="h-6 w-px bg-white/10 mx-1"></div>
+            
+            <!-- Suspend/Activate -->
             <form method="POST" class="inline m-0 p-0">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="update_status">
@@ -90,18 +79,19 @@
                 <input type="hidden" name="is_active" value="on">
                 {% endif %}
                 <button type="submit" 
-                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border {% if student.is_active %}border-amber-500/20 bg-amber-500/5 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300{% else %}border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300{% endif %} transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
-                    <i class="fas {% if student.is_active %}fa-ban{% else %}fa-check-circle{% endif %} opacity-70"></i>{% if student.is_active %}Suspend{% else %}Activate{% endif %}
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border {% if student.is_active %}border-amber-500/20 bg-amber-500/5 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300{% else %}border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300{% endif %} transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
+                    <i class="fas {% if student.is_active %}fa-pause-circle{% else %}fa-play-circle{% endif %} opacity-70"></i>
+                    {% if student.is_active %}Suspend{% else %}Activate{% endif %}
                 </button>
             </form>
             
-            <!-- 6. Delete -->
+            <!-- Delete -->
             <form method="POST" action="{{ url('musalleen_list' if institution.type == 'masjid' else 'students', institution.slug) }}" onsubmit="return confirm('کیا آپ واقعی اس ریکارڈ کو حذف کرنا چاہتے ہیں؟');" class="inline m-0 p-0">
                 {{ csrf_token() }}
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="student_id" value="{{ student.id }}">
                 <button type="submit" 
-                        class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-rose-500/20 bg-rose-500/5 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition-all text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-500/20 bg-rose-500/5 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm">
                     <i class="fas fa-trash-alt opacity-70"></i>Delete
                 </button>
             </form>
@@ -109,93 +99,102 @@
         </div>
     </div>
 
-    <div class="p-2 space-y-2">
-        <!-- Top Identity Layer: Info Left, Photo Right -->
-        <div class="flex items-center justify-between gap-2">
-            <!-- Text Info Cluster (Left) -->
-            <div class="flex-grow min-w-0 space-y-1 text-left">
-                <div>
-                    <h1 class="text-2xl font-black text-white tracking-tighter leading-none mb-1 truncate">{{ student.full_name }}</h1>
-                    <div class="flex items-center gap-2">
-                        <p class="text-[14px] text-slate-200">{% if institution.type == 'masjid' %}Guardian/Ref:{% else %}Father:{% endif %} {{ student.guardian_name }}</p>
+    <!-- Identity & Core Info Layer -->
+    <div class="px-6 py-6 space-y-6">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
+            <!-- Text Profile (Left) -->
+            <div class="flex-grow space-y-4 text-center sm:text-left">
+                <div class="space-y-1">
+                    <h1 class="text-3xl font-black text-white tracking-tighter leading-none mb-1 drop-shadow-lg">{{ student.full_name }}</h1>
+                    <div class="flex items-center justify-center sm:justify-start gap-2">
+                        <span class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">{% if institution.type == 'masjid' %}Guardian/Ref:{% else %}Father:{% endif %}</span>
+                        <span class="text-[15px] font-medium text-slate-200">{{ student.guardian_name }}</span>
                     </div>
                 </div>
                 
-                <!-- Primary Contact Node -->
-                <div class="inline-flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/10 px-3 py-1 rounded-lg">
-                    <i class="fas fa-phone text-[8px] text-emerald-500/50"></i>
-                    <a href="tel:{{ student.mobile }}" class="text-[11px] font-mono font-bold text-emerald-400">
-                        {{ student.mobile or "--NO_CELL--" }}
+                <!-- Primary Contact Badge -->
+                <div class="inline-flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/20 px-4 py-2 rounded-xl shadow-inner group transition-all hover:bg-emerald-500/10">
+                    <i class="fas fa-phone-alt text-[10px] text-emerald-500/50 group-hover:text-emerald-400 transition-colors"></i>
+                    <a href="tel:{{ student.mobile }}" class="text-[14px] font-mono font-black text-emerald-400 tracking-wider">
+                        {{ student.mobile or "--NO_MOBILE--" }}
                     </a>
                 </div>
             </div>
 
-            <!-- Photo Module (Right) -->
-            <div class="relative shrink-0">
-                <div class="w-20 h-20 rounded-[1.5rem] bg-black border border-white/10 overflow-hidden shadow-2xl flex items-center justify-center">
+            <!-- Avatar Module (Right) -->
+            <div class="relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 to-emerald-500 rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+                <div class="relative w-28 h-28 rounded-[1.8rem] bg-black border border-white/10 overflow-hidden shadow-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-[1.02]">
                     {% if student.photo %}
-                        <img src="{{ student.photo }}" alt="{{ student.full_name }}" class="w-full h-full object-cover grayscale-[0.2] contrast-125">
+                        <img src="{{ student.photo }}" alt="{{ student.full_name }}" class="w-full h-full object-cover grayscale-[0.1] contrast-125 brightness-90">
                     {% else %}
-                        <span class="text-3xl font-thin text-white/10">{{ student.full_name|first|upper }}</span>
+                        <span class="text-4xl font-thin text-white/5 drop-shadow-sm">{{ student.full_name|first|upper }}</span>
                     {% endif %}
                 </div>
-                <div class="absolute -bottom-2 -right-2 bg-indigo-600 text-white text-[9px] font-mono px-1.5 py-0.5 rounded shadow-lg uppercase">{{ student.reg_id }}</div>
+                <div class="absolute -bottom-2 -right-2 bg-indigo-600 text-white text-[10px] font-mono font-black px-2 py-1 rounded-lg shadow-xl uppercase border border-indigo-400/30">
+                    {{ student.reg_id or "REG_PENDING" }}
+                </div>
             </div>
         </div>
 
-        <!-- Tactical Information Stream: The "Button" Matrix -->
-        <div dir="ltr" class="text-left flex flex-wrap gap-2 border-t border-b border-white/5 py-4">
+        <!-- Demographic Matrix -->
+        <div dir="ltr" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 border-t border-white/5 pt-6">
             <!-- GENDER -->
-            <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg hover:border-emerald-500/30 hover:bg-white/20 transition-all group shadow-sm">
-                <span class="text-[9px] font-bold text-slate-400">Gender:</span>
-                <span class="text-xs font-black text-white">{{ student.gender }}</span>
+            <div class="flex flex-col gap-1 bg-white/[0.03] border border-white/5 px-4 py-3 rounded-2xl hover:bg-white/[0.05] transition-all">
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gender</span>
+                <span class="text-sm font-black text-white">{{ student.gender or "--" }}</span>
             </div>
+
             <!-- SECONDARY PHONE -->
             {% if student.mobile2 %}
-            <a href="tel:{{ student.mobile2 }}" class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg hover:border-emerald-500/30 hover:bg-white/20 transition-all group shadow-sm">
-                <span class="text-[8px] font-black text-slate-500 group-hover:text-emerald-400">No_2:</span>
-                <span class="text-xs font-mono font-bold text-white">{{ student.mobile2 }}</span>
+            <a href="tel:{{ student.mobile2 }}" class="flex flex-col gap-1 bg-white/[0.03] border border-white/5 px-4 py-3 rounded-2xl hover:border-emerald-500/30 hover:bg-white/[0.05] transition-all group">
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-emerald-400">Emerg_Cell</span>
+                <span class="text-sm font-mono font-bold text-white">{{ student.mobile2 }}</span>
             </a>
             {% endif %}
+
             <!-- EMAIL -->
             {% if student.email %}
-            <a href="mailto:{{ student.email }}" class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg hover:border-indigo-500/30 hover:bg-white/20 transition-all group shadow-sm">
-                <span class="text-[8px] font-black text-slate-500 group-hover:text-indigo-400">MAIL:</span>
-                <span class="text-xs font-mono font-bold text-white">{{ student.email }}</span>
+            <a href="mailto:{{ student.email }}" class="flex flex-col gap-1 bg-white/[0.03] border border-white/5 px-4 py-3 rounded-2xl hover:border-indigo-500/30 hover:bg-white/[0.05] transition-all group overflow-hidden">
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-indigo-400">Email_Vector</span>
+                <span class="text-[11px] font-mono font-bold text-white truncate">{{ student.email }}</span>
             </a>
             {% endif %}
 
             <!-- BLOOD GROUP -->
             {% if student.blood_group %}
-            <div class="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1.5 rounded-lg shadow-sm">
-                <span class="text-[8px] font-black text-rose-500/70">BLOOD:</span>
-                <span class="text-xs font-black text-rose-400">{{ student.blood_group }}</span>
+            <div class="flex flex-col gap-1 bg-rose-500/5 border border-rose-500/10 px-4 py-3 rounded-2xl">
+                <span class="text-[9px] font-black text-rose-500/70 uppercase tracking-widest">Blood_Type</span>
+                <span class="text-sm font-black text-rose-400">{{ student.blood_group }}</span>
             </div>
             {% endif %}
 
             <!-- DATE OF BIRTH -->
             {% if student.date_of_birth %}
-            <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg shadow-sm">
-                <span class="text-[8px] font-black text-slate-500">DOB:</span>
-                <span class="text-xs font-mono font-bold text-white uppercase">{{ student.date_of_birth|date("d M Y") }}</span>
+            <div class="flex flex-col gap-1 bg-white/[0.03] border border-white/5 px-4 py-3 rounded-2xl hover:bg-white/[0.05] transition-all">
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Birth_Cycle</span>
+                <span class="text-[12px] font-mono font-bold text-white uppercase">{{ student.date_of_birth|date }}</span>
             </div>
             {% endif %}
 
             <!-- JOINED DATE -->
-            <div class="flex items-center gap-2 bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-lg shadow-sm">
-                <span class="text-[8px] font-black text-slate-500">JOIN:</span>
-                <span class="text-xs font-mono font-bold text-white">{{ student.admission_date|date("d/m/y") }}</span>
+            <div class="flex flex-col gap-1 bg-white/[0.03] border border-white/5 px-4 py-3 rounded-2xl hover:bg-white/[0.05] transition-all">
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Entry_Point</span>
+                <span class="text-[12px] font-mono font-bold text-white">{{ student.admission_date|date }}</span>
             </div>
         </div>
 
-        <!-- Locational Node -->
-        <div class="flex items-start gap-3 bg-white/[0.03] p-4 rounded-2xl border border-white/10">
-            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
-                <i class="fas fa-map-marker-alt text-xs"></i>
-            </div>
-            <div class="min-w-0">
-                <span class="text-[8px] font-black text-slate-500 uppercase mb-1 block">Vector_Location:</span>
-                <p class="text-xs text-white font-urdu leading-snug">{{ student.address or "Vectors_Undefined" }}</p>
+        <!-- Location Node: Wide Glass Surface -->
+        <div class="relative group">
+            <div class="flex items-start gap-4 bg-white/[0.02] p-5 rounded-3xl border border-white/10 hover:bg-white/[0.04] transition-all overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl -z-10 group-hover:bg-indigo-500/10 transition-colors"></div>
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0 border border-indigo-500/20 shadow-lg">
+                    <i class="fas fa-map-marker-alt text-sm"></i>
+                </div>
+                <div class="min-w-0 flex-grow">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 block">Coordinate_Address</span>
+                    <p class="text-[15px] text-white font-urdu leading-relaxed">{{ student.address or "Vectors_Undefined_In_Database" }}</p>
+                </div>
             </div>
         </div>
     </div>
