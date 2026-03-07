@@ -25,7 +25,7 @@
                         title="{% if student.is_active %}Click to Suspend{% else %}Click to Activate{% endif %}">
                     <div class="w-1.5 h-1.5 rounded-full {% if student.is_active %}bg-emerald-400 shadow-[0_0_8px_#34d399] group-hover:bg-rose-400 group-hover:shadow-[0_0_8px_#f43f5e]{% else %}bg-rose-500 shadow-[0_0_8px_#f43f5e] group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_#34d399]{% endif %} transition-colors"></div>
                     <span class="group-hover:hidden">{% if student.is_active %}Active{% else %}Inactive{% endif %}</span>
-                    <span class="hidden group-hover:inline">{% if student.is_active %}Inactive{% else %}Active{% endif %}</span>
+                    <span class="hidden group-hover:inline">{% if student.is_active %}Suspend{% else %}Activate{% endif %}</span>
                 </button>
             </form>
             {% else %}
@@ -37,7 +37,7 @@
             </div>
             {% endif %}
 
-            <!-- 1. Account Portal -->
+            <!-- 1. Account -->
             {% if is_academic_admin %}
                 {% if not student.user_id %}
                 <form method="POST" action="{{ url('create_portal_account', institution.slug, 'student', student.id) }}" onsubmit="return confirm('کیا آپ اس طالب علم کا آن لائن پورٹل اکاؤنٹ بنانا چاہتے ہیں؟');" class="inline m-0 p-0">
@@ -50,7 +50,7 @@
                 {% else %}
                 <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 cursor-help text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm" 
                       title="User Account Connected">
-                    <i class="fas fa-check-circle opacity-70"></i>Portal
+                    <i class="fas fa-check-circle opacity-70"></i>Account
                 </div>
                 {% endif %}
             {% endif %}
