@@ -1,8 +1,3 @@
-from app.admin.base import DMSModelView
-from app.models.auth import User
-from app.models.people import Staff, Parent, Student, Admission
-from app.models.attendance import Attendance, Staff_Attendance
-from app.models.audit import ActivityLog
 from wtforms import PasswordField
 from starlette.requests import Request
 from app.admin.base import DMSModelView
