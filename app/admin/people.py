@@ -33,7 +33,7 @@ class UserAdmin(DMSModelView, model=User):
         new_password = data.get("password", "").strip()
         if new_password:
             from app.logic.auth import pwd_context
-            data["password"] = pwd_context.hash(new_password)
+            data["password"] = pwd_context.hash(new_password[:72])
         elif not is_created and model.password:
             # خالی ہے اور یہ edit ہے تو پرانا رکھیں
             data["password"] = model.password

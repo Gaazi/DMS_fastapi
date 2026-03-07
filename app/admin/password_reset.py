@@ -115,7 +115,8 @@ async def reset_password_submit(
 <body><div class="card"><div class="err">❌ پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے۔</div>
 <a class="back" href="/admin/reset-password/{user_id}">← واپس</a></div></body></html>""")
 
-    user.password = pwd_context.hash(new_password)
+    # bcrypt has a 72 byte limit, so we must truncate
+    user.password = pwd_context.hash(new_password[:72])
     session.add(user)
     session.commit()
 
