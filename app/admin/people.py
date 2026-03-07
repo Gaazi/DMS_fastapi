@@ -3,12 +3,31 @@ from app.models.auth import User
 from app.models.people import Staff, Parent, Student, Admission
 from app.models.attendance import Attendance, Staff_Attendance
 from app.models.audit import ActivityLog
+from starlette.requests import Request
 
 class UserAdmin(DMSModelView, model=User):
     column_list = [User.id, User.username, User.email, User.is_superuser, User.is_active]
     column_searchable_list = [User.username, User.email]
+    # پاس ورڈ فیلڈ لسٹ میں نہ دکھائیں
+    column_exclude_list = [User.password]
+    # فارم میں پاسورڈ دکھائیں لیکن نام تبدیل کریں
+    form_include_pk = False
     category = "People"
     icon = "fa-solid fa-users-gear"
+    name_plural = "Users"
+
+    async def on_model_change(self, data: dict, model: User, is_created: bool, request: Request) -> None:
+        """
+        اگر admin نے password فیلڈ بھری ہے تو اسے hash کر دیں۔
+        اگر فیلڈ خالی چھوڑی تو پرانا password رہنے دیں۔
+        """
+        new_password = data.get("password", "").strip()
+        if new_password:
+            from app.logic.auth import pwd_context
+            data["password"] = pwd_context.hash(new_password)
+        elif not is_created and model.password:
+            # خالی ہے اور یہ edit ہے تو پرانا رکھیں
+            data["password"] = model.password
 
 class StaffAdmin(DMSModelView, model=Staff):
     column_list = [Staff.id, Staff.name, Staff.reg_id, Staff.mobile, Staff.role]
